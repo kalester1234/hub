@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Medical Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #17a2b8; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 4rem; color: white;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    {% endif %}
+                    <h3 style="color: #1a3a4a; margin-top: 15px;">{{ user.get_full_name }}</h3>
+                    <p style="color: #666;"><strong>Role:</strong> {{ user.get_role_display }}</p>
+                    <p style="color: #666;"><strong>Email:</strong> {{ user.email }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5 class="card-title mb-0">Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                            {{ form.bio }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                            {{ form.profile_picture }}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

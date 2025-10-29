@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - Medical Connect{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row" style="height: calc(100vh - 200px);">
+        <div class="col-lg-8 mx-auto d-flex flex-column">
+            <!-- Header -->
+            <div class="card mb-3">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 style="color: #1a3a4a; margin: 0;">
+                            {% if user == conversation.doctor %}
+                                {{ conversation.patient.get_full_name }}
+                            {% else %}
+                                Dr. {{ conversation.doctor.get_full_name }}
+                            {% endif %}
+                        </h5>
+                        <small style="color: #666;">
+                            {% if user == conversation.doctor %}
+                                Patient
+                            {% else %}
+                                {{ conversation.doctor.doctor_profile.get_specialization_display }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    <a href="{% url 'conversations_list' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="card" style="flex: 1; overflow-y: auto; margin-bottom: 15px;">
+                <div class="card-body" id="messages-container">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div style="margin-bottom: 15px; display: flex; {% if message.sender == user %}justify-content: flex-end;{% else %}justify-content: flex-start;{% endif %}">
+                            <div style="{% if message.sender == user %}background-color: #17a2b8; color: white;{% else %}background-color: #f0f8f9; color: #1a3a4a;{% endif %} padding: 10px 15px; border-radius: 10px; max-width: 70%;">
+                                <p style="margin: 0; font-size: 0.9rem;">{{ message.content }}</p>
+                                {% if message.file %}
+                                    <div style="margin-top: 10px;">
+                                        <a href="{{ message.file.url }}" target="_blank" class="btn btn-sm" style="background-color: {% if message.sender == user %}rgba(255,255,255,0.2);{% else %}#17a2b8;{% endif %} color: {% if message.sender == user %}white;{% else %}white;{% endif %}">
+                                            <i class="bi bi-download"></i> {{ message.file.name|truncatechars:20 }}
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                <small style="opacity: 0.7;">{{ message.created_at|time:"H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-dots" style="font-size: 2rem; color: #17a2b8; opacity: 0.5;"></i>
+                            <p style="color: #999; margin-top: 10px;">No messages yet. Start the conversation!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Message Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            {{ form.content }}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                        <small style="color: #666;">Attach files if needed: {{ form.file }}</small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+</script>
+{% endblock %}

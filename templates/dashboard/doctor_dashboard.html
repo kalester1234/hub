@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - Medical Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 style="color: #1a3a4a; font-weight: 700;">Welcome, Dr. {{ user.last_name }}</h1>
+            <p style="color: #666;">Manage your appointments and patient interactions</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card" style="border-left: 4px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Today's Appointments</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ today_appointments }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card" style="border-left: 4px solid #ffc107;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Pending Requests</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ pending_requests }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #ffc107; opacity: 0.2;">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card" style="border-left: 4px solid #28a745;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Completed</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ completed_appointments }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #28a745; opacity: 0.2;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card" style="border-left: 4px solid #20c997;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Total Appointments</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_appointments }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #20c997; opacity: 0.2;">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'manage_availability' %}" class="btn btn-outline-primary me-2 mb-2">
+                        <i class="bi bi-calendar-check"></i> Manage Availability
+                    </a>
+                    <a href="{% url 'my_appointments' %}" class="btn btn-outline-primary me-2 mb-2">
+                        <i class="bi bi-calendar2-event"></i> View All Appointments
+                    </a>
+                    <a href="{% url 'conversations_list' %}" class="btn btn-outline-primary mb-2">
+                        <i class="bi bi-chat-dots"></i> Messages
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-event"></i> Upcoming Appointments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead style="background-color: #f0f8f9;">
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Date & Time</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in upcoming_appointments %}
+                                    <tr>
+                                        <td>{{ appointment.patient.get_full_name }}</td>
+                                        <td>
+                                            {{ appointment.appointment_date|date:"M d, Y" }}<br>
+                                            <small>{{ appointment.appointment_time|time:"H:i" }}</small>
+                                        </td>
+                                        <td>{{ appointment.reason|truncatewords:5 }}</td>
+                                        <td>
+                                            <span class="badge status-{{ appointment.status }}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i> No upcoming appointments scheduled.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

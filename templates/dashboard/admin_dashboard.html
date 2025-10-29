@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Medical Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 style="color: #1a3a4a; font-weight: 700;">Admin Dashboard</h1>
+            <p style="color: #666;">System overview and management</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card" style="border-left: 4px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Total Users</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_users }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card" style="border-left: 4px solid #20c997;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Doctors</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ doctors }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #20c997; opacity: 0.2;">
+                            <i class="bi bi-stethoscope"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card" style="border-left: 4px solid #ffc107;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Patients</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ patients }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #ffc107; opacity: 0.2;">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card" style="border-left: 4px solid #dc3545;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Pending Doctor Approvals</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ pending_doctors }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #dc3545; opacity: 0.2;">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card" style="border-left: 4px solid #28a745;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Total Appointments</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_appointments }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #28a745; opacity: 0.2;">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card" style="border-left: 4px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p style="color: #666; margin: 0;">Completed Appointments</p>
+                            <h3 style="color: #1a3a4a; margin: 0;">{{ completed_appointments }}</h3>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5 class="card-title mb-0">Admin Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="/admin/" class="btn btn-primary me-2 mb-2">
+                        <i class="bi bi-sliders"></i> Django Admin Panel
+                    </a>
+                    <a href="{% url 'my_appointments' %}" class="btn btn-outline-primary me-2 mb-2">
+                        <i class="bi bi-calendar2-event"></i> View All Appointments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

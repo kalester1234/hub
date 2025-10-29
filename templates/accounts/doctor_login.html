@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Login - Medical Connect{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #f0f8f9 0%, #e0f7ff 100%); min-height: calc(100vh - 200px); display: flex; align-items: center;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="row align-items-center">
+                    <!-- Left side - Decorative -->
+                    <div class="col-lg-5 mb-4 mb-lg-0" style="display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <svg viewBox="0 0 300 300" style="width: 100%; max-width: 300px;">
+                                <circle cx="100" cy="100" r="80" fill="#20c997" opacity="0.3"/>
+                                <circle cx="150" cy="150" r="60" fill="#20c997" opacity="0.2"/>
+                                <path d="M 80 150 L 120 150 M 100 130 L 100 170" stroke="#1a3a4a" stroke-width="3" fill="none"/>
+                            </svg>
+                            <h2 style="color: #1a3a4a; font-weight: 700; margin-top: 20px;">Medical Connect</h2>
+                            <p style="color: #666;">Your health, connected and simplified.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right side - Login Form -->
+                    <div class="col-lg-7">
+                        <div style="background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                            <h1 style="color: #1a3a4a; font-weight: 700; margin-bottom: 10px;">Doctor Login</h1>
+                            <p style="color: #666; margin-bottom: 30px;">Please sign in to your account.</p>
+
+                            <form method="POST">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.username.id_for_label }}" class="form-label">User Name</label>
+                                    {{ form.username }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        {{ form.password }}
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="showPassword">
+                                    <label class="form-check-label" for="showPassword">Show Password</label>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-lg" style="background-color: #1a7a8a; border: none; color: white;">
+                                        <i class="bi bi-box-arrow-in-right"></i> Login
+                                    </button>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <p style="color: #666;">Not a doctor? 
+                                        <a href="{% url 'login' %}" style="color: #20c997; text-decoration: none;">Login as a patient</a>
+                                    </p>
+                                </div>
+                            </form>
+
+                            <hr>
+
+                            <div class="text-center">
+                                <p style="color: #666;">Don't have an account? 
+                                    <a href="{% url 'doctor_signup' %}" style="color: #20c997; font-weight: 600; text-decoration: none;">
+                                        Register as Doctor
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+    const showPasswordCheckbox = document.getElementById('showPassword');
+
+    showPasswordCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            passwordField.type = 'text';
+        } else {
+            passwordField.type = 'password';
+        }
+    });
+
+    togglePassword.addEventListener('click', function() {
+        showPasswordCheckbox.checked = !showPasswordCheckbox.checked;
+        showPasswordCheckbox.dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock %}

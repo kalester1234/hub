@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Signup - Medical Connect{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #f0f8f9 0%, #e0f7ff 100%); min-height: calc(100vh - 200px); padding: 40px 0;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 mx-auto">
+                <div style="background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <h1 style="color: #1a3a4a; font-weight: 700;">Doctor Registration</h1>
+                        <p style="color: #666;">Register your medical practice to start receiving patient appointments</p>
+                    </div>
+
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        
+                        <h5 style="color: #1a3a4a; margin-top: 30px; margin-bottom: 20px;">Personal Information</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <h5 style="color: #1a3a4a; margin-top: 30px; margin-bottom: 20px;">Medical Credentials</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ form.specialization.id_for_label }}" class="form-label">Specialization</label>
+                            {{ form.specialization }}
+                            {% if form.specialization.errors %}
+                                <div class="invalid-feedback d-block">{{ form.specialization.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.license_number.id_for_label }}" class="form-label">License Number</label>
+                            {{ form.license_number }}
+                            {% if form.license_number.errors %}
+                                <div class="invalid-feedback d-block">{{ form.license_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.experience_years.id_for_label }}" class="form-label">Years of Experience</label>
+                            {{ form.experience_years }}
+                            {% if form.experience_years.errors %}
+                                <div class="invalid-feedback d-block">{{ form.experience_years.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.consultation_fee.id_for_label }}" class="form-label">Consultation Fee ($)</label>
+                            {{ form.consultation_fee }}
+                            {% if form.consultation_fee.errors %}
+                                <div class="invalid-feedback d-block">{{ form.consultation_fee.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <h5 style="color: #1a3a4a; margin-top: 30px; margin-bottom: 20px;">Account Security</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i> Your registration will be reviewed by our admin team before approval.
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-stethoscope"></i> Register as Doctor
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <p style="color: #666;">Already have an account? 
+                                <a href="{% url 'doctor_login' %}" style="color: #20c997; font-weight: 600; text-decoration: none;">
+                                    Login here
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Medical Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 style="color: #1a3a4a; font-weight: 700;">Notifications</h1>
+                {% if notifications.filter(is_read=False) %}
+                    <form method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_all_read">
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-check-all"></i> Mark all as read
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% if notifications %}
+                <div class="row g-3">
+                    {% for notification in notifications %}
+                    <div class="col-12">
+                        <div class="card" style="border-left: 4px solid {% if notification.is_read %}#ddd{% else %}#17a2b8{% endif %};">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div style="flex: 1;">
+                                        <h5 style="color: #1a3a4a; margin-bottom: 5px;">
+                                            {% if notification.notification_type == 'appointment_request' %}
+                                                <i class="bi bi-calendar-plus" style="color: #ffc107;"></i>
+                                            {% elif notification.notification_type == 'appointment_confirmed' %}
+                                                <i class="bi bi-check-circle" style="color: #28a745;"></i>
+                                            {% elif notification.notification_type == 'appointment_cancelled' %}
+                                                <i class="bi bi-x-circle" style="color: #dc3545;"></i>
+                                            {% elif notification.notification_type == 'message' %}
+                                                <i class="bi bi-chat-dots" style="color: #17a2b8;"></i>
+                                            {% elif notification.notification_type == 'doctor_approved' %}
+                                                <i class="bi bi-check2-square" style="color: #20c997;"></i>
+                                            {% endif %}
+                                            {{ notification.title }}
+                                        </h5>
+                                        <p style="color: #666; margin-bottom: 8px;">{{ notification.description }}</p>
+                                        <small style="color: #999;">{{ notification.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div>
+                                        {% if not notification.is_read %}
+                                            <span class="badge badge-primary" style="background-color: #17a2b8;">New</span>
+                                        {% endif %}
+                                        {% if notification.related_appointment %}
+                                            <a href="{% url 'mark_notification_read' notification.id %}" class="btn btn-sm btn-primary ms-2">
+                                                <i class="bi bi-arrow-right"></i> View
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-bell" style="font-size: 3rem; color: #17a2b8; opacity: 0.5;"></i>
+                        <h5 style="color: #1a3a4a; margin-top: 15px;">No notifications</h5>
+                        <p style="color: #666;">You're all caught up!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

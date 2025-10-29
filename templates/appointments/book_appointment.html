@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - Medical Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-plus"></i> Book Appointment with Dr. {{ doctor.get_full_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.appointment_date.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar"></i> Appointment Date
+                            </label>
+                            {{ form.appointment_date }}
+                            {% if form.appointment_date.errors %}
+                                <div class="invalid-feedback d-block">{{ form.appointment_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.appointment_time.id_for_label }}" class="form-label">
+                                <i class="bi bi-clock"></i> Preferred Time
+                            </label>
+                            {{ form.appointment_time }}
+                            {% if form.appointment_time.errors %}
+                                <div class="invalid-feedback d-block">{{ form.appointment_time.errors.0 }}</div>
+                            {% endif %}
+                            <small style="color: #666;">Choose a time within the doctor's availability</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-dots"></i> Reason for Visit
+                            </label>
+                            {{ form.reason }}
+                            {% if form.reason.errors %}
+                                <div class="invalid-feedback d-block">{{ form.reason.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 style="color: #1a3a4a;">Consultation Fee</h6>
+                                <p style="font-size: 1.5rem; color: #17a2b8; font-weight: 600; margin: 0;">
+                                    ${{ doctor.doctor_profile.consultation_fee }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'browse_doctors' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Book Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header" style="background-color: #f0f8f9;">
+                    <h5 class="card-title mb-0" style="color: #1a3a4a;">
+                        <i class="bi bi-info-circle"></i> Important Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>Please provide accurate details about your symptoms</li>
+                        <li>Ensure you're available at the selected time</li>
+                        <li>You will receive a confirmation email</li>
+                        <li>Cancellations should be made at least 24 hours before the appointment</li>
+                        <li>Payment is required at the time of consultation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
