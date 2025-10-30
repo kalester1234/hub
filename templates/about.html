@@ -3,35 +3,60 @@
 {% block title %}About Us - Medical Connect{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-5">
-        <div class="col-lg-8 mx-auto">
-            <h1 style="color: #1a3a4a; font-weight: 700; margin-bottom: 30px;">About Medical Connect</h1>
-            <p style="font-size: 1.1; line-height: 1.8; color: #666;">
-                Medical Connect is a modern healthcare platform designed to bridge the gap between patients and doctors. 
-                We believe that quality healthcare should be accessible, convenient, and efficient.
-            </p>
-            
-            <h3 style="color: #1a3a4a; margin-top: 40px; margin-bottom: 20px;">Our Mission</h3>
-            <p style="font-size: 1rem; line-height: 1.8; color: #666;">
-                To revolutionize healthcare by providing a seamless platform where patients can easily find and book 
-                appointments with qualified doctors, and doctors can manage their practice efficiently.
-            </p>
-            
-            <h3 style="color: #1a3a4a; margin-top: 40px; margin-bottom: 20px;">Our Vision</h3>
-            <p style="font-size: 1rem; line-height: 1.8; color: #666;">
-                To create a world where healthcare is at everyone's fingertips, where distance and time are no barriers 
-                to getting the medical care you need.
-            </p>
-            
-            <h3 style="color: #1a3a4a; margin-top: 40px; margin-bottom: 20px;">Why Choose Us?</h3>
-            <ul style="font-size: 1rem; line-height: 2; color: #666;">
-                <li><i class="bi bi-check-circle" style="color: #20c997; margin-right: 10px;"></i> Easy appointment booking</li>
-                <li><i class="bi bi-check-circle" style="color: #20c997; margin-right: 10px;"></i> Verified doctors and healthcare professionals</li>
-                <li><i class="bi bi-check-circle" style="color: #20c997; margin-right: 10px;"></i> Secure and confidential medical records</li>
-                <li><i class="bi bi-check-circle" style="color: #20c997; margin-right: 10px;"></i> Real-time messaging with doctors</li>
-                <li><i class="bi bi-check-circle" style="color: #20c997; margin-right: 10px;"></i> Convenient and affordable healthcare</li>
-            </ul>
+<div class="about-wrapper">
+    <style>
+        .about-wrapper { background: #f6fbf9; padding: 80px 0 100px; }
+        .about-container { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+        .about-header { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 56px; text-align: center; }
+        .about-header h1 { font-size: 2.85rem; font-weight: 700; color: #0e2b3a; letter-spacing: -0.5px; }
+        .about-header p { max-width: 720px; font-size: 1.08rem; color: #5a707a; line-height: 1.75; }
+        .mission-card { background: #ffffff; border-radius: 24px; padding: 44px 48px; box-shadow: 0 28px 60px rgba(19, 67, 90, 0.1); margin-bottom: 72px; }
+        .mission-card h2 { font-size: 1.8rem; font-weight: 600; color: #0e2b3a; margin-bottom: 18px; }
+        .mission-card p { font-size: 1.05rem; color: #4f656e; line-height: 1.85; margin: 0; }
+        .team-section { text-align: center; }
+        .team-section h2 { font-size: 2rem; font-weight: 600; color: #0e2b3a; margin-bottom: 14px; }
+        .team-section p { font-size: 1.02rem; color: #5a707a; line-height: 1.75; margin-bottom: 48px; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; }
+        .team-card { background: #ffffff; border-radius: 22px; padding: 36px 28px; box-shadow: 0 24px 50px rgba(19, 67, 90, 0.12); display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .team-initials { width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(140deg, #29e0c1, #16c3ca); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #ffffff; letter-spacing: 1px; }
+        .team-card h3 { font-size: 1.25rem; font-weight: 600; color: #0e2b3a; margin: 0; }
+        .team-role { font-size: 0.98rem; color: #667d88; margin: 0; }
+        @media (max-width: 768px) {
+            .about-wrapper { padding: 64px 0 80px; }
+            .about-header h1 { font-size: 2.4rem; }
+            .mission-card { padding: 32px; margin-bottom: 56px; }
+            .team-grid { gap: 24px; }
+        }
+    </style>
+    <div class="about-container">
+        <div class="about-header">
+            <h1>About Us</h1>
+            <p>Our mission is to streamline the medical scheduling process, creating a seamless and efficient connection between patients and healthcare providers.</p>
+        </div>
+        <div class="mission-card">
+            <h2>Our Mission at Medical Connect</h2>
+            <p>We aim to reduce administrative burdens and improve access to care through innovative technology, empowering both patients and healthcare professionals with an intuitive platform built for meaningful connections.</p>
+        </div>
+        <div class="team-section">
+            <h2>Meet the Team: Run Time Error</h2>
+            <p>We are a dedicated team of developers passionate about leveraging technology to solve real-world healthcare challenges.</p>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-initials">SS</div>
+                    <h3>Shyam Sundar S</h3>
+                    <p class="team-role">UI UX Designer</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-initials">SG</div>
+                    <h3>Syam Sundar G</h3>
+                    <p class="team-role">Data Analyst</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-initials">SV</div>
+                    <h3>S Vasanth</h3>
+                    <p class="team-role">Lead Developer</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -3,8 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from datetime import datetime, timedelta, time
 from django.contrib.auth import get_user_model
+import json
+import re
 from .models import Appointment, AvailabilitySlot, Prescription
 from .forms import AppointmentBookingForm, AvailabilitySlotForm, PrescriptionForm, AppointmentStatusForm
 from accounts.models import DoctorProfile
@@ -278,3 +282,135 @@ def cancel_appointment(request, appointment_id):
     
     messages.success(request, 'Appointment cancelled successfully!')
     return redirect('my_appointments')
+
+
+def _parse_preferred_date(data, query, today):
+    preferred_date = None
+    date_str = data.get('preferred_date')
+    if date_str:
+        try:
+            preferred_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            preferred_date = None
+    if not preferred_date and query:
+        if 'today' in query:
+            preferred_date = today
+        elif 'tomorrow' in query:
+            preferred_date = today + timedelta(days=1)
+        else:
+            match = re.search(r'\d{4}-\d{2}-\d{2}', query)
+            if match:
+                try:
+                    preferred_date = datetime.strptime(match.group(), '%Y-%m-%d').date()
+                except ValueError:
+                    preferred_date = None
+        if not preferred_date:
+            weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            for index, name in enumerate(weekdays):
+                if name in query:
+                    delta = (index - today.weekday()) % 7
+                    if delta == 0:
+                        delta = 7
+                    preferred_date = today + timedelta(days=delta)
+                    break
+    return preferred_date
+
+
+def _collect_available_slots(profiles, start_date, today):
+    available_slots = []
+    now_time = timezone.localtime().time()
+    for profile in profiles:
+        doctor = profile.user
+        slots_qs = AvailabilitySlot.objects.filter(doctor=doctor, is_active=True)
+        if not slots_qs.exists():
+            continue
+        for day_offset in range(0, 14):
+            current_date = start_date + timedelta(days=day_offset)
+            if current_date < today:
+                continue
+            day_slots = slots_qs.filter(day_of_week=current_date.weekday())
+            if not day_slots.exists():
+                continue
+            existing_times = set(
+                Appointment.objects.filter(
+                    doctor=doctor,
+                    appointment_date=current_date,
+                    status__in=['pending', 'confirmed']
+                ).values_list('appointment_time', flat=True)
+            )
+            for slot in day_slots:
+                step = slot.slot_duration if slot.slot_duration else 30
+                if step <= 0:
+                    step = 30
+                start_dt = datetime.combine(current_date, slot.start_time)
+                end_dt = datetime.combine(current_date, slot.end_time)
+                current_dt = start_dt
+                while current_dt + timedelta(minutes=step) <= end_dt:
+                    slot_time = current_dt.time()
+                    if slot_time in existing_times:
+                        current_dt += timedelta(minutes=step)
+                        continue
+                    if current_date == today and slot_time <= now_time:
+                        current_dt += timedelta(minutes=step)
+                        continue
+                    available_slots.append({
+                        'doctor': doctor,
+                        'profile': profile,
+                        'date': current_date,
+                        'time': slot_time
+                    })
+                    if len(available_slots) >= 30:
+                        return available_slots
+                    current_dt += timedelta(minutes=step)
+    return available_slots
+
+
+@require_POST
+def chatbot_suggest_slot(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except (json.JSONDecodeError, AttributeError):
+        data = {}
+    specialization = (data.get('specialization') or '').strip()
+    query = (data.get('query') or '').lower().strip()
+    today = timezone.localdate()
+    preferred_date = _parse_preferred_date(data, query, today)
+    start_date = preferred_date or today
+    profiles = DoctorProfile.objects.filter(is_approved=True).select_related('user')
+    if specialization and specialization != 'any':
+        profiles = profiles.filter(specialization=specialization)
+    specialization_map = dict(DoctorProfile.SPECIALIZATION_CHOICES)
+    if not profiles.exists():
+        message = "No doctors are available right now. Please try again soon."
+        return JsonResponse({'status': 'empty', 'message': message, 'slots': []})
+    available_slots = _collect_available_slots(profiles, start_date, today)
+    if not available_slots:
+        label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
+        message = f"No open slots found for {label.lower()} in the next two weeks. Please try a different specialty or time."
+        return JsonResponse({'status': 'empty', 'message': message, 'slots': []})
+    available_slots.sort(key=lambda item: (item['date'], item['time']))
+    top_slots = available_slots[:3]
+    slots_response = []
+    for item in top_slots:
+        doctor = item['doctor']
+        profile = item['profile']
+        date_value = item['date']
+        time_value = item['time']
+        slots_response.append({
+            'doctor_id': doctor.id,
+            'doctor_name': doctor.get_full_name() or doctor.username,
+            'specialization': specialization_map.get(profile.specialization, 'Doctor'),
+            'date': date_value.strftime('%Y-%m-%d'),
+            'display_date': date_value.strftime('%b %d, %Y'),
+            'time': time_value.strftime('%H:%M'),
+            'display_time': time_value.strftime('%I:%M %p'),
+            'location': profile.hospital_name or 'Clinic visit',
+            'fee': str(profile.consultation_fee),
+        })
+    label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
+    if preferred_date:
+        date_phrase = preferred_date.strftime('%b %d')
+        message = f"Here are {label.lower()} available around {date_phrase}."
+    else:
+        message = f"Here are the next available {label.lower()} slots."
+    return JsonResponse({'status': 'success', 'message': message, 'slots': slots_response})

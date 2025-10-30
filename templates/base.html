@@ -98,6 +98,147 @@
             margin-top: 50px;
         }
         
+        .chatbot-toggle {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            z-index: 1050;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 20px rgba(23, 162, 184, 0.3);
+        }
+        
+        .chatbot-panel {
+            position: fixed;
+            right: 25px;
+            bottom: 100px;
+            width: 360px;
+            max-width: calc(100% - 50px);
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(16, 30, 115, 0.12);
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1040;
+        }
+        
+        .chatbot-panel.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, var(--primary-color), #0f7186);
+            color: white;
+            padding: 16px 20px;
+        }
+        
+        .chatbot-body {
+            max-height: 360px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f7fdfd;
+        }
+        
+        .chatbot-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #eef3f5;
+            background: white;
+        }
+        
+        .chatbot-message {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chatbot-message.user .chatbot-bubble {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .chatbot-message.bot .chatbot-bubble {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e0f2f4;
+            color: var(--dark-color);
+        }
+        
+        .chatbot-bubble {
+            padding: 12px 16px;
+            border-radius: 14px;
+            max-width: 100%;
+            box-shadow: 0 5px 18px rgba(23, 162, 184, 0.07);
+        }
+        
+        .chatbot-slot-card {
+            border: 1px solid #e0f2f4;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 12px;
+            background: white;
+        }
+        
+        .chatbot-slot-card h6 {
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .chatbot-slot-card p {
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+            color: #556;
+        }
+        
+        .chatbot-slot-card .btn {
+            width: 100%;
+        }
+        
+        .chatbot-inputs {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .chatbot-inline-fields {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .chatbot-inline-fields select,
+        .chatbot-inline-fields input[type="date"] {
+            flex: 1 1 140px;
+        }
+        
+        .chatbot-inline-fields button {
+            flex: 1 1 100%;
+        }
+        
+        @media (max-width: 576px) {
+            .chatbot-panel {
+                right: 15px;
+                bottom: 90px;
+                width: calc(100% - 30px);
+            }
+            .chatbot-toggle {
+                right: 15px;
+                bottom: 15px;
+            }
+        }
+        
         .badge-primary {
             background-color: var(--primary-color);
         }
@@ -182,6 +323,44 @@
         {% block content %}{% endblock %}
     </main>
 
+    <button type="button" class="chatbot-toggle" id="chatbot-toggle" aria-label="Chat with assistant">
+        <i class="bi bi-chat-dots fs-4"></i>
+    </button>
+    <div class="chatbot-panel" id="chatbot-panel" aria-live="polite">
+        <div class="chatbot-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Care Assistant</h5>
+                    <small>Find the best time to visit a doctor</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-light" id="chatbot-close">Close</button>
+            </div>
+        </div>
+        <div class="chatbot-body" id="chatbot-messages"></div>
+        <div class="chatbot-footer">
+            <form id="chatbot-form" class="chatbot-inputs">
+                <div class="chatbot-inline-fields">
+                    <select id="chatbot-specialization" class="form-select form-select-sm">
+                        <option value="any">Any Doctor</option>
+                        <option value="general">General Practice</option>
+                        <option value="cardiology">Cardiology</option>
+                        <option value="dermatology">Dermatology</option>
+                        <option value="neurology">Neurology</option>
+                        <option value="pediatrics">Pediatrics</option>
+                        <option value="psychiatry">Psychiatry</option>
+                        <option value="orthopedics">Orthopedics</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="date" id="chatbot-date" class="form-control form-control-sm">
+                </div>
+                <div class="input-group input-group-sm">
+                    <input type="text" id="chatbot-query" class="form-control" placeholder="Describe your visit or enter preferred time" required>
+                    <button class="btn btn-primary" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer mt-5">
         <div class="container">
@@ -211,6 +390,133 @@
         </div>
     </footer>
 
+    <script>
+        (function() {
+            const toggle = document.getElementById('chatbot-toggle');
+            const panel = document.getElementById('chatbot-panel');
+            const closeButton = document.getElementById('chatbot-close');
+            const messages = document.getElementById('chatbot-messages');
+            const form = document.getElementById('chatbot-form');
+            const queryInput = document.getElementById('chatbot-query');
+            const specializationSelect = document.getElementById('chatbot-specialization');
+            const dateInput = document.getElementById('chatbot-date');
+            if (!toggle || !panel || !messages || !form) {
+                return;
+            }
+            let greeted = false;
+            const getCsrfToken = () => {
+                const name = 'csrftoken=';
+                const decoded = decodeURIComponent(document.cookie || '');
+                const parts = decoded.split(';');
+                for (const part of parts) {
+                    const trimmed = part.trim();
+                    if (trimmed.startsWith(name)) {
+                        return trimmed.substring(name.length);
+                    }
+                }
+                return '';
+            };
+            const scrollToBottom = () => {
+                messages.scrollTop = messages.scrollHeight;
+            };
+            const addMessage = (content, sender) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `chatbot-message ${sender}`;
+                const bubble = document.createElement('div');
+                bubble.className = 'chatbot-bubble';
+                bubble.innerHTML = content;
+                wrapper.appendChild(bubble);
+                messages.appendChild(wrapper);
+                scrollToBottom();
+            };
+            const renderSlots = slots => {
+                if (!Array.isArray(slots) || slots.length === 0) {
+                    return '';
+                }
+                return slots.map(slot => {
+                    const url = `/appointments/book/${slot.doctor_id}/`;
+                    return `
+                        <div class="chatbot-slot-card">
+                            <h6>${slot.doctor_name}</h6>
+                            <p>${slot.specialization}</p>
+                            <p>${slot.display_date} at ${slot.display_time}</p>
+                            <p>Visit: ${slot.location}</p>
+                            <p>Fee: ₹${slot.fee}</p>
+                            <a class="btn btn-sm btn-primary" href="${url}">Book this slot</a>
+                        </div>
+                    `;
+                }).join('');
+            };
+            const openPanel = () => {
+                panel.classList.add('active');
+                if (!greeted) {
+                    addMessage('👋 Namaste! I can help you find a doctor visit slot. Tell me how we can help today.', 'bot');
+                    greeted = true;
+                }
+                queryInput.focus();
+            };
+            const closePanel = () => {
+                panel.classList.remove('active');
+            };
+            toggle.addEventListener('click', () => {
+                if (panel.classList.contains('active')) {
+                    closePanel();
+                } else {
+                    openPanel();
+                }
+            });
+            closeButton.addEventListener('click', closePanel);
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                const query = (queryInput.value || '').trim();
+                if (!query) {
+                    queryInput.focus();
+                    return;
+                }
+                const specialization = specializationSelect.value;
+                const preferredDate = dateInput.value;
+                addMessage(query, 'user');
+                addMessage('Searching for the best options near you...', 'bot');
+                form.querySelector('button[type="submit"]').disabled = true;
+                try {
+                    const response = await fetch('/appointments/chatbot/suggest-slot/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            query,
+                            specialization,
+                            preferred_date: preferredDate
+                        })
+                    });
+                    const data = await response.json();
+                    const container = messages.lastElementChild;
+                    if (container && container.classList.contains('chatbot-message') && container.classList.contains('bot')) {
+                        container.remove();
+                    }
+                    if (data.status === 'success') {
+                        const slotsHtml = renderSlots(data.slots);
+                        const messageHtml = `${data.message}${slotsHtml}`;
+                        addMessage(messageHtml, 'bot');
+                    } else {
+                        addMessage(data.message || 'No slots found right now. Please try again later.', 'bot');
+                    }
+                } catch (error) {
+                    const container = messages.lastElementChild;
+                    if (container && container.classList.contains('chatbot-message') && container.classList.contains('bot')) {
+                        container.remove();
+                    }
+                    addMessage('Sorry, the network seems slow. Please try once more.', 'bot');
+                } finally {
+                    form.querySelector('button[type="submit"]').disabled = false;
+                    queryInput.value = '';
+                    queryInput.focus();
+                }
+            });
+        })();
+    </script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}

@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Q, Count
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from datetime import timedelta
 from appointments.models import Appointment
 from messaging.models import Notification
@@ -135,6 +137,17 @@ def admin_dashboard(request):
     
     total_appointments = Appointment.objects.count()
     completed_appointments = Appointment.objects.filter(status='completed').count()
+    status_counts = Appointment.objects.values('status').annotate(total=Count('id'))
+    status_totals = {item['status']: item['total'] for item in status_counts}
+    status_summary = [
+        {
+            'value': value,
+            'label': label,
+            'count': status_totals.get(value, 0)
+        }
+        for value, label in Appointment.STATUS_CHOICES
+    ]
+    recent_appointments = Appointment.objects.select_related('doctor', 'patient').order_by('-updated_at')[:10]
     
     context = {
         'total_users': total_users,
@@ -143,6 +156,48 @@ def admin_dashboard(request):
         'pending_doctors': pending_doctors,
         'total_appointments': total_appointments,
         'completed_appointments': completed_appointments,
+        'status_summary': status_summary,
+        'status_choices': Appointment._meta.get_field('status').choices,
+        'recent_appointments': recent_appointments,
     }
     
     return render(request, 'dashboard/admin_dashboard.html', context)
+
+@login_required(login_url='login')
+@require_POST
+def admin_update_appointment_status(request, appointment_id):
+    if request.user.role != 'admin':
+        messages.error(request, 'You do not have permission to perform this action.')
+        return redirect('dashboard')
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    status = request.POST.get('status')
+    notes = request.POST.get('notes', '')
+    valid_statuses = {value for value, _ in Appointment.STATUS_CHOICES}
+    if status not in valid_statuses:
+        messages.error(request, 'Invalid status selected.')
+        return redirect('dashboard')
+    appointment.status = status
+    appointment.notes = notes
+    appointment.save()
+    notification_type = None
+    if status == 'confirmed':
+        notification_type = 'appointment_confirmed'
+    elif status == 'cancelled':
+        notification_type = 'appointment_cancelled'
+    if notification_type:
+        Notification.objects.create(
+            user=appointment.patient,
+            notification_type=notification_type,
+            title=f'Appointment {status.capitalize()}',
+            description=f'Your appointment on {appointment.appointment_date} with Dr. {appointment.doctor.get_full_name()} is now {status}.',
+            related_appointment=appointment
+        )
+        Notification.objects.create(
+            user=appointment.doctor,
+            notification_type=notification_type,
+            title=f'Appointment {status.capitalize()}',
+            description=f'Appointment with {appointment.patient.get_full_name()} on {appointment.appointment_date} is now {status}.',
+            related_appointment=appointment
+        )
+    messages.success(request, 'Appointment status updated successfully.')
+    return redirect('dashboard')

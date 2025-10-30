@@ -4,130 +4,160 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 style="color: #1a3a4a; font-weight: 700;">Admin Dashboard</h1>
-            <p style="color: #666;">System overview and management</p>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h2 mb-1 text-primary fw-bold">Admin Dashboard</h1>
+            <p class="text-muted mb-0">Monitor platform performance and manage appointments effortlessly</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/admin/" class="btn btn-outline-secondary">
+                <i class="bi bi-sliders"></i> Django Admin Panel
+            </a>
+            <a href="{% url 'my_appointments' %}" class="btn btn-primary">
+                <i class="bi bi-calendar2-event"></i> View All Appointments
+            </a>
         </div>
     </div>
 
-    <!-- Statistics -->
     <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card" style="border-left: 4px solid #17a2b8;">
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Total Users</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_users }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;">
-                            <i class="bi bi-people"></i>
-                        </div>
-                    </div>
+                    <p class="text-uppercase text-muted small mb-1">Total Users</p>
+                    <h3 class="fw-bold text-dark mb-0">{{ total_users }}</h3>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card" style="border-left: 4px solid #20c997;">
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Doctors</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ doctors }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #20c997; opacity: 0.2;">
-                            <i class="bi bi-stethoscope"></i>
-                        </div>
-                    </div>
+                    <p class="text-uppercase text-muted small mb-1">Doctors</p>
+                    <h3 class="fw-bold text-primary mb-0">{{ doctors }}</h3>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card" style="border-left: 4px solid #ffc107;">
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Patients</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ patients }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #ffc107; opacity: 0.2;">
-                            <i class="bi bi-person-check"></i>
-                        </div>
-                    </div>
+                    <p class="text-uppercase text-muted small mb-1">Patients</p>
+                    <h3 class="fw-bold text-success mb-0">{{ patients }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-uppercase text-muted small mb-1">Pending Doctor Approvals</p>
+                    <h3 class="fw-bold text-danger mb-0">{{ pending_doctors }}</h3>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card" style="border-left: 4px solid #dc3545;">
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Pending Doctor Approvals</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ pending_doctors }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #dc3545; opacity: 0.2;">
-                            <i class="bi bi-clock"></i>
-                        </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="text-uppercase text-muted small mb-0">Total Appointments</p>
+                        <span class="badge bg-primary-subtle text-primary">Live</span>
                     </div>
+                    <h2 class="fw-bold text-dark mb-1">{{ total_appointments }}</h2>
+                    <p class="text-muted mb-0">{{ completed_appointments }} completed</p>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card" style="border-left: 4px solid #28a745;">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Total Appointments</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_appointments }}</h3>
+                    <h5 class="card-title mb-3">Appointment Status Overview</h5>
+                    <div class="row g-3">
+                        {% for item in status_summary %}
+                        <div class="col-sm-6 col-xl-4">
+                            <div class="border rounded-3 p-3 h-100 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="text-uppercase text-muted small mb-1">{{ item.label }}</p>
+                                    <h4 class="fw-bold mb-0">{{ item.count }}</h4>
+                                </div>
+                                <span class="badge {% if item.value == 'pending' %}bg-warning-subtle text-warning{% elif item.value == 'confirmed' %}bg-info-subtle text-info{% elif item.value == 'completed' %}bg-success-subtle text-success{% elif item.value == 'cancelled' %}bg-danger-subtle text-danger{% else %}bg-light text-dark{% endif %}">{{ item.label }}</span>
+                            </div>
                         </div>
-                        <div style="font-size: 2.5rem; color: #28a745; opacity: 0.2;">
-                            <i class="bi bi-calendar-event"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card" style="border-left: 4px solid #17a2b8;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Completed Appointments</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ completed_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header" style="background-color: #17a2b8; color: white;">
-                    <h5 class="card-title mb-0">Admin Actions</h5>
-                </div>
-                <div class="card-body">
-                    <a href="/admin/" class="btn btn-primary me-2 mb-2">
-                        <i class="bi bi-sliders"></i> Django Admin Panel
-                    </a>
-                    <a href="{% url 'my_appointments' %}" class="btn btn-outline-primary me-2 mb-2">
-                        <i class="bi bi-calendar2-event"></i> View All Appointments
-                    </a>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <h5 class="mb-0">Recent Appointments</h5>
+                    <small class="text-muted">Quickly review and update appointment statuses</small>
                 </div>
             </div>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_appointments %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Patient</th>
+                            <th scope="col">Doctor</th>
+                            <th scope="col">Date &amp; Time</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-end">Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in recent_appointments %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ appointment.patient.get_full_name }}</div>
+                                <small class="text-muted">{{ appointment.patient.email }}</small>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">Dr. {{ appointment.doctor.get_full_name }}</div>
+                                <small class="text-muted">{{ appointment.doctor.doctor_profile.get_specialization_display }}</small>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ appointment.appointment_time|time:"H:i" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {% if appointment.status == 'pending' %}bg-warning-subtle text-warning{% elif appointment.status == 'confirmed' %}bg-info-subtle text-info{% elif appointment.status == 'completed' %}bg-success-subtle text-success{% elif appointment.status == 'cancelled' %}bg-danger-subtle text-danger{% else %}bg-light text-dark{% endif %}">{{ appointment.get_status_display }}</span>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" action="{% url 'admin_update_appointment_status' appointment.id %}" class="row g-2 justify-content-end">
+                                    {% csrf_token %}
+                                    <div class="col-lg-4 col-md-6">
+                                        <select name="status" class="form-select form-select-sm">
+                                            {% for value, label in status_choices %}
+                                            <option value="{{ value }}" {% if appointment.status == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-5 col-md-6">
+                                        <textarea name="notes" rows="1" class="form-control form-control-sm" placeholder="Notes">{{ appointment.notes|default_if_none:'' }}</textarea>
+                                    </div>
+                                    <div class="col-lg-3 col-md-12 text-end">
+                                        <button type="submit" class="btn btn-sm btn-primary w-100">Update</button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-calendar-x fs-1"></i>
+                <p class="mt-3 mb-0">No recent appointments to display.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
