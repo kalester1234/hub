@@ -21,7 +21,7 @@ def dashboard(request):
     elif user.role == 'patient':
         return patient_dashboard(request)
     elif user.role == 'admin':
-        return admin_dashboard(request)
+        return redirect('admin_dashboard')
     else:
         return patient_dashboard(request)
 

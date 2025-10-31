@@ -30,6 +30,28 @@ def login_view(request):
     
     return render(request, 'accounts/login.html', {'form': form})
 
+def admin_login(request):
+    """Admin login view"""
+    if request.user.is_authenticated:
+        if request.user.role == 'admin':
+            return redirect('admin_dashboard')
+        return redirect('dashboard')
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user and user.role == 'admin':
+                login(request, user)
+                messages.success(request, 'Welcome back, Admin!')
+                return redirect('admin_dashboard')
+            messages.error(request, 'Only admin users can sign in here.')
+    else:
+        form = CustomAuthenticationForm()
+    return render(request, 'accounts/admin_login.html', {'form': form})
+
+
 def doctor_login(request):
     """Doctor login page"""
     if request.user.is_authenticated:
