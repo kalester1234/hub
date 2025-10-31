@@ -1,0 +1,175 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    body.login {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, rgba(17, 181, 197, 0.12), rgba(15, 113, 134, 0.12));
+        padding: 32px;
+    }
+
+    .doctor-login-card {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 24px 64px rgba(16, 30, 115, 0.12);
+        border: 1px solid rgba(17, 181, 197, 0.16);
+        padding: 48px;
+        width: min(480px, 100%);
+        display: grid;
+        gap: 24px;
+    }
+
+    .doctor-login-card h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f7186;
+    }
+
+    .doctor-login-card p {
+        margin: 0;
+        color: #5d6d7e;
+    }
+
+    .doctor-login-card form {
+        display: grid;
+        gap: 18px;
+    }
+
+    .doctor-login-card .form-row {
+        display: grid;
+        gap: 8px;
+    }
+
+    .doctor-login-card label {
+        font-weight: 600;
+        color: #1a3a4a;
+        margin-bottom: 6px;
+    }
+
+    .doctor-login-card input[type="text"],
+    .doctor-login-card input[type="password"] {
+        border-radius: 14px;
+        border: 1px solid rgba(17, 181, 197, 0.2);
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .doctor-login-card input[type="text"]:focus,
+    .doctor-login-card input[type="password"]:focus {
+        outline: none;
+        border-color: #11b5c5;
+        box-shadow: 0 0 0 3px rgba(17, 181, 197, 0.18);
+    }
+
+    .doctor-login-card .submit-row {
+        padding: 0;
+        background: transparent;
+        border: none;
+        justify-content: stretch;
+        display: grid;
+    }
+
+    .doctor-login-card .submit-row input[type="submit"] {
+        width: 100%;
+        border-radius: 16px;
+        padding: 14px 18px;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .doctor-login-card .help {
+        color: #6c7c8e;
+        font-size: 0.9rem;
+    }
+
+    .doctor-login-card .errornote {
+        background: rgba(220, 53, 69, 0.12);
+        border-left: 4px solid #dc3545;
+        color: #b11e31;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 600;
+    }
+
+    .doctor-login-card ul.errorlist {
+        margin: 0;
+        padding-left: 20px;
+        color: #b11e31;
+        font-weight: 600;
+        display: grid;
+        gap: 6px;
+    }
+
+    .doctor-login-card .forgotten-password {
+        justify-self: flex-end;
+        font-weight: 600;
+        color: #0f7186;
+        text-decoration: none;
+    }
+
+    .doctor-login-card .forgotten-password:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        body.login {
+            padding: 16px;
+        }
+
+        .doctor-login-card {
+            padding: 32px 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block content %}
+<div class="doctor-login-card">
+    <div>
+        <h1>{% trans "Medical Connect Admin" %}</h1>
+        <p>{% trans "Sign in to manage appointments, doctors, and patient experiences." %}</p>
+    </div>
+
+    {% if form.errors and not form.non_field_errors %}
+        <p class="errornote">{% trans "Please correct the error below." %}</p>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+            <p class="errornote">{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
+        <div class="form-row">
+            {{ form.username.errors }}
+            <label for="id_username">{% trans "Username" %}</label>
+            {{ form.username }}
+        </div>
+        <div class="form-row">
+            {{ form.password.errors }}
+            <label for="id_password">{% trans "Password" %}</label>
+            {{ form.password }}
+            <input type="hidden" name="next" value="{{ next }}">
+        </div>
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Log in' %}">
+        </div>
+    </form>
+
+    {% if password_reset_url %}
+        <a class="forgotten-password" href="{{ password_reset_url }}">{% trans "Forgotten your password or username?" %}</a>
+    {% endif %}
+</div>
+{% endblock %}

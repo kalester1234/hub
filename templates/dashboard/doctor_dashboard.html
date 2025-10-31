@@ -2,158 +2,638 @@
 
 {% block title %}Doctor Dashboard - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+    .doctor-dashboard {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f4fbfb;
+        border-radius: 24px;
+    }
+    .doctor-sidebar {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-profile-card {
+        text-align: center;
+    }
+    .doctor-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #11b5c5, #0f7186);
+        color: #ffffff;
+        font-size: 36px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+    }
+    .doctor-profile-card h4 {
+        margin-bottom: 4px;
+        color: #1a3a4a;
+        font-weight: 700;
+    }
+    .doctor-profile-card span {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        display: block;
+    }
+    .doctor-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #1a3a4a;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    .doctor-nav a:hover,
+    .doctor-nav a.active {
+        background: rgba(17, 181, 197, 0.1);
+        color: #0f7186;
+    }
+    .doctor-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+    }
+    .doctor-header h1 {
+        margin: 0;
+        font-size: 1.9rem;
+        color: #1a3a4a;
+        font-weight: 700;
+    }
+    .doctor-header p {
+        margin: 4px 0 0 0;
+        color: #5d6d7e;
+    }
+    .doctor-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .doctor-actions .btn {
+        border-radius: 14px;
+        padding: 10px 18px;
+        font-weight: 600;
+    }
+    .doctor-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 18px;
+    }
+    .doctor-stat-card {
+        background: #f6ffff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: inset 0 0 0 1px rgba(23, 162, 184, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-stat-card .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(17, 181, 197, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0f7186;
+        font-size: 1.4rem;
+    }
+    .doctor-stat-card span.label {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .doctor-stat-card h3 {
+        margin: 0;
+        color: #1a3a4a;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .doctor-card {
+        background: #ffffff;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .doctor-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .doctor-card__header h3 {
+        margin: 0;
+        color: #1a3a4a;
+        font-weight: 700;
+    }
+    .doctor-card__tools {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .doctor-search {
+        position: relative;
+    }
+    .doctor-search input {
+        padding: 10px 40px 10px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+        min-width: 220px;
+    }
+    .doctor-search i {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #5d6d7e;
+    }
+    .doctor-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .doctor-table thead tr {
+        background: #f4fbfb;
+    }
+    .doctor-table th,
+    .doctor-table td {
+        padding: 14px 16px;
+        text-align: left;
+        color: #1a3a4a;
+    }
+    .doctor-table tbody tr {
+        background: #ffffff;
+        border-bottom: 1px solid rgba(23, 162, 184, 0.08);
+    }
+    .doctor-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    .patient-name {
+        font-weight: 600;
+        color: #1a3a4a;
+    }
+    .patient-meta {
+        font-size: 0.8rem;
+        color: #6c7c8e;
+    }
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status-confirmed {
+        background: rgba(40, 167, 69, 0.12);
+        color: #1f8c3c;
+    }
+    .status-pending {
+        background: rgba(255, 193, 7, 0.18);
+        color: #ad7a00;
+    }
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.12);
+        color: #b11e31;
+    }
+    .token-badge {
+        background: rgba(23, 162, 184, 0.12);
+        color: #0f7186;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .table-empty {
+        padding: 32px;
+        text-align: center;
+        color: #5d6d7e;
+    }
+    .availability-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+    }
+    .availability-tile {
+        border: 1px solid rgba(17, 181, 197, 0.18);
+        border-radius: 16px;
+        padding: 16px;
+        background: #f9feff;
+    }
+    .availability-tile h5 {
+        margin: 0 0 6px 0;
+        color: #1a3a4a;
+        font-weight: 600;
+    }
+    .availability-tile span {
+        display: block;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .leave-list {
+        display: grid;
+        gap: 12px;
+    }
+    .leave-item {
+        border: 1px solid rgba(17, 181, 197, 0.14);
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f9feff;
+    }
+    .leave-item strong {
+        color: #1a3a4a;
+    }
+    .modal form .form-control,
+    .modal form .form-select {
+        border-radius: 12px;
+    }
+    @media (max-width: 992px) {
+        .doctor-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .doctor-sidebar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .doctor-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 style="color: #1a3a4a; font-weight: 700;">Welcome, Dr. {{ user.last_name }}</h1>
-            <p style="color: #666;">Manage your appointments and patient interactions</p>
+<div class="doctor-dashboard">
+    <aside class="doctor-sidebar">
+        <div class="doctor-profile-card">
+            <div class="doctor-avatar">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+            <h4>Dr. {{ user.get_full_name }}</h4>
+            {% if doctor_profile %}
+                <span>{{ doctor_profile.get_specialization_display }}</span>
+            {% endif %}
+            <span>{{ user.email }}</span>
         </div>
+        <nav class="doctor-nav">
+            <a href="{% url 'dashboard' %}" class="active"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{% url 'my_appointments' %}"><i class="bi bi-calendar-event"></i> Appointments</a>
+            <a href="{% url 'manage_availability' %}"><i class="bi bi-clock-history"></i> Availability</a>
+            <a href="{% url 'conversations_list' %}"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="{% url 'notifications' %}"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </aside>
+
+    <div class="doctor-main">
+        <header class="doctor-header">
+            <div>
+                <h1>Doctor's Dashboard</h1>
+                <p>Welcome back, Dr. {{ user.last_name }}. Here's a snapshot of your day.</p>
+            </div>
+            <div class="doctor-actions">
+                <button type="button" id="openAvailability" class="btn btn-primary">
+                    <i class="bi bi-calendar-plus"></i> Add Availability
+                </button>
+                <button type="button" id="openLeave" class="btn btn-outline-primary">
+                    <i class="bi bi-person-dash"></i> Request Leave
+                </button>
+                <a href="{% url 'manage_availability' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-list-check"></i> Manage Slots
+                </a>
+            </div>
+        </header>
+
+        <section class="doctor-stats">
+            <div class="doctor-stat-card">
+                <div class="icon"><i class="bi bi-calendar-week"></i></div>
+                <span class="label">Next Day Appointments</span>
+                <h3>{{ next_day_appointments }}</h3>
+            </div>
+            <div class="doctor-stat-card">
+                <div class="icon"><i class="bi bi-calendar-day"></i></div>
+                <span class="label">Today's Appointments</span>
+                <h3>{{ today_appointments }}</h3>
+            </div>
+            <div class="doctor-stat-card">
+                <div class="icon"><i class="bi bi-clipboard-pulse"></i></div>
+                <span class="label">Pending Requests</span>
+                <h3>{{ pending_requests }}</h3>
+            </div>
+            <div class="doctor-stat-card">
+                <div class="icon"><i class="bi bi-check2-circle"></i></div>
+                <span class="label">Total Appointments</span>
+                <h3>{{ total_appointments }}</h3>
+            </div>
+        </section>
+
+        <section class="doctor-card">
+            <div class="doctor-card__header">
+                <h3>Patient Appointments</h3>
+                <div class="doctor-card__tools">
+                    <div class="doctor-search">
+                        <input type="text" id="patient-search" placeholder="Search patients...">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <span class="token-badge">Queue tokens auto-generated</span>
+                </div>
+            </div>
+            {% if upcoming_appointments %}
+                <div class="table-responsive">
+                    <table class="doctor-table" id="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Appointment Time</th>
+                                <th>Purpose</th>
+                                <th>Status</th>
+                                <th>Token</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in upcoming_appointments %}
+                            <tr>
+                                <td>
+                                    <div class="patient-name">{{ appointment.patient.get_full_name }}</div>
+                                    <div class="patient-meta">#{{ appointment.patient.id }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                                    <div class="patient-meta">{{ appointment.appointment_time|time:"h:i A" }}</div>
+                                </td>
+                                <td>{{ appointment.reason|default:"General Consultation" }}</td>
+                                <td>
+                                    {% if appointment.status == 'confirmed' %}
+                                        <span class="status-chip status-confirmed"><i class="bi bi-check-circle"></i> Confirmed</span>
+                                    {% elif appointment.status == 'pending' %}
+                                        <span class="status-chip status-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+                                    {% elif appointment.status == 'completed' %}
+                                        <span class="status-chip status-confirmed"><i class="bi bi-clipboard-check"></i> Completed</span>
+                                    {% else %}
+                                        <span class="status-chip status-cancelled"><i class="bi bi-x-circle"></i> Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="token-badge">Token #{{ forloop.counter }}</span></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary" href="{% url 'appointment_detail' appointment.id %}">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="table-empty">
+                    <i class="bi bi-info-circle"></i> No upcoming appointments scheduled.
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="doctor-card">
+            <div class="doctor-card__header">
+                <h3>Your Availability</h3>
+            </div>
+            {% if availability_slots %}
+                <div class="availability-grid">
+                    {% for slot in availability_slots %}
+                        <div class="availability-tile">
+                            <h5>{{ slot.get_day_of_week_display }}</h5>
+                            <span>{{ slot.start_time|time:"h:i A" }} - {{ slot.end_time|time:"h:i A" }}</span>
+                            <span>Duration: {{ slot.slot_duration }} minutes</span>
+                            {% if slot.is_active %}
+                                <span class="status-chip status-confirmed">Active</span>
+                            {% else %}
+                                <span class="status-chip status-pending">Inactive</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="table-empty">
+                    <i class="bi bi-clock-history"></i> No availability slots set yet.
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="doctor-card">
+            <div class="doctor-card__header">
+                <h3>Recent Leave Requests</h3>
+            </div>
+            {% if leave_requests %}
+                <div class="leave-list">
+                    {% for leave in leave_requests %}
+                        <div class="leave-item">
+                            <div>
+                                <strong>{{ leave.start_date|date:"M d" }} - {{ leave.end_date|date:"M d, Y" }}</strong>
+                                <div class="patient-meta">{{ leave.reason|default:"No reason provided" }}</div>
+                            </div>
+                            {% if leave.status == 'approved' %}
+                                <span class="status-chip status-confirmed">Approved</span>
+                            {% elif leave.status == 'pending' %}
+                                <span class="status-chip status-pending">Pending</span>
+                            {% else %}
+                                <span class="status-chip status-cancelled">Rejected</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="table-empty">
+                    <i class="bi bi-briefcase"></i> No leave requests submitted yet.
+                </div>
+            {% endif %}
+        </section>
     </div>
+</div>
 
-    <!-- Statistics -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #17a2b8;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Today's Appointments</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ today_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;">
-                            <i class="bi bi-calendar-event"></i>
-                        </div>
-                    </div>
-                </div>
+{% if availability_form %}
+<div class="modal fade" id="availabilityModal" tabindex="-1" aria-labelledby="availabilityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #17a2b8; color: white;">
+                <h5 class="modal-title" id="availabilityModalLabel"><i class="bi bi-calendar-plus"></i> Add Availability Slot</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #ffc107;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Pending Requests</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ pending_requests }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #ffc107; opacity: 0.2;">
-                            <i class="bi bi-clock"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #28a745;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Completed</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ completed_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #28a745; opacity: 0.2;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #20c997;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Total Appointments</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #20c997; opacity: 0.2;">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header" style="background-color: #17a2b8; color: white;">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <a href="{% url 'manage_availability' %}" class="btn btn-outline-primary me-2 mb-2">
-                        <i class="bi bi-calendar-check"></i> Manage Availability
-                    </a>
-                    <a href="{% url 'my_appointments' %}" class="btn btn-outline-primary me-2 mb-2">
-                        <i class="bi bi-calendar2-event"></i> View All Appointments
-                    </a>
-                    <a href="{% url 'conversations_list' %}" class="btn btn-outline-primary mb-2">
-                        <i class="bi bi-chat-dots"></i> Messages
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upcoming Appointments -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header" style="background-color: #17a2b8; color: white;">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-calendar-event"></i> Upcoming Appointments
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if upcoming_appointments %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead style="background-color: #f0f8f9;">
-                                    <tr>
-                                        <th>Patient</th>
-                                        <th>Date & Time</th>
-                                        <th>Reason</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for appointment in upcoming_appointments %}
-                                    <tr>
-                                        <td>{{ appointment.patient.get_full_name }}</td>
-                                        <td>
-                                            {{ appointment.appointment_date|date:"M d, Y" }}<br>
-                                            <small>{{ appointment.appointment_time|time:"H:i" }}</small>
-                                        </td>
-                                        <td>{{ appointment.reason|truncatewords:5 }}</td>
-                                        <td>
-                                            <span class="badge status-{{ appointment.status }}">
-                                                {{ appointment.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> View
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-info" role="alert">
-                            <i class="bi bi-info-circle"></i> No upcoming appointments scheduled.
-                        </div>
+            <div class="modal-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="availability">
+                    {% if availability_form.non_field_errors %}
+                        <div class="alert alert-danger">{{ availability_form.non_field_errors }}</div>
                     {% endif %}
-                </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ availability_form.day_of_week.id_for_label }}" class="form-label">Day of Week</label>
+                            {{ availability_form.day_of_week }}
+                            {% if availability_form.day_of_week.errors %}
+                                <div class="text-danger small">{{ availability_form.day_of_week.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ availability_form.slot_duration.id_for_label }}" class="form-label">Slot Duration (minutes)</label>
+                            {{ availability_form.slot_duration }}
+                            {% if availability_form.slot_duration.errors %}
+                                <div class="text-danger small">{{ availability_form.slot_duration.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ availability_form.start_time.id_for_label }}" class="form-label">Start Time</label>
+                            {{ availability_form.start_time }}
+                            {% if availability_form.start_time.errors %}
+                                <div class="text-danger small">{{ availability_form.start_time.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ availability_form.end_time.id_for_label }}" class="form-label">End Time</label>
+                            {{ availability_form.end_time }}
+                            {% if availability_form.end_time.errors %}
+                                <div class="text-danger small">{{ availability_form.end_time.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        {{ availability_form.is_active }}
+                        <label class="form-check-label" for="{{ availability_form.is_active.id_for_label }}">Active Slot</label>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Save Slot</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+{% endif %}
+
+{% if leave_form %}
+<div class="modal fade" id="leaveModal" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #17a2b8; color: white;">
+                <h5 class="modal-title" id="leaveModalLabel"><i class="bi bi-person-dash"></i> Request Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="leave">
+                    {% if leave_form.non_field_errors %}
+                        <div class="alert alert-danger">{{ leave_form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ leave_form.start_date.id_for_label }}" class="form-label">Start Date</label>
+                            {{ leave_form.start_date }}
+                            {% if leave_form.start_date.errors %}
+                                <div class="text-danger small">{{ leave_form.start_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ leave_form.end_date.id_for_label }}" class="form-label">End Date</label>
+                            {{ leave_form.end_date }}
+                            {% if leave_form.end_date.errors %}
+                                <div class="text-danger small">{{ leave_form.end_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ leave_form.reason.id_for_label }}" class="form-label">Reason</label>
+                        {{ leave_form.reason }}
+                        {% if leave_form.reason.errors %}
+                            <div class="text-danger small">{{ leave_form.reason.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const availabilityButton = document.getElementById('openAvailability');
+        const leaveButton = document.getElementById('openLeave');
+        const availabilityModalEl = document.getElementById('availabilityModal');
+        const leaveModalEl = document.getElementById('leaveModal');
+        const searchInput = document.getElementById('patient-search');
+        const table = document.getElementById('appointments-table');
+
+        const openModal = (el) => {
+            if (!el) {
+                return;
+            }
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(el);
+            modalInstance.show();
+        };
+
+        if (availabilityButton && availabilityModalEl) {
+            availabilityButton.addEventListener('click', () => openModal(availabilityModalEl));
+        }
+        if (leaveButton && leaveModalEl) {
+            leaveButton.addEventListener('click', () => openModal(leaveModalEl));
+        }
+
+        if (searchInput && table) {
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            searchInput.addEventListener('input', event => {
+                const term = event.target.value.toLowerCase();
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(term) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

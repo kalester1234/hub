@@ -1,0 +1,397 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Medical Connect Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --doctor-primary: #11b5c5;
+        --doctor-primary-dark: #0f7186;
+        --doctor-surface: #f4fbfb;
+        --doctor-card: #ffffff;
+        --doctor-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        --doctor-border: rgba(17, 181, 197, 0.14);
+        --doctor-text: #1a3a4a;
+        --doctor-muted: #5d6d7e;
+    }
+
+    body {
+        background: var(--doctor-surface);
+        font-family: "Poppins", "Segoe UI", Tahoma, sans-serif;
+        color: var(--doctor-text);
+    }
+
+    #header {
+        background: linear-gradient(135deg, var(--doctor-primary), var(--doctor-primary-dark));
+        border-radius: 20px;
+        margin: 24px;
+        padding: 18px 24px;
+        box-shadow: var(--doctor-shadow);
+    }
+
+    #branding h1,
+    #branding h1 a {
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1.6rem;
+        text-decoration: none;
+    }
+
+    .admin-branding .tagline {
+        color: rgba(255, 255, 255, 0.78);
+        margin: 6px 0 0;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    #user-tools,
+    #user-tools a {
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 500;
+    }
+
+    #content {
+        background: var(--doctor-card);
+        border-radius: 24px;
+        margin: 0 24px 48px;
+        padding: 32px;
+        box-shadow: var(--doctor-shadow);
+        border: 1px solid rgba(17, 181, 197, 0.1);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5 {
+        color: var(--doctor-text);
+        font-weight: 700;
+    }
+
+    .breadcrumbs {
+        background: rgba(17, 181, 197, 0.08);
+        border-radius: 14px;
+        margin-bottom: 24px;
+        padding: 12px 18px;
+        color: var(--doctor-muted);
+    }
+
+    .module {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        padding: 24px;
+    }
+
+    .module caption,
+    .module h2 {
+        border-bottom: 1px solid rgba(17, 181, 197, 0.16);
+        padding-bottom: 12px;
+        margin-bottom: 18px;
+        font-size: 1.1rem;
+        color: var(--doctor-primary-dark);
+    }
+
+    .module table {
+        width: 100%;
+        border-spacing: 0;
+    }
+
+    .module table thead {
+        background: rgba(17, 181, 197, 0.1);
+    }
+
+    .module table th,
+    .module table td {
+        padding: 14px 16px;
+        color: var(--doctor-text);
+        border-bottom: 1px solid rgba(17, 181, 197, 0.08);
+    }
+
+    .module table tr:nth-child(even) {
+        background: rgba(17, 181, 197, 0.04);
+    }
+
+    .module table tr:hover {
+        background: rgba(17, 181, 197, 0.12);
+    }
+
+    .submit-row {
+        padding: 18px 24px;
+        background: rgba(17, 181, 197, 0.06);
+        border-radius: 16px;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .submit-row input[type="submit"],
+    .submit-row input[type="button"],
+    .submit-row button,
+    .submit-row .button {
+        background: var(--doctor-primary);
+        border: none;
+        border-radius: 12px;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 10px 20px;
+        box-shadow: 0 10px 24px rgba(17, 181, 197, 0.25);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .submit-row input[type="submit"]:hover,
+    .submit-row input[type="button"]:hover,
+    .submit-row button:hover,
+    .submit-row .button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(17, 181, 197, 0.35);
+    }
+
+    .module .addlink,
+    .module .changelink,
+    .module .deletelink,
+    .module .viewlink {
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+    }
+
+    .module .addlink { background: rgba(40, 167, 69, 0.15); color: #1f8c3c; }
+    .module .changelink { background: rgba(23, 162, 184, 0.18); color: var(--doctor-primary-dark); }
+    .module .deletelink { background: rgba(220, 53, 69, 0.18); color: #b11e31; }
+    .module .viewlink { background: rgba(108, 117, 125, 0.18); color: #495057; }
+
+    form .aligned .form-row,
+    .form-row {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    form .aligned .form-row .field-box label,
+    .form-row label {
+        font-weight: 600;
+        color: var(--doctor-muted);
+    }
+
+    form .aligned .form-row .field-box input,
+    form .aligned .form-row .field-box select,
+    form .aligned .form-row .field-box textarea,
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+        border-radius: 12px;
+        border: 1px solid rgba(17, 181, 197, 0.2);
+        padding: 10px 14px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus {
+        outline: none;
+        border-color: var(--doctor-primary);
+        box-shadow: 0 0 0 3px rgba(17, 181, 197, 0.18);
+    }
+
+    #nav-sidebar .current-app .section,
+    #nav-sidebar .current-model {
+        background: rgba(17, 181, 197, 0.12);
+        border-radius: 12px;
+    }
+
+    #nav-sidebar {
+        background: var(--doctor-card);
+        border-radius: 18px;
+        padding: 20px;
+        margin: 24px 0;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        border: 1px solid rgba(17, 181, 197, 0.12);
+    }
+
+    #nav-sidebar h2 {
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        color: var(--doctor-muted);
+        margin-bottom: 12px;
+    }
+
+    #nav-sidebar .module caption {
+        border-bottom: none;
+        margin-bottom: 8px;
+        padding-bottom: 0;
+    }
+
+    #nav-sidebar ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+    }
+
+    #nav-sidebar li a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        color: var(--doctor-text);
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    #nav-sidebar li a:hover,
+    #nav-sidebar li a:focus {
+        background: rgba(17, 181, 197, 0.12);
+        color: var(--doctor-primary-dark);
+    }
+
+    .dashboard #content {
+        display: grid;
+        gap: 24px;
+    }
+
+    .dashboard .app-index .module {
+        display: grid;
+        gap: 16px;
+    }
+
+    .dashboard .app-index .module ul {
+        display: grid;
+        gap: 10px;
+    }
+
+    .object-tools {
+        margin-bottom: 18px;
+    }
+
+    .object-tools a {
+        background: var(--doctor-primary);
+        border-radius: 999px;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 8px 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        box-shadow: 0 10px 24px rgba(17, 181, 197, 0.25);
+    }
+
+    .inline-group {
+        border-radius: 20px;
+        border: 1px solid rgba(17, 181, 197, 0.14);
+        box-shadow: 0 12px 28px rgba(16, 30, 115, 0.06);
+        overflow: hidden;
+    }
+
+    .inline-group h2 {
+        background: rgba(17, 181, 197, 0.08);
+        padding: 16px 24px;
+        margin: 0;
+    }
+
+    .inline-related {
+        padding: 24px;
+    }
+
+    .selector select {
+        min-height: 220px;
+        border-radius: 16px;
+    }
+
+    .selector-available h2, .selector-chosen h2 {
+        color: var(--doctor-primary-dark);
+    }
+
+    #footer {
+        background: transparent;
+        color: var(--doctor-muted);
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        #content {
+            margin: 0 18px 32px;
+            padding: 24px;
+        }
+
+        #header {
+            margin: 18px;
+            border-radius: 18px;
+        }
+
+        form .aligned .form-row,
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        #nav-sidebar {
+            margin: 18px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #nav-sidebar {
+            order: 2;
+        }
+
+        #content {
+            order: 1;
+        }
+
+        #header {
+            order: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<div class="admin-branding">
+    <h1><a href="{% url 'admin:index' %}">Medical Connect Control Center</a></h1>
+    <p class="tagline">Manage doctors, appointments, and patient experiences with ease</p>
+</div>
+{% endblock %}
+
+{% block nav-sidebar %}
+<aside class="admin-sidebar doctor-theme-sidebar">
+    {{ block.super }}
+</aside>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const nav = document.querySelector(".doctor-theme-sidebar ul");
+        if (!nav) return;
+        nav.querySelectorAll("li a").forEach(function (link) {
+            link.addEventListener("mouseenter", function () {
+                link.classList.add("hovering");
+            });
+            link.addEventListener("mouseleave", function () {
+                link.classList.remove("hovering");
+            });
+        });
+    });
+</script>
+{% endblock %}

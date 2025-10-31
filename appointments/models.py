@@ -20,7 +20,7 @@ class AvailabilitySlot(models.Model):
     day_of_week = models.IntegerField(choices=DAYS_OF_WEEK)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    slot_duration = models.IntegerField(default=30)  # in minutes
+    slot_duration = models.IntegerField(default=30)
     is_active = models.BooleanField(default=True)
     
     class Meta:
@@ -80,3 +80,24 @@ class Prescription(models.Model):
     
     def __str__(self):
         return f"Prescription for {self.appointment}"
+
+
+class DoctorLeave(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    doctor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='leave_requests')
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-start_date']
+    
+    def __str__(self):
+        return f"Leave {self.start_date} to {self.end_date} for {self.doctor.get_full_name()}"

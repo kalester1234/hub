@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Count
+from django.db import IntegrityError
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from datetime import timedelta
-from appointments.models import Appointment
+from appointments.models import Appointment, AvailabilitySlot, DoctorLeave
+from appointments.forms import AvailabilitySlotForm, DoctorLeaveForm
 from messaging.models import Notification
 from accounts.models import DoctorProfile
 
@@ -24,55 +26,80 @@ def dashboard(request):
         return patient_dashboard(request)
 
 def doctor_dashboard(request):
-    """Doctor dashboard"""
     doctor = request.user
-    
-    # Get appointments statistics
     today = timezone.now().date()
     upcoming_appointments = Appointment.objects.filter(
         doctor=doctor,
-        appointment_date__gte=today,
+        appointment_date__gte=today
+    ).order_by('appointment_date', 'appointment_time')[:10]
+    next_day_date = today + timedelta(days=1)
+    next_day_appointments = Appointment.objects.filter(
+        doctor=doctor,
+        appointment_date=next_day_date,
         status='confirmed'
-    ).order_by('appointment_date', 'appointment_time')[:5]
-    
+    ).count()
     today_appointments = Appointment.objects.filter(
         doctor=doctor,
         appointment_date=today,
         status='confirmed'
     ).count()
-    
     pending_requests = Appointment.objects.filter(
         doctor=doctor,
         status='pending'
     ).count()
-    
     total_appointments = Appointment.objects.filter(doctor=doctor).count()
     completed_appointments = Appointment.objects.filter(
         doctor=doctor,
         status='completed'
     ).count()
-    
-    # Get notifications
-    unread_notifications = request.user.notifications.filter(is_read=False).count()
-    
-    # Get unread messages
+    availability_form = AvailabilitySlotForm()
+    leave_form = DoctorLeaveForm()
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+        if form_type == 'availability':
+            availability_form = AvailabilitySlotForm(request.POST)
+            if availability_form.is_valid():
+                slot = availability_form.save(commit=False)
+                slot.doctor = doctor
+                try:
+                    slot.save()
+                    messages.success(request, 'Availability slot added successfully.')
+                    return redirect('dashboard')
+                except IntegrityError:
+                    availability_form.add_error(None, 'This availability slot already exists.')
+        elif form_type == 'leave':
+            leave_form = DoctorLeaveForm(request.POST)
+            if leave_form.is_valid():
+                leave = leave_form.save(commit=False)
+                leave.doctor = doctor
+                leave.save()
+                messages.success(request, 'Leave request submitted successfully.')
+                return redirect('dashboard')
+    availability_slots = AvailabilitySlot.objects.filter(doctor=doctor).order_by('day_of_week', 'start_time')
+    leave_requests = DoctorLeave.objects.filter(doctor=doctor).order_by('-start_date')[:5]
+    doctor_profile = getattr(doctor, 'doctor_profile', None)
     from messaging.models import Message, Conversation
     conversations = Conversation.objects.filter(doctor=doctor)
     unread_messages = Message.objects.filter(
         conversation__in=conversations,
         is_read=False
     ).exclude(sender=doctor).count()
-    
+    unread_notifications = request.user.notifications.filter(is_read=False).count()
     context = {
         'upcoming_appointments': upcoming_appointments,
         'today_appointments': today_appointments,
         'pending_requests': pending_requests,
         'total_appointments': total_appointments,
         'completed_appointments': completed_appointments,
+        'next_day_appointments': next_day_appointments,
         'unread_notifications': unread_notifications,
         'unread_messages': unread_messages,
+        'availability_form': availability_form,
+        'availability_slots': availability_slots,
+        'leave_form': leave_form,
+        'leave_requests': leave_requests,
+        'doctor_profile': doctor_profile,
     }
-    
     return render(request, 'dashboard/doctor_dashboard.html', context)
 
 def patient_dashboard(request):
