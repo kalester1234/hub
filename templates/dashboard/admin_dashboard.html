@@ -3,162 +3,358 @@
 {% block title %}Admin Dashboard - Medical Connect{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h1 class="h2 mb-1 text-primary fw-bold">Admin Dashboard</h1>
-            <p class="text-muted mb-0">Monitor platform performance and manage appointments effortlessly</p>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="/admin/" class="btn btn-outline-secondary">
-                <i class="bi bi-sliders"></i> Django Admin Panel
-            </a>
-            <a href="{% url 'my_appointments' %}" class="btn btn-primary">
-                <i class="bi bi-calendar2-event"></i> View All Appointments
-            </a>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <p class="text-uppercase text-muted small mb-1">Total Users</p>
-                    <h3 class="fw-bold text-dark mb-0">{{ total_users }}</h3>
-                </div>
+<div class="admin-dashboard">
+    <aside class="admin-sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="bi bi-heart-pulse"></i></div>
+            <div>
+                <h2>HealthStack</h2>
+                <p>Admin Center</p>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <p class="text-uppercase text-muted small mb-1">Doctors</p>
-                    <h3 class="fw-bold text-primary mb-0">{{ doctors }}</h3>
-                </div>
-            </div>
+        <nav>
+            <ul>
+                <li class="active"><i class="bi bi-grid"></i> Dashboard</li>
+                <li><i class="bi bi-hospital"></i> Hospitals</li>
+                <li><i class="bi bi-person-badge"></i> Doctors</li>
+                <li><i class="bi bi-person-lines-fill"></i> Lab Worker</li>
+                <li><i class="bi bi-capsule-pill"></i> Pharmacist</li>
+                <li><i class="bi bi-person"></i> Profile</li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/admin/" class="btn btn-outline-light w-100">Open Django Admin</a>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <p class="text-uppercase text-muted small mb-1">Patients</p>
-                    <h3 class="fw-bold text-success mb-0">{{ patients }}</h3>
-                </div>
+    </aside>
+    <section class="admin-content">
+        <header class="admin-header">
+            <div>
+                <h1>Welcome Admin!</h1>
+                <p>Dashboard</p>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <p class="text-uppercase text-muted small mb-1">Pending Doctor Approvals</p>
-                    <h3 class="fw-bold text-danger mb-0">{{ pending_doctors }}</h3>
-                </div>
+            <div class="admin-actions">
+                <div class="status-pill">User logged in</div>
+                <div class="avatar"><i class="bi bi-person-fill"></i></div>
             </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-lg-5">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <p class="text-uppercase text-muted small mb-0">Total Appointments</p>
-                        <span class="badge bg-primary-subtle text-primary">Live</span>
-                    </div>
-                    <h2 class="fw-bold text-dark mb-1">{{ total_appointments }}</h2>
-                    <p class="text-muted mb-0">{{ completed_appointments }} completed</p>
+        </header>
+        <div class="stats-grid">
+            {% for card in stat_cards %}
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: {{ card.accent }}15; color: {{ card.accent }};">
+                    <i class="bi {{ card.icon }}"></i>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-7">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Appointment Status Overview</h5>
-                    <div class="row g-3">
-                        {% for item in status_summary %}
-                        <div class="col-sm-6 col-xl-4">
-                            <div class="border rounded-3 p-3 h-100 d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-uppercase text-muted small mb-1">{{ item.label }}</p>
-                                    <h4 class="fw-bold mb-0">{{ item.count }}</h4>
-                                </div>
-                                <span class="badge {% if item.value == 'pending' %}bg-warning-subtle text-warning{% elif item.value == 'confirmed' %}bg-info-subtle text-info{% elif item.value == 'completed' %}bg-success-subtle text-success{% elif item.value == 'cancelled' %}bg-danger-subtle text-danger{% else %}bg-light text-dark{% endif %}">{{ item.label }}</span>
-                            </div>
-                        </div>
-                        {% endfor %}
+                <div class="stat-body">
+                    <span class="stat-label">{{ card.label }}</span>
+                    <h3>{{ card.count }}</h3>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ card.progress }}%; background-color: {{ card.accent }};"></div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-    </div>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white border-0 py-3">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div>
-                    <h5 class="mb-0">Recent Appointments</h5>
-                    <small class="text-muted">Quickly review and update appointment statuses</small>
+        <div class="dashboard-main">
+            <div class="hospital-card">
+                <div class="card-header">
+                    <h2>Hospital List</h2>
+                </div>
+                <div class="hospital-table">
+                    <div class="table-head">
+                        <span>Hospital Name</span>
+                        <span>Address</span>
+                        <span>Email</span>
+                    </div>
+                    {% for hospital in hospital_list %}
+                    <div class="table-row">
+                        <span>{{ hospital.name }}</span>
+                        <span>{{ hospital.address }}</span>
+                        <span>{{ hospital.email }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="table-empty">No hospitals available</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="card-header">
+                    <h2>Appointment Bar Chart</h2>
+                </div>
+                <div class="bar-chart">
+                    {% for item in chart_data %}
+                    <div class="bar">
+                        <div class="bar-fill" style="height: {{ item.height }}%;"></div>
+                        <span class="bar-label">{{ item.count }}</span>
+                        <span class="bar-caption">{{ item.label }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-        <div class="card-body p-0">
-            {% if recent_appointments %}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Patient</th>
-                            <th scope="col">Doctor</th>
-                            <th scope="col">Date &amp; Time</th>
-                            <th scope="col">Status</th>
-                            <th scope="col" class="text-end">Update Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for appointment in recent_appointments %}
-                        <tr>
-                            <td>
-                                <div class="fw-semibold">{{ appointment.patient.get_full_name }}</div>
-                                <small class="text-muted">{{ appointment.patient.email }}</small>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">Dr. {{ appointment.doctor.get_full_name }}</div>
-                                <small class="text-muted">{{ appointment.doctor.doctor_profile.get_specialization_display }}</small>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">{{ appointment.appointment_date|date:"M d, Y" }}</div>
-                                <small class="text-muted">{{ appointment.appointment_time|time:"H:i" }}</small>
-                            </td>
-                            <td>
-                                <span class="badge {% if appointment.status == 'pending' %}bg-warning-subtle text-warning{% elif appointment.status == 'confirmed' %}bg-info-subtle text-info{% elif appointment.status == 'completed' %}bg-success-subtle text-success{% elif appointment.status == 'cancelled' %}bg-danger-subtle text-danger{% else %}bg-light text-dark{% endif %}">{{ appointment.get_status_display }}</span>
-                            </td>
-                            <td class="text-end">
-                                <form method="post" action="{% url 'admin_update_appointment_status' appointment.id %}" class="row g-2 justify-content-end">
-                                    {% csrf_token %}
-                                    <div class="col-lg-4 col-md-6">
-                                        <select name="status" class="form-select form-select-sm">
-                                            {% for value, label in status_choices %}
-                                            <option value="{{ value }}" {% if appointment.status == value %}selected{% endif %}>{{ label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col-lg-5 col-md-6">
-                                        <textarea name="notes" rows="1" class="form-control form-control-sm" placeholder="Notes">{{ appointment.notes|default_if_none:'' }}</textarea>
-                                    </div>
-                                    <div class="col-lg-3 col-md-12 text-end">
-                                        <button type="submit" class="btn btn-sm btn-primary w-100">Update</button>
-                                    </div>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="p-5 text-center text-muted">
-                <i class="bi bi-calendar-x fs-1"></i>
-                <p class="mt-3 mb-0">No recent appointments to display.</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+    </section>
 </div>
+{% endblock %}
+{% block extra_css %}
+<style>
+.admin-dashboard {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 80px);
+    background-color: #F4F6F8;
+}
+.admin-sidebar {
+    background: linear-gradient(180deg, #7CC1AE 0%, #7CC1AE 100%);
+    color: #0E4934;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+.brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.brand-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.35);
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    color: #0E4934;
+}
+.brand h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+.brand p {
+    margin: 0;
+    font-size: 0.85rem;
+}
+.admin-sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+}
+.admin-sidebar nav li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: rgba(14, 73, 52, 0.75);
+}
+.admin-sidebar nav li i {
+    font-size: 1.1rem;
+}
+.admin-sidebar nav li.active {
+    background: #0E4934;
+    color: #FFFFFF;
+}
+.sidebar-footer {
+    margin-top: auto;
+}
+.admin-content {
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.admin-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1B3A4B;
+}
+.admin-header p {
+    margin: 0;
+    color: #718096;
+}
+.admin-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.status-pill {
+    padding: 8px 16px;
+    background: rgba(12, 211, 162, 0.12);
+    color: #0BA57A;
+    border-radius: 999px;
+    font-weight: 600;
+}
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #FDE68A;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    color: #78350F;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+}
+.stat-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    box-shadow: 0 18px 35px rgba(62, 78, 107, 0.08);
+}
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+}
+.stat-label {
+    display: block;
+    color: #718096;
+    font-size: 0.9rem;
+}
+.stat-card h3 {
+    margin: 4px 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1B3A4B;
+}
+.progress {
+    height: 6px;
+    background: rgba(113, 128, 150, 0.15);
+    border-radius: 999px;
+}
+.progress-bar {
+    border-radius: 999px;
+}
+.dashboard-main {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+}
+.hospital-card,
+.chart-card {
+    background: #FFFFFF;
+    border-radius: 18px;
+    box-shadow: 0 18px 35px rgba(62, 78, 107, 0.08);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1B3A4B;
+}
+.hospital-table {
+    display: grid;
+    gap: 12px;
+}
+.table-head,
+.table-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+}
+.table-head {
+    color: #4A5568;
+    font-weight: 600;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 8px;
+}
+.table-row {
+    background: #F8FAFC;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: #1B3A4B;
+    font-weight: 500;
+}
+.table-empty {
+    text-align: center;
+    padding: 32px;
+    background: #F8FAFC;
+    border-radius: 12px;
+    color: #718096;
+    font-weight: 500;
+}
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    height: 220px;
+    padding-top: 12px;
+    border-bottom: 1px solid #E2E8F0;
+}
+.bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 48px;
+}
+.bar-fill {
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(180deg, #0BA57A 0%, #1B3A4B 100%);
+    transition: height 0.4s ease;
+}
+.bar-label {
+    font-weight: 600;
+    color: #1B3A4B;
+}
+.bar-caption {
+    font-size: 0.85rem;
+    color: #718096;
+    text-transform: capitalize;
+}
+@media (max-width: 992px) {
+    .admin-dashboard {
+        grid-template-columns: 1fr;
+    }
+    .admin-sidebar {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .admin-sidebar nav ul {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+    }
+    .dashboard-main {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px) {
+    .admin-content {
+        padding: 24px;
+    }
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+}
+</style>
 {% endblock %}

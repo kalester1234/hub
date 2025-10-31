@@ -175,7 +175,6 @@ def admin_dashboard(request):
     doctors = CustomUser.objects.filter(role='doctor').count()
     patients = CustomUser.objects.filter(role='patient').count()
     pending_doctors = DoctorProfile.objects.filter(is_approved=False).count()
-    
     total_appointments = Appointment.objects.count()
     completed_appointments = Appointment.objects.filter(status='completed').count()
     status_counts = Appointment.objects.values('status').annotate(total=Count('id'))
@@ -188,20 +187,78 @@ def admin_dashboard(request):
         }
         for value, label in Appointment.STATUS_CHOICES
     ]
-    recent_appointments = Appointment.objects.select_related('doctor', 'patient').order_by('-updated_at')[:10]
-    
+    chart_max = max([item['count'] for item in status_summary], default=0)
+    chart_data = [
+        {
+            'value': item['value'],
+            'label': item['label'],
+            'count': item['count'],
+            'height': int((item['count'] / chart_max) * 100) if chart_max else 0
+        }
+        for item in status_summary
+    ]
+    lab_workers = CustomUser.objects.filter(role='admin').count()
+    total_hospitals = DoctorProfile.objects.exclude(hospital_name__isnull=True).exclude(hospital_name__exact='').values('hospital_name').distinct().count()
+    hospital_profiles = DoctorProfile.objects.select_related('user').exclude(hospital_name__isnull=True).exclude(hospital_name__exact='').order_by('hospital_name')
+    seen_hospitals = set()
+    hospital_list = []
+    for profile in hospital_profiles:
+        name = profile.hospital_name.strip()
+        if not name:
+            continue
+        key = name.lower()
+        if key in seen_hospitals:
+            continue
+        seen_hospitals.add(key)
+        hospital_list.append({
+            'name': name,
+            'address': profile.user.bio or 'Not provided',
+            'email': profile.user.email or 'Not provided'
+        })
+        if len(hospital_list) >= 5:
+            break
+    doctor_share = int((doctors / total_users) * 100) if total_users else 0
+    patient_share = int((patients / total_users) * 100) if total_users else 0
+    appointment_completion = int((completed_appointments / total_appointments) * 100) if total_appointments else 0
+    approval_rate = int((pending_doctors / doctors) * 100) if doctors else 0
+    stat_cards = [
+        {
+            'label': 'Total Doctors',
+            'count': doctors,
+            'icon': 'bi-people-fill',
+            'accent': '#0BA57A',
+            'progress': doctor_share
+        },
+        {
+            'label': 'Total Patients',
+            'count': patients,
+            'icon': 'bi-person-heart',
+            'accent': '#36B37E',
+            'progress': patient_share
+        },
+        {
+            'label': 'Total Hospital',
+            'count': total_hospitals,
+            'icon': 'bi-building',
+            'accent': '#F05252',
+            'progress': min(100, total_hospitals * 10)
+        },
+        {
+            'label': 'Total Lab Worker',
+            'count': lab_workers,
+            'icon': 'bi-flask',
+            'accent': '#F4B740',
+            'progress': approval_rate if approval_rate else 5
+        }
+    ]
     context = {
         'total_users': total_users,
-        'doctors': doctors,
-        'patients': patients,
-        'pending_doctors': pending_doctors,
-        'total_appointments': total_appointments,
         'completed_appointments': completed_appointments,
         'status_summary': status_summary,
-        'status_choices': Appointment._meta.get_field('status').choices,
-        'recent_appointments': recent_appointments,
+        'chart_data': chart_data,
+        'hospital_list': hospital_list,
+        'stat_cards': stat_cards,
     }
-    
     return render(request, 'dashboard/admin_dashboard.html', context)
 
 @login_required(login_url='login')

@@ -167,6 +167,12 @@ class DoctorSignUpForm(UserCreationForm):
 
 
 class UserProfileForm(forms.ModelForm):
+    specialization = forms.ChoiceField(
+        choices=DoctorProfile._meta.get_field('specialization').choices,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = CustomUser
         fields = ['first_name', 'last_name', 'email', 'phone', 'profile_picture', 'bio']
@@ -178,3 +184,29 @@ class UserProfileForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.get('instance')
+        super().__init__(*args, **kwargs)
+
+        # Show specialization field only for doctors
+        if not self.user or self.user.role != 'doctor':
+            self.fields.pop('specialization', None)
+        else:
+            doctor_profile = getattr(self.user, 'doctor_profile', None)
+            if doctor_profile:
+                self.fields['specialization'].initial = doctor_profile.specialization
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        if commit:
+            user.save()
+
+        if self.user.role == 'doctor' and 'specialization' in self.cleaned_data:
+            doctor_profile, _ = DoctorProfile.objects.get_or_create(user=self.user)
+            if self.cleaned_data['specialization']:
+                doctor_profile.specialization = self.cleaned_data['specialization']
+                doctor_profile.save()
+
+        return user

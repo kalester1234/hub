@@ -20,21 +20,36 @@ CustomUser = get_user_model()
 @login_required(login_url='login')
 def browse_doctors(request):
     """Browse and search doctors"""
-    specialization = request.GET.get('specialization', '')
-    search = request.GET.get('search', '')
-    
+    specialization = request.GET.get('specialization', '').strip()
+    search = request.GET.get('search', '').strip()
+
     doctors = DoctorProfile.objects.filter(is_approved=True).select_related('user')
-    
+
     if specialization:
         doctors = doctors.filter(specialization=specialization)
-    
+
     if search:
-        doctors = doctors.filter(
+        search_lower = search.lower()
+        specialization_matches = [
+            value
+            for value, label in DoctorProfile.SPECIALIZATION_CHOICES
+            if search_lower in value.lower() or search_lower in label.lower()
+        ]
+
+        search_filters = (
             Q(user__first_name__icontains=search) |
             Q(user__last_name__icontains=search) |
-            Q(user__email__icontains=search)
+            Q(user__email__icontains=search) |
+            Q(hospital_name__icontains=search)
         )
-    
+
+        if specialization_matches:
+            search_filters |= Q(specialization__in=specialization_matches)
+        else:
+            search_filters |= Q(specialization__icontains=search)
+
+        doctors = doctors.filter(search_filters)
+
     context = {
         'doctors': doctors,
         'specializations': DoctorProfile._meta.get_field('specialization').choices,
