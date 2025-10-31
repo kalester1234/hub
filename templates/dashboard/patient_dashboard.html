@@ -15,6 +15,7 @@
             return;
         }
         const submitButton = form.querySelector('button[type="submit"]');
+        const promptButtons = document.querySelectorAll('[data-chat-prompt]');
         const getCsrfToken = () => {
             const name = 'csrftoken=';
             const decoded = decodeURIComponent(document.cookie || '');
@@ -50,12 +51,19 @@
                 const url = `/appointments/book/${slot.doctor_id}/`;
                 return `
                     <div class="patient-chat-slot">
-                        <h6>${slot.doctor_name}</h6>
-                        <p>${slot.specialization}</p>
-                        <p>${slot.display_date} at ${slot.display_time}</p>
-                        <p>Visit: ${slot.location}</p>
-                        <p>Fee: ₹${slot.fee}</p>
-                        <a class="btn btn-sm btn-primary" href="${url}">Book this slot</a>
+                        <div class="patient-chat-slot-row">
+                            <div>
+                                <h6>${slot.doctor_name}</h6>
+                                <p>${slot.specialization}</p>
+                            </div>
+                            <span class="patient-chat-slot-tag">${slot.display_date}</span>
+                        </div>
+                        <div class="patient-chat-slot-info">
+                            <span><i class="bi bi-clock"></i>${slot.display_time}</span>
+                            <span><i class="bi bi-geo-alt"></i>${slot.location}</span>
+                            <span><i class="bi bi-currency-rupee"></i>${slot.fee}</span>
+                        </div>
+                        <a class="patient-chat-slot-link" href="${url}">Book this slot</a>
                     </div>
                 `;
             }).join('');
@@ -68,7 +76,7 @@
                 return;
             }
             addMessage(query, 'user');
-            const typing = addMessage('Searching for the best options near you...', 'bot');
+            const typing = addMessage('Finding the best options for you…', 'bot');
             if (submitButton) {
                 submitButton.disabled = true;
             }
@@ -91,16 +99,16 @@
                 }
                 if (data.status === 'success') {
                     const slotsHtml = renderSlots(data.slots);
-                    const messageHtml = `<p style="margin-bottom: 8px;">${data.message}</p>${slotsHtml}`;
+                    const messageHtml = `<p class="patient-chat-slot-message">${data.message}</p>${slotsHtml}`;
                     addMessage(messageHtml, 'bot', true);
                 } else {
-                    addMessage(data.message || 'No slots found right now. Please try again later.', 'bot');
+                    addMessage(data.message || 'No slots available right now. Let me check again shortly.', 'bot');
                 }
             } catch (error) {
                 if (typing && typing.parentNode) {
                     typing.parentNode.removeChild(typing);
                 }
-                addMessage('Sorry, the network seems slow. Please try once more.', 'bot');
+                addMessage('The connection seems slow. Please try again in a moment.', 'bot');
             } finally {
                 if (submitButton) {
                     submitButton.disabled = false;
@@ -110,6 +118,13 @@
             }
         };
         form.addEventListener('submit', handleSubmit);
+        promptButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const preset = button.getAttribute('data-chat-prompt') || '';
+                queryInput.value = preset;
+                queryInput.focus();
+            });
+        });
         if (clearButton) {
             clearButton.addEventListener('click', () => {
                 if (specializationSelect) {
@@ -129,22 +144,149 @@
 {% block content %}
 <div class="container py-4">
     <style>
+        :root {
+            --med-primary: #00897B;
+            --med-teal: #00897B;
+            --med-dark: #0A3F3A;
+            --med-muted: #536A6D;
+            --med-light: #E0F2F1;
+            --med-surface: #FFFFFF;
+            --med-highlight: #B2DFDB;
+        }
+        .patient-dashboard-heading {
+            color: var(--med-dark);
+            font-weight: 700;
+        }
+        .patient-dashboard-subtitle {
+            color: var(--med-muted);
+            margin-bottom: 0;
+        }
+        .stat-card {
+            border-radius: 18px;
+            border: none;
+            background: var(--med-surface);
+            box-shadow: 0 18px 35px rgba(0, 137, 123, 0.15);
+            padding: 22px;
+        }
+        .stat-card-highlight {
+            font-size: 2.75rem;
+            color: rgba(0, 137, 123, 0.22);
+        }
+        .patient-quick-card {
+            border-radius: 18px;
+            border: none;
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+        }
+        .patient-quick-card .card-header {
+            border: none;
+            padding: 18px 24px;
+            background: var(--med-primary);
+        }
+        .patient-quick-card .card-body {
+            padding: 24px;
+        }
         .patient-chat-card {
-            border: 1px solid #e0f2f4;
-            box-shadow: 0 10px 30px rgba(16, 30, 115, 0.07);
+            border-radius: 26px;
+            background: var(--med-surface);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 1px solid rgba(0, 137, 123, 0.12);
+        }
+        .patient-chat-header {
+            background: var(--med-primary);
+            padding: 30px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .patient-chat-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .patient-chat-logo {
+            width: 54px;
+            height: 54px;
             border-radius: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .patient-chat-prompts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .patient-chat-chip {
+            border: none;
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .patient-chat-chip:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .patient-chat-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: #F5FBFA;
+        }
+        .patient-chat-toolbar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+        .patient-chat-field label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: var(--med-dark);
+        }
+        .patient-chat-field select,
+        .patient-chat-field input {
+            border-radius: 14px;
+            border: 1px solid rgba(0, 137, 123, 0.22);
+            padding: 10px 14px;
+            font-size: 0.95rem;
+        }
+        .patient-chat-clear {
+            border: none;
+            border-radius: 14px;
+            background: rgba(0, 137, 123, 0.12);
+            color: var(--med-primary);
+            font-weight: 600;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .patient-chat-clear:hover {
+            background: rgba(0, 137, 123, 0.22);
         }
         .patient-chat-messages {
-            height: 260px;
+            height: 300px;
             overflow-y: auto;
-            padding: 12px;
-            background: #f7fdfd;
-            border-radius: 12px;
-            border: 1px solid #e0f2f4;
+            padding: 20px;
+            border-radius: 22px;
+            background: var(--med-surface);
+            border: 1px solid rgba(30, 102, 245, 0.12);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
         .patient-chat-message {
             display: flex;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         .patient-chat-message.bot {
             justify-content: flex-start;
@@ -153,119 +295,234 @@
             justify-content: flex-end;
         }
         .patient-chat-bubble {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 14px;
-            box-shadow: 0 5px 20px rgba(23, 162, 184, 0.08);
+            max-width: 78%;
+            border-radius: 20px;
+            padding: 14px 16px;
             font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 18px 35px rgba(30, 102, 245, 0.08);
         }
         .patient-chat-message.bot .patient-chat-bubble {
-            background: white;
-            color: #1a3a4a;
-            border: 1px solid #d8eff2;
+            background: var(--med-light);
+            color: var(--med-dark);
+            border: 1px solid rgba(30, 102, 245, 0.12);
         }
         .patient-chat-message.user .patient-chat-bubble {
-            background: #0A74DA;
-            color: white;
+            background: var(--med-primary);
+            color: #ffffff;
+        }
+        .patient-chat-slot-message {
+            margin-bottom: 12px;
+            color: var(--med-dark);
+            font-weight: 600;
         }
         .patient-chat-slot {
-            border: 1px solid #e0f2f4;
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 12px;
-            background: white;
+            border: 1px solid rgba(0, 137, 123, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            background: #ffffff;
+            margin-bottom: 12px;
+            box-shadow: 0 16px 30px rgba(0, 137, 123, 0.12);
+        }
+        .patient-chat-slot-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 10px;
         }
         .patient-chat-slot h6 {
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #1a3a4a;
+            margin: 0 0 4px 0;
+            font-weight: 700;
+            color: var(--med-dark);
         }
         .patient-chat-slot p {
-            margin-bottom: 4px;
+            margin: 0;
+            color: var(--med-muted);
             font-size: 0.85rem;
-            color: #556;
+        }
+        .patient-chat-slot-tag {
+            background: rgba(0, 137, 123, 0.12);
+            color: var(--med-primary);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .patient-chat-slot-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: var(--med-muted);
+            font-size: 0.85rem;
+        }
+        .patient-chat-slot-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .patient-chat-slot-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: var(--med-primary);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 18px;
+        }
+        .patient-chat-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .patient-chat-input {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+        .patient-chat-input input {
+            border-radius: 18px;
+            border: 1px solid rgba(0, 137, 123, 0.22);
+            padding: 14px 20px;
+            font-size: 0.95rem;
+            background: #ffffff;
+        }
+        .patient-chat-submit {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            border: none;
+            background: var(--med-primary);
+            color: #ffffff;
+            display: grid;
+            place-items: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .patient-chat-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px rgba(30, 102, 245, 0.2);
+        }
+        .patient-chat-quick {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .patient-chat-quick button {
+            border: none;
+            background: rgba(0, 137, 123, 0.12);
+            color: var(--med-primary);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .patient-chat-quick button:hover {
+            background: rgba(0, 137, 123, 0.22);
+        }
+        .status-confirmed {
+            background: rgba(0, 137, 123, 0.18) !important;
+            color: var(--med-primary) !important;
+        }
+        .status-pending {
+            background: rgba(0, 137, 123, 0.12) !important;
+            color: var(--med-primary) !important;
+        }
+        .status-completed {
+            background: rgba(12, 150, 130, 0.16) !important;
+            color: var(--med-primary) !important;
+        }
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #ef4444 !important;
+        }
+        @media (max-width: 768px) {
+            .patient-chat-header {
+                padding: 24px;
+            }
+            .patient-chat-body {
+                padding: 24px;
+            }
+            .patient-chat-messages {
+                height: 260px;
+            }
+            .patient-chat-bubble {
+                max-width: 90%;
+            }
         }
     </style>
     <div class="row mb-4">
         <div class="col-12">
-            <h1 style="color: #1a3a4a; font-weight: 700;">Welcome, {{ user.get_full_name }}</h1>
-            <p style="color: #666;">Manage your health and appointments</p>
+            <h1 class="patient-dashboard-heading">Welcome, {{ user.get_full_name }}</h1>
+            <p class="patient-dashboard-subtitle">Take control of your healthcare journey</p>
         </div>
     </div>
-
-    <!-- Statistics -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #0A74DA;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Today's Appointments</p>
-                            <h3 style="color: #003366; margin: 0;">{{ today_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #0A74DA; opacity: 0.2;">
-                            <i class="bi bi-calendar-event"></i>
-                        </div>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1" style="color: var(--med-muted);">Today's Appointments</p>
+                        <h3 class="mb-0" style="color: var(--med-dark);">{{ today_appointments }}</h3>
+                    </div>
+                    <div class="stat-card-highlight">
+                        <i class="bi bi-calendar-event"></i>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #20c997;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Total Appointments</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ total_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #20c997; opacity: 0.2;">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1" style="color: var(--med-muted);">Total Appointments</p>
+                        <h3 class="mb-0" style="color: var(--med-dark);">{{ total_appointments }}</h3>
+                    </div>
+                    <div class="stat-card-highlight" style="color: rgba(20, 184, 166, 0.22);">
+                        <i class="bi bi-graph-up"></i>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #28a745;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Completed</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ completed_appointments }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #28a745; opacity: 0.2;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1" style="color: var(--med-muted);">Completed</p>
+                        <h3 class="mb-0" style="color: var(--med-dark);">{{ completed_appointments }}</h3>
+                    </div>
+                    <div class="stat-card-highlight" style="color: rgba(34, 197, 94, 0.24);">
+                        <i class="bi bi-check-circle"></i>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="col-md-3">
-            <div class="card" style="border-left: 4px solid #ffc107;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p style="color: #666; margin: 0;">Available Doctors</p>
-                            <h3 style="color: #1a3a4a; margin: 0;">{{ doctors_available }}</h3>
-                        </div>
-                        <div style="font-size: 2.5rem; color: #ffc107; opacity: 0.2;">
-                            <i class="bi bi-stethoscope"></i>
-                        </div>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1" style="color: var(--med-muted);">Available Doctors</p>
+                        <h3 class="mb-0" style="color: var(--med-dark);">{{ doctors_available }}</h3>
+                    </div>
+                    <div class="stat-card-highlight" style="color: rgba(250, 204, 21, 0.25);">
+                        <i class="bi bi-stethoscope"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Quick Actions -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header" style="background-color: #0A74DA; color: white;">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
+            <div class="patient-quick-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 text-white">Quick Actions</h5>
                 </div>
                 <div class="card-body">
                     <a href="{% url 'browse_doctors' %}" class="btn btn-primary me-2 mb-2">
@@ -284,59 +541,82 @@
             </div>
         </div>
     </div>
-
-    <!-- Care Assistant -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card patient-chat-card">
-                <div class="card-header" style="background-color: #0A74DA; color: white;">
-                    <h5 class="card-title mb-0">Care Assistant</h5>
+            <div class="patient-chat-card">
+                <div class="patient-chat-header">
+                    <div class="patient-chat-brand">
+                        <div class="patient-chat-logo">MS</div>
+                        <div>
+                            <h4 class="mb-1">MediSchedule Assistant</h4>
+                            <p class="mb-0" style="opacity: 0.82;">Smarter scheduling that understands your needs</p>
+                        </div>
+                    </div>
+                    <div class="patient-chat-prompts">
+                        <button type="button" class="patient-chat-chip" data-chat-prompt="I need a general check-up this week.">General check-up</button>
+                        <button type="button" class="patient-chat-chip" data-chat-prompt="Find the earliest cardiologist appointment for me.">Cardiology</button>
+                        <button type="button" class="patient-chat-chip" data-chat-prompt="Show pediatricians available on Saturday morning.">Pediatrics</button>
+                        <button type="button" class="patient-chat-chip" data-chat-prompt="Book an online follow-up consultation.">Virtual follow-up</button>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="patient-chat-body">
+                    <div class="patient-chat-toolbar">
+                        <div class="patient-chat-field">
+                            <label for="patient-chat-specialization">Preferred specialty</label>
+                            <select id="patient-chat-specialization" class="form-select form-select-sm">
+                                <option value="any">Any Doctor</option>
+                                <option value="general">General Practice</option>
+                                <option value="cardiology">Cardiology</option>
+                                <option value="dermatology">Dermatology</option>
+                                <option value="neurology">Neurology</option>
+                                <option value="pediatrics">Pediatrics</option>
+                                <option value="psychiatry">Psychiatry</option>
+                                <option value="orthopedics">Orthopedics</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="patient-chat-field">
+                            <label for="patient-chat-date">Ideal visit date</label>
+                            <input type="date" id="patient-chat-date" class="form-control form-control-sm">
+                        </div>
+                        <div class="patient-chat-field">
+                            <button type="button" id="patient-chat-clear" class="patient-chat-clear">Reset filters</button>
+                        </div>
+                    </div>
                     <div id="patient-chat-messages" class="patient-chat-messages">
                         <div class="patient-chat-message bot">
                             <div class="patient-chat-bubble">
-                                👋 Namaste! I can help you find a doctor visit slot. Tell me how we can help today.
+                                👋 Hi {{ user.first_name }}! I am your MediSchedule assistant. Tell me what kind of care you need and I will suggest the best appointment slots.
+                            </div>
+                        </div>
+                        <div class="patient-chat-message bot">
+                            <div class="patient-chat-bubble waiting">
+                                Waiting for confirmation after you pick a slot—I'll keep you posted.
                             </div>
                         </div>
                     </div>
                     <form id="patient-chat-form" class="patient-chat-form">
-                        <div class="row g-2 align-items-center mb-2">
-                            <div class="col-md-4">
-                                <select id="patient-chat-specialization" class="form-select form-select-sm">
-                                    <option value="any">Any Doctor</option>
-                                    <option value="general">General Practice</option>
-                                    <option value="cardiology">Cardiology</option>
-                                    <option value="dermatology">Dermatology</option>
-                                    <option value="neurology">Neurology</option>
-                                    <option value="pediatrics">Pediatrics</option>
-                                    <option value="psychiatry">Psychiatry</option>
-                                    <option value="orthopedics">Orthopedics</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="date" id="patient-chat-date" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-4">
-                                <button type="button" id="patient-chat-clear" class="btn btn-outline-secondary btn-sm w-100">Clear Filters</button>
-                            </div>
+                        <div class="patient-chat-input">
+                            <input type="text" id="patient-chat-query" placeholder="Describe your visit or add timing preferences" required>
+                            <button type="submit" class="patient-chat-submit" aria-label="Send">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
                         </div>
-                        <div class="input-group input-group-sm">
-                            <input type="text" id="patient-chat-query" class="form-control" placeholder="Describe your visit or enter preferred time" required>
-                            <button type="submit" class="btn btn-primary">Send</button>
+                        <div class="patient-chat-quick">
+                            <button type="button" data-chat-prompt="Any doctor available tomorrow morning?">Tomorrow morning</button>
+                            <button type="button" data-chat-prompt="Which specialist can see me virtually?">Virtual visit</button>
+                            <button type="button" data-chat-prompt="Need an urgent consultation today.">Urgent help</button>
+                            <button type="button" data-chat-prompt="List weekend availability for dermatology.">Weekend slots</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Upcoming Appointments -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header" style="background-color: #0A74DA; color: white;">
+            <div class="card" style="border-radius: 20px; box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08); border: none;">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--med-primary), var(--med-teal)); color: #ffffff; border: none; border-radius: 20px 20px 0 0;">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-calendar-event"></i> Upcoming Appointments
                     </h5>
@@ -344,8 +624,8 @@
                 <div class="card-body">
                     {% if upcoming_appointments %}
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead style="background-color: #F4F6F8;">
+                            <table class="table table-hover align-middle">
+                                <thead style="background-color: var(--med-light);">
                                     <tr>
                                         <th>Doctor</th>
                                         <th>Specialization</th>
@@ -364,9 +644,7 @@
                                             <small>{{ appointment.appointment_time|time:"H:i" }}</small>
                                         </td>
                                         <td>
-                                            <span class="badge status-{{ appointment.status }}">
-                                                {{ appointment.get_status_display }}
-                                            </span>
+                                            <span class="badge status-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
                                         </td>
                                         <td>
                                             <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-sm btn-primary">
@@ -379,9 +657,8 @@
                             </table>
                         </div>
                     {% else %}
-                        <div class="alert alert-info" role="alert">
-                            <i class="bi bi-info-circle"></i> 
-                            No upcoming appointments. <a href="{% url 'browse_doctors' %}">Book an appointment</a>
+                        <div class="alert alert-info mb-0" role="alert">
+                            <i class="bi bi-info-circle"></i> No upcoming appointments. <a href="{% url 'browse_doctors' %}">Book an appointment</a>
                         </div>
                     {% endif %}
                 </div>

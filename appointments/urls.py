@@ -7,6 +7,7 @@ urlpatterns = [
     path('book/<int:doctor_id>/', views.book_appointment, name='book_appointment'),
     path('my-appointments/', views.my_appointments, name='my_appointments'),
     path('chatbot/suggest-slot/', views.chatbot_suggest_slot, name='chatbot_suggest_slot'),
+    path('chatbot/book/', views.chatbot_book_appointment, name='chatbot_book_appointment'),
     path('<int:appointment_id>/', views.appointment_detail, name='appointment_detail'),
     path('<int:appointment_id>/cancel/', views.cancel_appointment, name='cancel_appointment'),
     path('<int:appointment_id>/complete/', views.complete_appointment, name='complete_appointment'),

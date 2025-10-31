@@ -3,24 +3,55 @@
 {% block title %}Book Appointment - Medical Connect{% endblock %}
 
 {% block content %}
-<div style="background: linear-gradient(135deg, #0A74DA 0%, #0560c0 100%); padding: 50px 0; margin-bottom: 30px; color: white; text-align: center;">
+<div style="background:#00897B;padding:50px 0;margin-bottom:30px;color:white;text-align:center;">
     <div class="container">
-        <h1 style="font-weight: 700; margin-bottom: 10px;">Book Your Appointment</h1>
-        <p style="font-size: 1.05; opacity: 0.95;">Schedule a consultation with Dr. {{ doctor.get_full_name }}</p>
+        <h1 style="font-weight:700;margin-bottom:10px;">Book Your Appointment</h1>
+        <p style="font-size:1.05;opacity:0.95;">Schedule a consultation with Dr. {{ doctor.get_full_name }}</p>
     </div>
 </div>
 
+<style>
+:root{--teal-primary:#00897B;--teal-dark:#045A52;--teal-muted:#4F6E6B;--teal-surface:#FFFFFF;--teal-soft:#E0F2F1;--teal-highlight:rgba(0,137,123,0.18);}
+.chatbot-card{background:var(--teal-surface);border-radius:24px;box-shadow:0 24px 48px rgba(0,137,123,0.16);padding:24px;display:flex;flex-direction:column;gap:20px;min-height:100%;}
+.chatbot-header{display:flex;align-items:center;gap:14px;}
+.chatbot-avatar{height:50px;width:50px;border-radius:18px;background:var(--teal-primary);display:grid;place-items:center;color:#ffffff;font-weight:700;font-size:1.2rem;box-shadow:0 10px 22px rgba(0,137,123,0.28);}
+.chatbot-header h5{font-weight:700;color:var(--teal-dark);}
+.chatbot-header small{color:var(--teal-muted);font-weight:500;letter-spacing:0.02em;}
+.chatbot-body{background:var(--teal-soft);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:16px;}
+.chatbot-messages{height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:6px;scrollbar-width:thin;}
+.chatbot-messages::-webkit-scrollbar{width:6px;}
+.chatbot-messages::-webkit-scrollbar-thumb{background:rgba(0,137,123,0.25);border-radius:10px;}
+.chatbot-message{max-width:85%;padding:12px 16px;border-radius:18px;font-size:0.95rem;line-height:1.55;box-shadow:0 10px 18px rgba(4,90,82,0.08);}
+.chatbot-message.bot{background:#CDECE6;color:var(--teal-dark);border-bottom-left-radius:6px;}
+.chatbot-message.user{background:var(--teal-dark);color:#ffffff;border-bottom-right-radius:6px;margin-left:auto;}
+.chatbot-quick{display:flex;flex-wrap:wrap;gap:10px;}
+.chatbot-option{border:0;border-radius:999px;padding:10px 20px;font-size:0.9rem;font-weight:600;background:var(--teal-primary);color:#ffffff;box-shadow:0 10px 24px rgba(0,137,123,0.28);transition:transform 0.2s ease,box-shadow 0.2s ease;}
+.chatbot-option:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(0,137,123,0.35);}
+.chatbot-input{display:flex;gap:12px;align-items:center;}
+.chatbot-input .form-control{flex:1;border-radius:16px;border:1px solid rgba(0,137,123,0.22);padding:12px 18px;box-shadow:0 6px 18px rgba(4,90,82,0.08);}
+.chatbot-input button{border-radius:16px;padding:12px 16px;background:var(--teal-primary);border:0;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 24px rgba(0,137,123,0.3);}
+.chatbot-input button i{font-size:1.1rem;color:#ffffff;}
+.chatbot-highlight{outline:3px solid var(--teal-highlight);outline-offset:2px;}
+.btn-teal{background:var(--teal-primary);border-color:var(--teal-primary);color:#ffffff;}
+.btn-teal:hover{background:var(--teal-dark);border-color:var(--teal-dark);color:#ffffff;}
+.info-card-header{background:var(--teal-soft);}
+.info-card-title{color:var(--teal-dark);}
+.info-card-list{color:var(--teal-muted);line-height:1.8;}
+.consult-fee-label{color:var(--teal-dark);}
+.consult-fee-value{font-size:1.5rem;color:var(--teal-primary);font-weight:600;margin:0;}
+@media (max-width:991.98px){.chatbot-card{padding:20px;margin-top:20px;}}
+</style>
 <div class="container py-4">
-    <div class="row">
-        <div class="col-lg-6 mx-auto">
-            <div class="card">
-                <div class="card-header" style="background-color: #0A74DA; color: white;">
+    <div class="row g-4 align-items-stretch">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header" style="background-color:#00897B;color:white;">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-calendar-plus"></i> Book Appointment with Dr. {{ doctor.get_full_name }}
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" id="appointmentBookingForm" data-doctor-name="{{ doctor.get_full_name|escape }}" data-doctor-id="{{ doctor.id }}">
                         {% csrf_token %}
                         
                         <div class="mb-3">
@@ -54,10 +85,10 @@
                             {% endif %}
                         </div>
 
-                        <div class="card bg-light mb-3">
+                        <div class="card mb-3" style="background:var(--teal-soft);border:1px solid rgba(0,137,123,0.15);">
                             <div class="card-body">
-                                <h6 style="color: #003366;">Consultation Fee</h6>
-                                <p style="font-size: 1.5rem; color: #0A74DA; font-weight: 600; margin: 0;">
+                                <h6 class="consult-fee-label">Consultation Fee</h6>
+                                <p class="consult-fee-value">
                                     ${{ doctor.doctor_profile.consultation_fee }}
                                 </p>
                             </div>
@@ -67,7 +98,7 @@
                             <a href="{% url 'browse_doctors' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle"></i> Cancel
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-teal">
                                 <i class="bi bi-check-circle"></i> Book Appointment
                             </button>
                         </div>
@@ -75,14 +106,14 @@
                 </div>
             </div>
 
-            <div class="card mt-4">
-                <div class="card-header" style="background-color: #F4F6F8;">
-                    <h5 class="card-title mb-0" style="color: #003366;">
+            <div class="card mt-4" style="border:1px solid rgba(0,137,123,0.15);">
+                <div class="card-header info-card-header">
+                    <h5 class="card-title mb-0 info-card-title">
                         <i class="bi bi-info-circle"></i> Important Information
                     </h5>
                 </div>
                 <div class="card-body">
-                    <ul style="color: #666; line-height: 1.8;">
+                    <ul class="info-card-list">
                         <li>Please provide accurate details about your symptoms</li>
                         <li>Ensure you're available at the selected time</li>
                         <li>You will receive a confirmation email</li>
@@ -92,6 +123,469 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-6 col-xl-5 ms-lg-auto">
+            <div class="chatbot-card" id="appointmentChatbot">
+                <div class="chatbot-header">
+                    <div class="chatbot-avatar">AB</div>
+                    <div>
+                        <h5 class="mb-0">AppointBot</h5>
+                        <small>Smart scheduling assistant</small>
+                    </div>
+                </div>
+                <div class="chatbot-body">
+                    <div class="chatbot-messages" id="chatbotMessages"></div>
+                    <div class="chatbot-quick" id="chatbotQuickReplies"></div>
+                    <div class="chatbot-input">
+                        <input type="text" class="form-control" placeholder="Ask for a time or type a message" id="chatbotInput">
+                        <button type="button" id="chatbotSend">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('appointmentBookingForm');
+    const messages = document.getElementById('chatbotMessages');
+    const quick = document.getElementById('chatbotQuickReplies');
+    const input = document.getElementById('chatbotInput');
+    const send = document.getElementById('chatbotSend');
+    if (!form || !messages || !quick || !input || !send) {
+        return;
+    }
+    const dateField = form.querySelector('[name="appointment_date"]');
+    const timeField = form.querySelector('[name="appointment_time"]');
+    const reasonField = form.querySelector('[name="reason"]');
+    const doctorName = form.dataset.doctorName || 'your doctor';
+    const doctorId = form.dataset.doctorId || '';
+    let step = 'welcome';
+    let currentSlots = [];
+    let selectedSlot = null;
+    async function fetchSlots(pref) {
+        const payload = {
+            query: pref || '',
+            doctor_id: doctorId
+        };
+        if (dateField && dateField.value) {
+            payload.preferred_date = dateField.value;
+        }
+        try {
+            const response = await fetch('/appointments/chatbot/suggest-slot/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                return { status: 'error', message: 'Unable to reach the scheduling assistant. Please try again.' };
+            }
+            return await response.json();
+        } catch (error) {
+            return { status: 'error', message: 'Unable to reach the scheduling assistant. Please try again.' };
+        }
+    }
+    async function attemptBooking(slot) {
+        if (!slot) {
+            addMessage('Please choose a slot first.', 'bot');
+            return;
+        }
+        const reasonValue = reasonField ? reasonField.value.trim() : '';
+        if (!reasonValue) {
+            addMessage('Add your reason for visit on the left before booking.', 'bot');
+            focusField(reasonField);
+            step = 'confirmBooking';
+            renderStep();
+            return;
+        }
+        quick.innerHTML = '';
+        addMessage('Booking your appointment now...', 'bot');
+        try {
+            const response = await fetch('/appointments/chatbot/book/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                },
+                body: JSON.stringify({
+                    doctor_id: slot.doctor_id || doctorId,
+                    appointment_date: slot.date,
+                    appointment_time: slot.time,
+                    reason: reasonValue
+                })
+            });
+            const data = await response.json();
+            if (!response.ok || data.status !== 'success') {
+                addMessage(data.message || 'Unable to book right now. Please try again.', 'bot');
+                step = 'confirmBooking';
+                renderStep();
+                return;
+            }
+            addMessage('Appointment booked! Redirecting you to My Appointments...', 'bot');
+            step = 'completed';
+            renderStep();
+            setTimeout(function() {
+                window.location.href = data.redirect_url || '/appointments/my-appointments/';
+            }, 1200);
+        } catch (error) {
+            addMessage('Network issue while booking. Please try again.', 'bot');
+            step = 'confirmBooking';
+            renderStep();
+        }
+    }
+    function addMessage(text, sender) {
+        const bubble = document.createElement('div');
+        bubble.className = 'chatbot-message ' + sender;
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    function setQuickReplies(options) {
+        quick.innerHTML = '';
+        options.forEach(function(option) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'chatbot-option';
+            button.textContent = option.label;
+            button.addEventListener('click', function() {
+                handleSelection(option.value, option.label);
+            });
+            quick.appendChild(button);
+        });
+    }
+    function focusField(field) {
+        if (!field) {
+            return;
+        }
+        if (field.classList) {
+            field.classList.add('chatbot-highlight');
+            setTimeout(function() {
+                field.classList.remove('chatbot-highlight');
+            }, 1600);
+        }
+        if (field.focus) {
+            field.focus();
+        }
+    }
+    async function handleSelection(value, label) {
+        addMessage(label, 'user');
+        quick.innerHTML = '';
+        if (step === 'welcome') {
+            if (value === 'book') {
+                setTimeout(function() {
+                    addMessage('Great! What kind of visit are you planning today?', 'bot');
+                    step = 'visitType';
+                    renderStep();
+                }, 400);
+            } else if (value === 'reschedule') {
+                setTimeout(function() {
+                    addMessage('To reschedule, open My Appointments to update your booking. I can also help you submit a new request now.', 'bot');
+                    renderStep();
+                }, 400);
+            } else {
+                setTimeout(function() {
+                    addMessage('For other questions our care desk is available at support@healthstack.com. Would you like to continue with booking?', 'bot');
+                    renderStep();
+                }, 400);
+            }
+            return;
+        }
+        if (step === 'visitType') {
+            if (reasonField) {
+                reasonField.value = label;
+            }
+            setTimeout(function() {
+                addMessage('Perfect. Do you already have a date in mind or should I recommend openings?', 'bot');
+                step = 'scheduleDate';
+                renderStep();
+            }, 400);
+            return;
+        }
+        if (step === 'scheduleDate') {
+            if (value === 'show') {
+                addMessage('Let me check available times with Dr. ' + doctorName + '.', 'bot');
+                const response = await fetchSlots('show available slots');
+                renderSlotsResponse(response);
+            } else {
+                focusField(dateField);
+                setTimeout(function() {
+                    addMessage('Great. After you pick the date, choose the time that suits you.', 'bot');
+                    step = 'scheduleTime';
+                    renderStep();
+                }, 400);
+            }
+            return;
+        }
+        if (step === 'slotList') {
+            if (value && value.startsWith('pick-')) {
+                const index = parseInt(value.split('-')[1], 10) - 1;
+                const choice = currentSlots[index];
+                if (!choice) {
+                    addMessage('Please choose a listed option.', 'bot');
+                    renderStep();
+                    return;
+                }
+                selectedSlot = choice;
+                if (dateField && timeField) {
+                    dateField.value = choice.date;
+                    timeField.value = choice.time;
+                }
+                addMessage('Great choice! Shall I book ' + choice.display_date + ' at ' + choice.display_time + '?', 'bot');
+                focusField(timeField);
+                step = 'confirmBooking';
+                renderStep();
+                return;
+            }
+            if (value === 'restart') {
+                addMessage('Sure, I will look for more times.', 'bot');
+                step = 'scheduleTime';
+                renderStep();
+                return;
+            }
+        }
+        if (step === 'scheduleTime') {
+            if (value === 'morning' || value === 'afternoon' || value === 'evening') {
+                addMessage('Checking ' + value + ' openings with Dr. ' + doctorName + '.', 'bot');
+                const response = await fetchSlots(value + ' slots');
+                renderSlotsResponse(response);
+                return;
+            }
+            focusField(timeField);
+            setTimeout(function() {
+                addMessage('Once your time is set, press Book Appointment to send the request. I will alert the doctor instantly.', 'bot');
+            }, 400);
+            step = 'wrap';
+            renderStep();
+            return;
+        }
+        if (step === 'scheduleTime') {
+            if (value === 'morning' || value === 'afternoon' || value === 'evening') {
+                addMessage('Checking ' + value + ' openings with Dr. ' + doctorName + '.', 'bot');
+                const response = await fetchSlots(value + ' slots');
+                renderSlotsResponse(response);
+                return;
+            }
+            focusField(timeField);
+            setTimeout(function() {
+                addMessage('Once your time is set, press Book Appointment to send the request. I will alert the doctor instantly.', 'bot');
+            }, 400);
+            step = 'wrap';
+            renderStep();
+            return;
+        }
+        if (step === 'confirmBooking') {
+            if (value === 'book-now') {
+                await attemptBooking(selectedSlot);
+                return;
+            }
+            if (value === 'change-time') {
+                addMessage('Okay, let me show you other times.', 'bot');
+                step = 'scheduleTime';
+                renderStep();
+                return;
+            }
+            step = 'welcome';
+            setTimeout(function() {
+                addMessage('Restarting your booking flow. How can I assist today?', 'bot');
+                renderStep();
+            }, 400);
+            return;
+        }
+        if (step === 'wrap') {
+            if (value === 'confirm') {
+                setTimeout(function() {
+                    addMessage('Submit the form and watch for confirmation through notifications and email.', 'bot');
+                    renderStep();
+                }, 400);
+            } else if (value === 'support') {
+                setTimeout(function() {
+                    addMessage('Need help from a person? Reach us at support@healthstack.com or via in-app messages.', 'bot');
+                    renderStep();
+                }, 400);
+            } else {
+                step = 'welcome';
+                setTimeout(function() {
+                    addMessage('Restarting your booking flow. How can I assist today?', 'bot');
+                    renderStep();
+                }, 400);
+            }
+        }
+    }
+    function renderStep() {
+        if (step === 'welcome') {
+            setQuickReplies([
+                { label: 'Book an appointment', value: 'book' },
+                { label: 'Reschedule a visit', value: 'reschedule' },
+                { label: 'Something else', value: 'other' }
+            ]);
+            return;
+        }
+        if (step === 'visitType') {
+            setQuickReplies([
+                { label: 'Medical Check-up', value: 'checkup' },
+                { label: 'Consultation', value: 'consultation' },
+                { label: 'Follow-up', value: 'followup' },
+                { label: 'Other', value: 'other' }
+            ]);
+            return;
+        }
+        if (step === 'scheduleDate') {
+            setQuickReplies([
+                { label: 'Show available slots', value: 'show' },
+                { label: 'I already have a date', value: 'date' }
+            ]);
+            return;
+        }
+        if (step === 'scheduleTime') {
+            setQuickReplies([
+                { label: 'Morning slots', value: 'morning' },
+                { label: 'Afternoon slots', value: 'afternoon' },
+                { label: 'Evening slots', value: 'evening' },
+                { label: 'I will choose manually', value: 'manual' }
+            ]);
+            return;
+        }
+        if (step === 'wrap') {
+            setQuickReplies([
+                { label: 'How do I confirm?', value: 'confirm' },
+                { label: 'Talk to support', value: 'support' },
+                { label: 'Start over', value: 'restart' }
+            ]);
+            return;
+        }
+        if (step === 'slotList') {
+            const options = currentSlots.map(function(slot, index) {
+                return {
+                    label: (index + 1) + '. ' + slot.display_time,
+                    value: 'pick-' + (index + 1)
+                };
+            });
+            options.push({ label: 'More options', value: 'restart' });
+            setQuickReplies(options);
+            return;
+        }
+        if (step === 'confirmBooking') {
+            setQuickReplies([
+                { label: 'Yes, book it', value: 'book-now' },
+                { label: 'See other times', value: 'change-time' },
+                { label: 'Start over', value: 'restart' }
+            ]);
+            return;
+        }
+    }
+    async function renderSlotsResponse(response) {
+        if (!response) {
+            addMessage('Something went wrong while fetching slots. Please try again.', 'bot');
+            return;
+        }
+        if (response.status === 'success' && Array.isArray(response.slots) && response.slots.length > 0) {
+            currentSlots = response.slots;
+            currentSlots.forEach(function(slot, index) {
+                addMessage((index + 1) + '. ' + slot.display_date + ' at ' + slot.display_time + ' • waiting for confirmation', 'bot');
+            });
+            addMessage('Reply with a number to pick one, or ask for more options.', 'bot');
+            step = 'slotList';
+            renderStep();
+        } else {
+            currentSlots = [];
+            addMessage(response.message || 'No slots available right now. Please try again soon.', 'bot');
+            renderStep();
+        }
+    }
+    async function handleManualInput() {
+        const text = input.value.trim();
+        if (!text) {
+            return;
+        }
+        addMessage(text, 'user');
+        input.value = '';
+        quick.innerHTML = '';
+        const message = text.toLowerCase();
+        if (message.includes('restart')) {
+            step = 'welcome';
+            setTimeout(function() {
+                addMessage('No problem, starting again.', 'bot');
+                renderStep();
+            }, 300);
+            return;
+        }
+        if (message.includes('show') || message.includes('slot') || message.includes('available')) {
+            addMessage('Gathering open times now.', 'bot');
+            const response = await fetchSlots(text);
+            renderSlotsResponse(response);
+            return;
+        }
+        if (message.includes('date')) {
+            focusField(dateField);
+            setTimeout(function() {
+                addMessage('Choose the best date using the calendar on the left.', 'bot');
+                renderStep();
+            }, 300);
+            return;
+        }
+        if (message.includes('time')) {
+            focusField(timeField);
+            setTimeout(function() {
+                addMessage('Pick the time that works for you and I will share it with Dr. ' + doctorName + '.', 'bot');
+                renderStep();
+            }, 300);
+            return;
+        }
+        if (message.includes('confirm')) {
+            if (selectedSlot) {
+                await attemptBooking(selectedSlot);
+                return;
+            }
+            setTimeout(function() {
+                addMessage('Press Book Appointment and we will confirm as soon as the doctor responds.', 'bot');
+                renderStep();
+            }, 300);
+            return;
+        }
+        if (message.includes('support')) {
+            setTimeout(function() {
+                addMessage('Our team is on standby at support@healthstack.com or via notifications.', 'bot');
+                renderStep();
+            }, 300);
+            return;
+        }
+        if (step === 'slotList' && currentSlots.length) {
+            const numeric = parseInt(message.replace(/[^0-9]/g, ''), 10);
+            if (!isNaN(numeric) && numeric >= 1 && numeric <= currentSlots.length) {
+                const choice = currentSlots[numeric - 1];
+                if (choice && dateField && timeField) {
+                    selectedSlot = choice;
+                    dateField.value = choice.date;
+                    timeField.value = choice.time;
+                    focusField(timeField);
+                    addMessage('Locked in option ' + numeric + '. Want me to book it for you?', 'bot');
+                    step = 'confirmBooking';
+                    renderStep();
+                    return;
+                }
+            }
+        }
+        if (step === 'visitType' && reasonField) {
+            reasonField.value = text;
+        }
+        setTimeout(function() {
+            addMessage('Ask me about available days, best times, or next steps any time.', 'bot');
+            renderStep();
+        }, 300);
+    }
+    send.addEventListener('click', handleManualInput);
+    input.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            handleManualInput();
+        }
+    });
+    addMessage('Hi, I am AppointBot. I will guide you through booking with Dr. ' + doctorName + '. Ask me for available times anytime.', 'bot');
+    renderStep();
+});
+</script>
 {% endblock %}

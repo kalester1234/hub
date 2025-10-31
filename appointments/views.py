@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 from datetime import datetime, timedelta, time
 from django.contrib.auth import get_user_model
 import json
@@ -558,17 +559,34 @@ def chatbot_suggest_slot(request):
     today = timezone.localdate()
     preferred_date = _parse_preferred_date(data, query, today)
     start_date = preferred_date or today
+    doctor_id = data.get('doctor_id')
+    try:
+        doctor_id = int(doctor_id) if doctor_id else None
+    except (TypeError, ValueError):
+        doctor_id = None
     profiles = DoctorProfile.objects.filter(is_approved=True).select_related('user')
+    if doctor_id:
+        profiles = profiles.filter(user_id=doctor_id)
     if specialization and specialization != 'any':
         profiles = profiles.filter(specialization=specialization)
+    doctor_profile = None
+    if doctor_id:
+        doctor_profile = profiles.first()
+        if not doctor_profile:
+            message = "This doctor has no availability right now. Please try another day."
+            return JsonResponse({'status': 'empty', 'message': message, 'slots': []})
     specialization_map = dict(DoctorProfile.SPECIALIZATION_CHOICES)
-    if not profiles.exists():
+    if not doctor_id and not profiles.exists():
         message = "No doctors are available right now. Please try again soon."
         return JsonResponse({'status': 'empty', 'message': message, 'slots': []})
     available_slots = _collect_available_slots(profiles, start_date, today)
     if not available_slots:
-        label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
-        message = f"No open slots found for {label.lower()} in the next two weeks. Please try a different specialty or time."
+        if doctor_profile:
+            doctor_label = doctor_profile.user.get_full_name() or doctor_profile.user.username
+            message = f"No open slots found for {doctor_label} in the next two weeks. Please try a different date."
+        else:
+            label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
+            message = f"No open slots found for {label.lower()} in the next two weeks. Please try a different specialty or time."
         return JsonResponse({'status': 'empty', 'message': message, 'slots': []})
     available_slots.sort(key=lambda item: (item['date'], item['time']))
     top_slots = available_slots[:3]
@@ -589,10 +607,75 @@ def chatbot_suggest_slot(request):
             'location': profile.hospital_name or 'Clinic visit',
             'fee': str(profile.consultation_fee),
         })
-    label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
-    if preferred_date:
-        date_phrase = preferred_date.strftime('%b %d')
-        message = f"Here are {label.lower()} available around {date_phrase}."
+    if doctor_profile:
+        doctor_label = doctor_profile.user.get_full_name() or doctor_profile.user.username
+        if preferred_date:
+            date_phrase = preferred_date.strftime('%b %d')
+            message = f"Here are {doctor_label}'s available times around {date_phrase}."
+        else:
+            message = f"Here are the next available times with {doctor_label}."
     else:
-        message = f"Here are the next available {label.lower()} slots."
+        label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
+        if preferred_date:
+            date_phrase = preferred_date.strftime('%b %d')
+            message = f"Here are {label.lower()} available around {date_phrase}."
+        else:
+            message = f"Here are the next available {label.lower()} slots."
     return JsonResponse({'status': 'success', 'message': message, 'slots': slots_response})
+
+
+@login_required(login_url='login')
+@require_POST
+def chatbot_book_appointment(request):
+    if request.user.role != 'patient':
+        return JsonResponse({'status': 'error', 'message': 'Only patients can book appointments.'}, status=403)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid request data.'}, status=400)
+    doctor_id = data.get('doctor_id')
+    try:
+        doctor_id = int(doctor_id)
+    except (TypeError, ValueError):
+        doctor_id = None
+    if not doctor_id:
+        return JsonResponse({'status': 'error', 'message': 'Doctor information is missing.'}, status=400)
+    doctor = get_object_or_404(CustomUser, id=doctor_id, role='doctor')
+    booking_data = {
+        'appointment_date': data.get('appointment_date'),
+        'appointment_time': data.get('appointment_time'),
+        'reason': data.get('reason', '').strip()
+    }
+    form = AppointmentBookingForm(booking_data)
+    if not form.is_valid():
+        error_list = []
+        for field, errors in form.errors.items():
+            for error in errors:
+                error_list.append(f"{field.replace('_', ' ').title()}: {error}")
+        message = ' '.join(error_list) if error_list else 'Please check the details provided.'
+        return JsonResponse({'status': 'error', 'message': message}, status=400)
+    appointment = form.save(commit=False)
+    appointment.doctor = doctor
+    appointment.patient = request.user
+    start_time = appointment.appointment_time
+    end_datetime = datetime.combine(datetime.today(), start_time) + timedelta(minutes=30)
+    appointment.end_time = end_datetime.time()
+    existing = Appointment.objects.filter(
+        doctor=doctor,
+        appointment_date=appointment.appointment_date,
+        appointment_time=appointment.appointment_time,
+        status__in=['confirmed', 'pending']
+    ).exists()
+    if existing:
+        return JsonResponse({'status': 'error', 'message': 'This time slot is already booked.'}, status=409)
+    appointment.save()
+    Notification.objects.create(
+        user=doctor,
+        notification_type='appointment_request',
+        title='New Appointment Request',
+        description=f'{request.user.get_full_name()} has requested an appointment',
+        related_appointment=appointment
+    )
+    messages.success(request, 'Appointment booked successfully! Awaiting confirmation.')
+    redirect_url = reverse('my_appointments')
+    return JsonResponse({'status': 'success', 'message': 'Appointment booked successfully!', 'redirect_url': redirect_url})

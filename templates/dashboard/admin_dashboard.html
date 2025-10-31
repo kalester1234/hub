@@ -14,12 +14,11 @@
         </div>
         <nav>
             <ul>
-                <li class="active"><i class="bi bi-grid"></i> Dashboard</li>
-                <li><i class="bi bi-hospital"></i> Hospitals</li>
-                <li><i class="bi bi-person-badge"></i> Doctors</li>
-                <li><i class="bi bi-person-lines-fill"></i> Lab Worker</li>
-                <li><i class="bi bi-capsule-pill"></i> Pharmacist</li>
-                <li><i class="bi bi-person"></i> Profile</li>
+                <li class="active"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-grid"></i> Dashboard</a></li>
+                <li><a href="{% url 'my_appointments' %}"><i class="bi bi-calendar2-event"></i> Appointments</a></li>
+                <li><a href="{% url 'browse_doctors' %}"><i class="bi bi-person-badge"></i> Doctors</a></li>
+                <li><a href="{% url 'notifications' %}"><i class="bi bi-bell"></i> Notifications</a></li>
+                <li><a href="{% url 'profile' %}"><i class="bi bi-person"></i> Profile</a></li>
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -28,66 +27,117 @@
     </aside>
     <section class="admin-content">
         <header class="admin-header">
-            <div>
-                <h1>Welcome Admin!</h1>
-                <p>Dashboard</p>
+            <div class="admin-greeting">
+                <span class="admin-role">{{ user_summary.role }}</span>
+                <h1>Welcome {{ user_summary.name }}!</h1>
+                <p>{{ user_summary.status_text }}</p>
             </div>
             <div class="admin-actions">
-                <div class="status-pill">User logged in</div>
-                <div class="avatar"><i class="bi bi-person-fill"></i></div>
+                <div class="admin-metrics">
+                    <div class="status-pill"><i class="bi bi-calendar-check"></i> {{ appointment_overview.total }} total appointments</div>
+                    <div class="status-pill secondary"><i class="bi bi-people"></i> {{ total_users }} users</div>
+                </div>
+                <div class="admin-user">
+                    <div class="admin-bell">
+                        <i class="bi bi-bell"></i>
+                        {% if user_summary.notifications %}
+                        <span class="badge">{{ user_summary.notifications }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="admin-avatar">{{ user_summary.initials }}</div>
+                </div>
             </div>
         </header>
+
+        <div class="overview-grid">
+            {% for item in overview_cards %}
+            <div class="overview-card">
+                <div class="overview-icon" style="background-color: {{ item.accent }}1A; color: {{ item.accent }};">
+                    <i class="bi {{ item.icon }}"></i>
+                </div>
+                <div>
+                    <span class="overview-label">{{ item.label }}</span>
+                    <h4>{{ item.value }}</h4>
+                    <small>{{ item.description }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
         <div class="stats-grid">
             {% for card in stat_cards %}
             <div class="stat-card">
-                <div class="stat-icon" style="background-color: {{ card.accent }}15; color: {{ card.accent }};">
+                <div class="stat-icon" style="background-color: {{ card.accent }}14; color: {{ card.accent }};">
                     <i class="bi {{ card.icon }}"></i>
                 </div>
                 <div class="stat-body">
                     <span class="stat-label">{{ card.label }}</span>
                     <h3>{{ card.count }}</h3>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: {{ card.progress }}%; background-color: {{ card.accent }};"></div>
+                    {% if card.hint %}
+                    <span class="stat-hint">{{ card.hint }}</span>
+                    {% endif %}
+                    <div class="progress-wrapper">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {{ card.progress }}%; background-color: {{ card.accent }};"></div>
+                        </div>
+                        <span class="progress-value">{{ card.progress }}%</span>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+
         <div class="dashboard-main">
             <div class="hospital-card">
                 <div class="card-header">
                     <h2>Hospital List</h2>
+                    <span class="card-subtitle">{{ total_hospitals }} connected {% if total_hospitals == 1 %}hospital{% else %}hospitals{% endif %}</span>
                 </div>
                 <div class="hospital-table">
                     <div class="table-head">
-                        <span>Hospital Name</span>
-                        <span>Address</span>
-                        <span>Email</span>
+                        {% for header in hospital_headers %}
+                        <span>{{ header }}</span>
+                        {% endfor %}
                     </div>
-                    {% for hospital in hospital_list %}
-                    <div class="table-row">
-                        <span>{{ hospital.name }}</span>
-                        <span>{{ hospital.address }}</span>
-                        <span>{{ hospital.email }}</span>
-                    </div>
-                    {% empty %}
-                    <div class="table-empty">No hospitals available</div>
-                    {% endfor %}
+                    {% if hospital_list %}
+                        {% for hospital in hospital_list %}
+                        <div class="table-row">
+                            <span class="table-primary">{{ hospital.name }}</span>
+                            <span>{{ hospital.count }}</span>
+                            <span>{{ hospital.contact }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="table-empty">No hospitals connected yet.</div>
+                    {% endif %}
                 </div>
             </div>
             <div class="chart-card">
                 <div class="card-header">
-                    <h2>Appointment Bar Chart</h2>
+                    <h2>Appointment Status</h2>
+                    <span class="card-subtitle">{{ appointment_overview.completed }} completed ({{ appointment_overview.completed_percent }}%)</span>
                 </div>
+                {% if has_chart_data %}
                 <div class="bar-chart">
                     {% for item in chart_data %}
                     <div class="bar">
-                        <div class="bar-fill" style="height: {{ item.height }}%;"></div>
+                        <div class="bar-fill" style="height: {{ item.height }}%; background: {{ item.color }};"></div>
                         <span class="bar-label">{{ item.count }}</span>
                         <span class="bar-caption">{{ item.label }}</span>
                     </div>
                     {% endfor %}
                 </div>
+                <div class="chart-legend">
+                    {% for item in chart_data %}
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: {{ item.color }};"></span>
+                        <span>{{ item.label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="chart-empty">No appointment activity yet.</div>
+                {% endif %}
             </div>
         </div>
     </section>
@@ -102,7 +152,7 @@
     background-color: #F4F6F8;
 }
 .admin-sidebar {
-    background: linear-gradient(180deg, #7CC1AE 0%, #7CC1AE 100%);
+    background: linear-gradient(180deg, #7CC1AE 0%, #0D8C9B 100%);
     color: #0E4934;
     padding: 32px 24px;
     display: flex;
@@ -118,7 +168,7 @@
     width: 48px;
     height: 48px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.3);
     display: grid;
     place-items: center;
     font-size: 24px;
@@ -132,35 +182,51 @@
 .brand p {
     margin: 0;
     font-size: 0.85rem;
+    opacity: 0.8;
 }
 .admin-sidebar nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 12px;
+    gap: 10px;
 }
 .admin-sidebar nav li {
+    display: block;
+}
+.admin-sidebar nav a {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
     border-radius: 12px;
     font-weight: 500;
-    color: rgba(14, 73, 52, 0.75);
+    color: rgba(14, 73, 52, 0.8);
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
 }
-.admin-sidebar nav li i {
-    font-size: 1.1rem;
-}
-.admin-sidebar nav li.active {
+.admin-sidebar nav li.active a {
     background: #0E4934;
     color: #FFFFFF;
+}
+.admin-sidebar nav a:hover {
+    background: rgba(14, 73, 52, 0.18);
+    color: #0E4934;
 }
 .sidebar-footer {
     margin-top: auto;
 }
+.sidebar-footer .btn {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #0E4934;
+    font-weight: 600;
+}
+.sidebar-footer .btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+}
 .admin-content {
-    padding: 32px 40px;
+    padding: 36px 40px;
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -169,41 +235,141 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
 }
-.admin-header h1 {
-    font-size: 2rem;
+.admin-greeting {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.admin-role {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(11, 165, 122, 0.15);
+    color: #0BA57A;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.admin-greeting h1 {
+    margin: 0;
+    font-size: 2.1rem;
     font-weight: 700;
     color: #1B3A4B;
 }
-.admin-header p {
+.admin-greeting p {
     margin: 0;
-    color: #718096;
+    color: #607B8A;
+    font-size: 0.95rem;
 }
 .admin-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.admin-metrics {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 16px;
-    background: rgba(12, 211, 162, 0.12);
+    border-radius: 999px;
+    background: rgba(11, 165, 122, 0.12);
     color: #0BA57A;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.status-pill.secondary {
+    background: rgba(76, 110, 245, 0.12);
+    color: #4C6EF5;
+}
+.admin-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.admin-bell {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    background: #EEF4FB;
+    display: grid;
+    place-items: center;
+    color: #1B3A4B;
+    font-size: 1.1rem;
+}
+.admin-bell .badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 0.7rem;
+    padding: 2px 6px;
     border-radius: 999px;
     font-weight: 600;
 }
-.avatar {
+.admin-avatar {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: #FDE68A;
+    background: #12344D;
+    color: #FFFFFF;
     display: grid;
     place-items: center;
-    font-size: 1.5rem;
-    color: #78350F;
+    font-weight: 600;
+}
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+.overview-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 18px 35px rgba(62, 78, 107, 0.08);
+}
+.overview-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 1.25rem;
+}
+.overview-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+.overview-card h4 {
+    margin: 4px 0 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1B3A4B;
+}
+.overview-card small {
+    color: #94A3B8;
 }
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
 }
 .stat-card {
@@ -212,7 +378,7 @@
     padding: 20px;
     display: flex;
     gap: 14px;
-    align-items: center;
+    align-items: flex-start;
     box-shadow: 0 18px 35px rgba(62, 78, 107, 0.08);
 }
 .stat-icon {
@@ -223,24 +389,49 @@
     place-items: center;
     font-size: 1.4rem;
 }
+.stat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
 .stat-label {
     display: block;
     color: #718096;
     font-size: 0.9rem;
 }
 .stat-card h3 {
-    margin: 4px 0;
+    margin: 0;
     font-size: 1.75rem;
     font-weight: 700;
     color: #1B3A4B;
 }
+.stat-hint {
+    color: #94A3B8;
+    font-size: 0.85rem;
+}
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 .progress {
+    flex: 1;
     height: 6px;
-    background: rgba(113, 128, 150, 0.15);
+    background: rgba(113, 128, 150, 0.18);
     border-radius: 999px;
 }
 .progress-bar {
+    height: 100%;
     border-radius: 999px;
+    transition: width 0.3s ease;
+}
+.progress-value {
+    font-weight: 600;
+    color: #4A5568;
+    font-size: 0.85rem;
+    min-width: 42px;
+    text-align: right;
 }
 .dashboard-main {
     display: grid;
@@ -257,11 +448,21 @@
     flex-direction: column;
     gap: 16px;
 }
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
 .card-header h2 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
     color: #1B3A4B;
+}
+.card-subtitle {
+    font-size: 0.85rem;
+    color: #94A3B8;
 }
 .hospital-table {
     display: grid;
@@ -270,7 +471,7 @@
 .table-head,
 .table-row {
     display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr;
+    grid-template-columns: 1.3fr 0.6fr 1fr;
     gap: 12px;
     align-items: center;
 }
@@ -286,6 +487,10 @@
     border-radius: 12px;
     color: #1B3A4B;
     font-weight: 500;
+}
+.table-primary {
+    font-weight: 600;
+    color: #1B3A4B;
 }
 .table-empty {
     text-align: center;
@@ -313,7 +518,6 @@
 .bar-fill {
     width: 100%;
     border-radius: 12px 12px 0 0;
-    background: linear-gradient(180deg, #0BA57A 0%, #1B3A4B 100%);
     transition: height 0.4s ease;
 }
 .bar-label {
@@ -323,37 +527,70 @@
 .bar-caption {
     font-size: 0.85rem;
     color: #718096;
-    text-transform: capitalize;
+    text-align: center;
+}
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4A5568;
+    font-size: 0.85rem;
+}
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.chart-empty {
+    text-align: center;
+    padding: 40px 20px;
+    background: #F8FAFC;
+    border-radius: 12px;
+    color: #94A3B8;
+    font-weight: 500;
+}
+@media (max-width: 1200px) {
+    .dashboard-main {
+        grid-template-columns: 1fr;
+    }
 }
 @media (max-width: 992px) {
     .admin-dashboard {
         grid-template-columns: 1fr;
     }
     .admin-sidebar {
-        flex-direction: row;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 16px;
+        flex-direction: column;
+        border-radius: 0 0 24px 24px;
     }
-    .admin-sidebar nav ul {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        width: 100%;
+    .admin-content {
+        padding: 28px 24px;
     }
-    .dashboard-main {
-        grid-template-columns: 1fr;
+    .hospital-table {
+        overflow-x: auto;
+    }
+    .table-head,
+    .table-row {
+        min-width: 520px;
     }
 }
 @media (max-width: 768px) {
-    .admin-content {
-        padding: 24px;
+    .admin-actions {
+        justify-content: flex-start;
     }
-    .admin-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+    .admin-metrics {
+        width: 100%;
+    }
+    .overview-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
     .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 }
 </style>

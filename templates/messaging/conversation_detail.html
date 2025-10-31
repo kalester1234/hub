@@ -3,84 +3,443 @@
 {% block title %}Chat - Medical Connect{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row" style="height: calc(100vh - 200px);">
-        <div class="col-lg-8 mx-auto d-flex flex-column">
-            <!-- Header -->
-            <div class="card mb-3">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 style="color: #1a3a4a; margin: 0;">
-                            {% if user == conversation.doctor %}
-                                {{ conversation.patient.get_full_name }}
-                            {% else %}
-                                Dr. {{ conversation.doctor.get_full_name }}
-                            {% endif %}
-                        </h5>
-                        <small style="color: #666;">
-                            {% if user == conversation.doctor %}
-                                Patient
-                            {% else %}
-                                {{ conversation.doctor.doctor_profile.get_specialization_display }}
-                            {% endif %}
-                        </small>
-                    </div>
-                    <a href="{% url 'conversations_list' %}" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-arrow-left"></i> Back
-                    </a>
+<div class="chat-shell">
+    <div class="chat-panel">
+        <div class="chat-header">
+            <div class="chat-partner">
+                <div class="chat-partner-avatar">{{ partner_initials }}</div>
+                <div>
+                    <h5>{{ partner_name }}</h5>
+                    <span>{{ partner_meta }}</span>
                 </div>
             </div>
-
-            <!-- Messages -->
-            <div class="card" style="flex: 1; overflow-y: auto; margin-bottom: 15px;">
-                <div class="card-body" id="messages-container">
-                    {% if messages %}
-                        {% for message in messages %}
-                        <div style="margin-bottom: 15px; display: flex; {% if message.sender == user %}justify-content: flex-end;{% else %}justify-content: flex-start;{% endif %}">
-                            <div style="{% if message.sender == user %}background-color: #0A74DA; color: white;{% else %}background-color: #F4F6F8; color: #003366;{% endif %} padding: 10px 15px; border-radius: 10px; max-width: 70%;">
-                                <p style="margin: 0; font-size: 0.9rem;">{{ message.content }}</p>
-                                {% if message.file %}
-                                    <div style="margin-top: 10px;">
-                                        <a href="{{ message.file.url }}" target="_blank" class="btn btn-sm" style="background-color: {% if message.sender == user %}rgba(255,255,255,0.2);{% else %}#17a2b8;{% endif %} color: {% if message.sender == user %}white;{% else %}white;{% endif %}">
-                                            <i class="bi bi-download"></i> {{ message.file.name|truncatechars:20 }}
-                                        </a>
-                                    </div>
-                                {% endif %}
-                                <small style="opacity: 0.7;">{{ message.created_at|time:"H:i" }}</small>
-                            </div>
-                        </div>
+            <a href="{% url 'conversations_list' %}" class="chat-back">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+        <div class="chat-body" id="messages-container">
+            <div class="assistant-surface">
+                <div class="assistant-icon">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div class="assistant-content">
+                    <h6>AppointBot</h6>
+                    <p>{{ assistant_intro }}</p>
+                    <div class="assistant-topics">
+                        {% for topic in assistant_topics %}
+                        <button type="button" class="assistant-chip" data-message="{{ topic.message }}">{{ topic.label }}</button>
                         {% endfor %}
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-chat-dots" style="font-size: 2rem; color: #17a2b8; opacity: 0.5;"></i>
-                            <p style="color: #999; margin-top: 10px;">No messages yet. Start the conversation!</p>
+                    </div>
+                    <div class="assistant-suggestions">
+                        {% if appointment_suggestions %}
+                        <span>Here are the next available times:</span>
+                        <div class="assistant-suggestion-grid">
+                            {% for slot in appointment_suggestions %}
+                            <button type="button" class="suggestion-button" data-slot="true" data-message="{{ slot.message }}">{{ slot.label }}</button>
+                            {% endfor %}
                         </div>
+                        {% else %}
+                        <span>No open slots this week. Try requesting another time.</span>
+                        {% endif %}
+                    </div>
+                    {% if booking_url %}
+                    <a href="{{ booking_url }}" class="assistant-booking">Book appointment</a>
                     {% endif %}
                 </div>
             </div>
-
-            <!-- Message Form -->
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            {{ form.content }}
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send"></i> Send
-                            </button>
+            <div class="chat-thread">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="message-row {% if message.sender == user %}is-self{% else %}is-other{% endif %}">
+                        <div class="message-bubble">
+                            <div class="message-text">{{ message.content }}</div>
+                            {% if message.file %}
+                            <a href="{{ message.file.url }}" target="_blank" class="message-attachment">
+                                <i class="bi bi-paperclip"></i> {{ message.file.name|truncatechars:24 }}
+                            </a>
+                            {% endif %}
+                            <span class="message-time">{{ message.created_at|time:"H:i" }}</span>
                         </div>
-                        <small style="color: #666;">Attach files if needed: {{ form.file }}</small>
-                    </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="message-empty">
+                    <i class="bi bi-chat-dots"></i>
+                    <p>No messages yet. Start the conversation.</p>
                 </div>
+                {% endif %}
             </div>
+        </div>
+        <div class="chat-footer">
+            <div class="quick-replies">
+                {% for action in quick_replies %}
+                <button type="button" class="quick-reply" data-message="{{ action.message }}">{{ action.label }}</button>
+                {% endfor %}
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="chat-form" id="chat-form">
+                {% csrf_token %}
+                <div class="chat-input">
+                    {{ form.content }}
+                    <button type="submit" class="chat-submit">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+                <div class="chat-attachment-field">
+                    {{ form.file }}
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_css %}
+<style>
+:root {
+    --chat-teal: #00897B;
+    --chat-teal-dark: #00695C;
+    --chat-teal-light: #E0F2F1;
+    --chat-surface: #FFFFFF;
+    --chat-muted: #4B6164;
+    --chat-shell: #F3F6F6;
+}
+.chat-shell {
+    padding: 40px 16px;
+    background: var(--chat-shell);
+}
+.chat-panel {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--chat-surface);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.chat-header {
+    background: var(--chat-teal);
+    color: #FFFFFF;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.chat-partner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.chat-partner-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.22);
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+.chat-partner h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+.chat-partner span {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+.chat-back {
+    color: #FFFFFF;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.chat-body {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: #F7FBFB;
+}
+.assistant-surface {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    background: var(--chat-surface);
+    border-radius: 18px;
+    padding: 20px 24px;
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
+}
+.assistant-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(0, 137, 123, 0.12);
+    display: grid;
+    place-items: center;
+    color: var(--chat-teal);
+    font-size: 1.3rem;
+}
+.assistant-content h6 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--chat-teal-dark);
+}
+.assistant-content p {
+    margin: 6px 0 16px;
+    color: var(--chat-muted);
+    font-size: 0.95rem;
+}
+.assistant-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.assistant-chip {
+    border: none;
+    background: rgba(0, 137, 123, 0.12);
+    color: var(--chat-teal-dark);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.assistant-chip:hover {
+    background: rgba(0, 137, 123, 0.2);
+}
+.assistant-suggestions span {
+    display: block;
+    color: var(--chat-teal-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.assistant-suggestion-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.suggestion-button {
+    border: none;
+    background: var(--chat-teal);
+    color: #FFFFFF;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.suggestion-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 137, 123, 0.25);
+}
+.assistant-booking {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 18px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--chat-teal);
+    color: var(--chat-teal);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.chat-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.message-row {
+    display: flex;
+}
+.message-row.is-self {
+    justify-content: flex-end;
+}
+.message-row.is-other {
+    justify-content: flex-start;
+}
+.message-bubble {
+    max-width: 70%;
+    background: var(--chat-teal);
+    color: #FFFFFF;
+    border-radius: 18px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 12px 24px rgba(0, 137, 123, 0.2);
+}
+.message-row.is-other .message-bubble {
+    background: var(--chat-teal-light);
+    color: var(--chat-teal-dark);
+    border: 1px solid rgba(0, 137, 123, 0.18);
+    box-shadow: none;
+}
+.message-bubble.waiting {
+    font-style: italic;
+    opacity: 0.8;
+}
+.message-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+}
+.message-attachment {
+    font-size: 0.85rem;
+    color: var(--chat-teal-dark);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.message-row.is-self .message-attachment {
+    color: rgba(255, 255, 255, 0.86);
+}
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+.message-empty {
+    display: grid;
+    place-items: center;
+    gap: 12px;
+    padding: 80px 0;
+    color: var(--chat-muted);
+    text-align: center;
+}
+.message-empty i {
+    font-size: 2.2rem;
+}
+.chat-footer {
+    border-top: 1px solid rgba(0, 137, 123, 0.12);
+    padding: 24px 32px;
+    background: var(--chat-surface);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.quick-reply {
+    border: none;
+    background: rgba(0, 137, 123, 0.12);
+    color: var(--chat-teal-dark);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.quick-reply:hover {
+    background: rgba(0, 137, 123, 0.22);
+}
+.chat-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.chat-input {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+.chat-input textarea.form-control {
+    border-radius: 16px;
+    border: 1px solid rgba(0, 137, 123, 0.22);
+    padding: 14px;
+    resize: none;
+    min-height: 88px;
+    box-shadow: none;
+}
+.chat-submit {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    border: none;
+    background: var(--chat-teal);
+    color: #FFFFFF;
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.chat-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 137, 123, 0.25);
+}
+.chat-submit.is-loading {
+    opacity: 0.6;
+    cursor: wait;
+}
+.chat-attachment-field input.form-control {
+    border-radius: 12px;
+    border: 1px dashed rgba(0, 137, 123, 0.3);
+    padding: 10px 14px;
+}
+@media (max-width: 768px) {
+    .chat-panel {
+        border-radius: 0;
+    }
+    .chat-header {
+        padding: 20px;
+    }
+    .chat-body {
+        padding: 20px;
+    }
+    .chat-footer {
+        padding: 20px;
+    }
+    .message-bubble {
+        max-width: 85%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    // Auto-scroll to bottom
-    const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('messages-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+    const form = document.getElementById('chat-form');
+    if (form && !form.dataset.bound) {
+        form.dataset.bound = 'true';
+        form.addEventListener('submit', function () {
+            const submitButton = form.querySelector('.chat-submit');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.classList.add('is-loading');
+            }
+        });
+    }
+    const messageField = document.getElementById('id_content');
+    document.querySelectorAll('[data-message]').forEach(function (element) {
+        element.addEventListener('click', function () {
+            if (messageField) {
+                messageField.value = this.dataset.message;
+                messageField.focus();
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

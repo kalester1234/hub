@@ -167,16 +167,34 @@ def patient_dashboard(request):
     
     return render(request, 'dashboard/patient_dashboard.html', context)
 
+@login_required(login_url='login')
 def admin_dashboard(request):
     """Admin dashboard"""
+    if request.user.role != 'admin':
+        return redirect('dashboard')
     from accounts.models import CustomUser
-    
+
+    doctors_qs = CustomUser.objects.filter(role='doctor')
+    patients_qs = CustomUser.objects.filter(role='patient')
     total_users = CustomUser.objects.count()
-    doctors = CustomUser.objects.filter(role='doctor').count()
-    patients = CustomUser.objects.filter(role='patient').count()
+    total_doctors = doctors_qs.count()
+    total_patients = patients_qs.count()
+    approved_doctors = DoctorProfile.objects.filter(is_approved=True).count()
     pending_doctors = DoctorProfile.objects.filter(is_approved=False).count()
+    active_patients = patients_qs.filter(is_active=True).count()
+
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+    upcoming_appointments = Appointment.objects.filter(appointment_date__gte=today).count()
+    pending_appointments = Appointment.objects.filter(status='pending').count()
     total_appointments = Appointment.objects.count()
     completed_appointments = Appointment.objects.filter(status='completed').count()
+    completed_this_month = Appointment.objects.filter(
+        status='completed',
+        appointment_date__gte=month_start,
+        appointment_date__lte=today
+    ).count()
+
     status_counts = Appointment.objects.values('status').annotate(total=Count('id'))
     status_totals = {item['status']: item['total'] for item in status_counts}
     status_summary = [
@@ -187,77 +205,155 @@ def admin_dashboard(request):
         }
         for value, label in Appointment.STATUS_CHOICES
     ]
+    status_palette = {
+        'pending': '#F4B740',
+        'confirmed': '#4C6EF5',
+        'completed': '#0BA57A',
+        'cancelled': '#EF4444'
+    }
     chart_max = max([item['count'] for item in status_summary], default=0)
     chart_data = [
         {
             'value': item['value'],
             'label': item['label'],
             'count': item['count'],
-            'height': int((item['count'] / chart_max) * 100) if chart_max else 0
+            'height': int((item['count'] / chart_max) * 100) if chart_max else 0,
+            'color': status_palette.get(item['value'], '#1B3A4B')
         }
         for item in status_summary
     ]
-    lab_workers = CustomUser.objects.filter(role='admin').count()
-    total_hospitals = DoctorProfile.objects.exclude(hospital_name__isnull=True).exclude(hospital_name__exact='').values('hospital_name').distinct().count()
-    hospital_profiles = DoctorProfile.objects.select_related('user').exclude(hospital_name__isnull=True).exclude(hospital_name__exact='').order_by('hospital_name')
-    seen_hospitals = set()
-    hospital_list = []
+    has_chart_data = any(item['count'] for item in chart_data)
+
+    hospital_profiles = list(
+        DoctorProfile.objects.select_related('user')
+        .exclude(hospital_name__isnull=True)
+        .exclude(hospital_name__exact='')
+        .order_by('hospital_name', 'user__first_name', 'user__last_name')
+    )
+    hospital_map = {}
+    hospital_order = []
     for profile in hospital_profiles:
-        name = profile.hospital_name.strip()
-        if not name:
+        hospital_name = profile.hospital_name.strip()
+        if not hospital_name:
             continue
-        key = name.lower()
-        if key in seen_hospitals:
-            continue
-        seen_hospitals.add(key)
-        hospital_list.append({
-            'name': name,
-            'address': profile.user.bio or 'Not provided',
-            'email': profile.user.email or 'Not provided'
+        key = hospital_name.casefold()
+        if key not in hospital_map:
+            hospital_map[key] = {
+                'name': hospital_name,
+                'doctors': 0,
+                'emails': set(),
+            }
+            hospital_order.append(key)
+        entry = hospital_map[key]
+        entry['doctors'] += 1
+        if profile.user.email:
+            entry['emails'].add(profile.user.email)
+
+    hospital_list_full = []
+    for key in hospital_order:
+        entry = hospital_map[key]
+        hospital_list_full.append({
+            'name': entry['name'],
+            'count': entry['doctors'],
+            'contact': ', '.join(sorted(entry['emails'])) if entry['emails'] else 'Not provided'
         })
-        if len(hospital_list) >= 5:
-            break
-    doctor_share = int((doctors / total_users) * 100) if total_users else 0
-    patient_share = int((patients / total_users) * 100) if total_users else 0
-    appointment_completion = int((completed_appointments / total_appointments) * 100) if total_appointments else 0
-    approval_rate = int((pending_doctors / doctors) * 100) if doctors else 0
+    total_hospitals = len(hospital_list_full)
+    hospital_list = hospital_list_full[:5]
+    doctors_with_hospital = len(hospital_profiles)
+
+    def percentage(part, whole):
+        return int((part / whole) * 100) if whole else 0
+
     stat_cards = [
         {
             'label': 'Total Doctors',
-            'count': doctors,
+            'count': total_doctors,
             'icon': 'bi-people-fill',
             'accent': '#0BA57A',
-            'progress': doctor_share
+            'progress': percentage(approved_doctors, total_doctors),
+            'hint': f'{approved_doctors} approved'
         },
         {
             'label': 'Total Patients',
-            'count': patients,
+            'count': total_patients,
             'icon': 'bi-person-heart',
             'accent': '#36B37E',
-            'progress': patient_share
+            'progress': percentage(active_patients, total_patients),
+            'hint': f'{active_patients} active'
         },
         {
-            'label': 'Total Hospital',
+            'label': 'Hospitals on Platform',
             'count': total_hospitals,
             'icon': 'bi-building',
-            'accent': '#F05252',
-            'progress': min(100, total_hospitals * 10)
+            'accent': '#4C6EF5',
+            'progress': percentage(doctors_with_hospital, total_doctors),
+            'hint': 'Linked to doctor profiles'
         },
         {
-            'label': 'Total Lab Worker',
-            'count': lab_workers,
-            'icon': 'bi-flask',
+            'label': 'Pending Approvals',
+            'count': pending_doctors,
+            'icon': 'bi-person-check',
             'accent': '#F4B740',
-            'progress': approval_rate if approval_rate else 5
-        }
+            'progress': percentage(pending_doctors, total_doctors),
+            'hint': 'Awaiting review'
+        },
     ]
+
+    overview_cards = [
+        {
+            'label': 'Upcoming appointments',
+            'value': upcoming_appointments,
+            'icon': 'bi-calendar-event',
+            'accent': '#0BA57A',
+            'description': 'Scheduled from today onwards'
+        },
+        {
+            'label': 'Pending appointments',
+            'value': pending_appointments,
+            'icon': 'bi-hourglass-split',
+            'accent': '#F59E0B',
+            'description': 'Awaiting confirmation'
+        },
+        {
+            'label': 'Completed this month',
+            'value': completed_this_month,
+            'icon': 'bi-check2-circle',
+            'accent': '#4C6EF5',
+            'description': 'Month to date'
+        },
+    ]
+
+    appointment_overview = {
+        'total': total_appointments,
+        'completed': completed_appointments,
+        'completed_percent': percentage(completed_appointments, total_appointments),
+        'pending': pending_appointments,
+        'upcoming': upcoming_appointments,
+    }
+
+    user_name = request.user.get_full_name() or request.user.username
+    user_summary = {
+        'name': user_name,
+        'role': request.user.get_role_display(),
+        'status_text': f'{upcoming_appointments} upcoming appointments' if upcoming_appointments else 'No upcoming appointments scheduled',
+        'notifications': request.user.notifications.filter(is_read=False).count(),
+        'pending_doctors': pending_doctors,
+        'initials': ''.join([part[0] for part in user_name.split()[:2]]).upper()
+    }
+
     context = {
-        'total_users': total_users,
-        'completed_appointments': completed_appointments,
-        'status_summary': status_summary,
-        'chart_data': chart_data,
-        'hospital_list': hospital_list,
         'stat_cards': stat_cards,
+        'hospital_headers': ['Hospital', 'Doctors', 'Primary Contact'],
+        'hospital_list': hospital_list,
+        'total_hospitals': total_hospitals,
+        'chart_data': chart_data,
+        'status_summary': status_summary,
+        'appointment_overview': appointment_overview,
+        'overview_cards': overview_cards,
+        'user_summary': user_summary,
+        'total_users': total_users,
+        'pending_doctors': pending_doctors,
+        'has_chart_data': has_chart_data,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 
