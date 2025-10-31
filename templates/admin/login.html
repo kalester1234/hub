@@ -9,31 +9,58 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, rgba(10, 116, 218, 0.12), rgba(0, 51, 102, 0.12));
+        background: linear-gradient(135deg, rgba(0, 137, 123, 0.12), rgba(4, 90, 82, 0.12));
         padding: clamp(20px, 5vw, 40px);
+    }
+
+    body.login #container {
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        background: transparent;
+        display: flex;
+        justify-content: center;
+    }
+
+    body.login #content {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+    }
+
+    body.login #content-main {
+        padding: 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    body.login #sidebar,
+    body.login #nav-sidebar,
+    body.login #toggle-nav-sidebar,
+    body.login .toggle-nav-sidebar {
+        display: none !important;
     }
 
     .doctor-login-card {
         background: #ffffff;
         border-radius: 24px;
-        box-shadow: 0 24px 64px rgba(10, 116, 218, 0.18);
-        border: 1px solid rgba(10, 116, 218, 0.16);
+        box-shadow: 0 24px 64px rgba(0, 137, 123, 0.18);
+        border: 1px solid rgba(0, 137, 123, 0.16);
         padding: clamp(32px, 5vw, 48px);
-        width: min(480px, 100%);
+        width: min(420px, 100%);
         display: grid;
-        gap: clamp(20px, 4vw, 28px);
+        gap: clamp(24px, 4vw, 32px);
+        margin: 0 auto;
     }
 
     .doctor-login-card h1 {
         margin: 0;
-        font-size: clamp(1.8rem, 4vw, 2.1rem);
+        font-size: clamp(1.8rem, 4vw, 2.2rem);
         font-weight: 700;
-        color: #003366;
-    }
-
-    .doctor-login-card p {
-        margin: 0;
-        color: #5b6a81;
+        color: #045a52;
+        text-align: center;
     }
 
     .doctor-login-card form {
@@ -48,25 +75,31 @@
 
     .doctor-login-card label {
         font-weight: 600;
-        color: #003366;
+        color: #045a52;
         margin-bottom: 6px;
     }
 
     .doctor-login-card input[type="text"],
     .doctor-login-card input[type="password"] {
         border-radius: 14px;
-        border: 1px solid rgba(10, 116, 218, 0.22);
+        border: 1px solid rgba(0, 137, 123, 0.22);
         padding: 12px 16px;
         font-size: 1rem;
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        background: #fdfdff;
+        background: #ffffff;
+        color: #045a52;
+    }
+
+    .doctor-login-card input[type="text"]::placeholder,
+    .doctor-login-card input[type="password"]::placeholder {
+        color: rgba(4, 90, 82, 0.6);
     }
 
     .doctor-login-card input[type="text"]:focus,
     .doctor-login-card input[type="password"]:focus {
         outline: none;
-        border-color: #0a74da;
-        box-shadow: 0 0 0 3px rgba(10, 116, 218, 0.2);
+        border-color: #00897b;
+        box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.2);
     }
 
     .doctor-login-card .submit-row {
@@ -84,11 +117,19 @@
         font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
+        background: #00897b;
+        border: none;
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 16px 30px rgba(0, 137, 123, 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
-    .doctor-login-card .help {
-        color: #6b7b91;
-        font-size: 0.9rem;
+    .doctor-login-card .submit-row input[type="submit"]:hover,
+    .doctor-login-card .submit-row input[type="submit"]:focus {
+        background: #045a52;
+        transform: translateY(-1px);
+        box-shadow: 0 20px 34px rgba(0, 137, 123, 0.32);
     }
 
     .doctor-login-card .errornote {
@@ -109,17 +150,6 @@
         gap: 6px;
     }
 
-    .doctor-login-card .forgotten-password {
-        justify-self: flex-end;
-        font-weight: 600;
-        color: #0f7186;
-        text-decoration: none;
-    }
-
-    .doctor-login-card .forgotten-password:hover {
-        text-decoration: underline;
-    }
-
     @media (max-width: 600px) {
         body.login {
             padding: 16px;
@@ -138,7 +168,6 @@
 <div class="doctor-login-card">
     <div>
         <h1>{% trans "Medical Connect Admin" %}</h1>
-        <p>{% trans "Sign in to manage appointments, doctors, and patient experiences." %}</p>
     </div>
 
     {% if form.errors and not form.non_field_errors %}
@@ -151,6 +180,7 @@
         {% endfor %}
     {% endif %}
 
+    {% url 'admin_dashboard' as admin_dashboard_url %}
     <form action="{{ app_path }}" method="post" id="login-form">
         {% csrf_token %}
         <div class="form-row">
@@ -162,7 +192,7 @@
             {{ form.password.errors }}
             <label for="id_password">{% trans "Password" %}</label>
             {{ form.password }}
-            <input type="hidden" name="next" value="{{ next }}">
+            <input type="hidden" name="next" value="{{ admin_dashboard_url }}">
         </div>
         <div class="submit-row">
             <input type="submit" value="{% trans 'Log in' %}">
@@ -173,4 +203,16 @@
         <a class="forgotten-password" href="{{ password_reset_url }}">{% trans "Forgotten your password or username?" %}</a>
     {% endif %}
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('login-form');
+        if (!form) return;
+        form.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                form.submit();
+            }
+        });
+    });
+</script>
 {% endblock %}

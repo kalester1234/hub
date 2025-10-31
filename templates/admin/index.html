@@ -1,0 +1,473 @@
+{% extends "admin/base_site.html" %}
+{% load i18n log %}
+
+{% block content %}
+<div class="portal">
+    <section class="portal-hero">
+        <div class="hero-copy">
+            <span class="hero-badge">{% trans "Administration" %}</span>
+            <h1>{% blocktrans with name=user.get_full_name|default:user.get_username %}Welcome back, {{ name }}{% endblocktrans %}</h1>
+            <p>{% trans "Oversee platform data, coordinate teams, and keep every record in sync." %}</p>
+        </div>
+        <div class="hero-cards">
+            <div class="hero-card">
+                <span>{% trans "Signed in as" %}</span>
+                <strong>{{ user.username }}</strong>
+                <small>{% trans "Last login" %}: {{ user.last_login|date:"M j, Y H:i"|default:_("Just now") }}</small>
+            </div>
+            <div class="hero-card">
+                <span>{% trans "Applications" %}</span>
+                <strong>{{ app_list|length }}</strong>
+                <small>{% trans "Modules available" %}</small>
+            </div>
+        </div>
+    </section>
+    <div class="portal-grid">
+        <section class="portal-main">
+            <header class="section-heading">
+                <div>
+                    <h2>{% trans "Data hubs" %}</h2>
+                    <p>{% trans "Jump straight into any area and manage records with confidence." %}</p>
+                </div>
+                <div class="heading-actions">
+                    <a class="heading-link" href="{% url 'admin:index' %}"><i class="bi bi-arrow-clockwise"></i> {% trans "Refresh" %}</a>
+                    <a class="heading-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i> {% trans "Custom dashboard" %}</a>
+                </div>
+            </header>
+            {% if app_list %}
+            <div class="app-list">
+                {% for app in app_list %}
+                <article class="app-card">
+                    <header class="app-card-head">
+                        <div>
+                            <span class="app-name">{{ app.name }}</span>
+                            <span class="app-label">{{ app.app_label }}</span>
+                        </div>
+                        {% if app.app_url %}
+                        <a class="pill pill-open" href="{{ app.app_url }}"><i class="bi bi-box-arrow-up-right"></i> {% trans "Open" %}</a>
+                        {% endif %}
+                    </header>
+                    <ul class="model-list">
+                        {% for model in app.models %}
+                        <li class="model-item">
+                            <div class="model-info">
+                                {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                                {% else %}
+                                <span>{{ model.name }}</span>
+                                {% endif %}
+                                <small class="model-meta">{{ model.object_name }}</small>
+                            </div>
+                            <div class="model-actions">
+                                {% if model.admin_url %}
+                                <a class="pill pill-view" href="{{ model.admin_url }}">{% trans "Browse" %}</a>
+                                {% endif %}
+                                {% if model.add_url %}
+                                <a class="pill pill-add" href="{{ model.add_url }}">{% trans "Add" %}</a>
+                                {% elif model.view_only %}
+                                <span class="pill pill-disabled">{% trans "View only" %}</span>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-inboxes"></i></div>
+                <p>{% trans "No applications are configured for this admin yet." %}</p>
+            </div>
+            {% endif %}
+        </section>
+        <aside class="portal-aside">
+            <section class="aside-card">
+                <h3>{% trans "Quick actions" %}</h3>
+                <ul>
+                    {% if perms.accounts.add_customuser %}
+                    <li><a href="{% url 'admin:accounts_customuser_add' %}"><i class="bi bi-person-plus"></i> {% trans "Create user" %}</a></li>
+                    {% endif %}
+                    {% if perms.appointments.add_appointment %}
+                    <li><a href="{% url 'admin:appointments_appointment_add' %}"><i class="bi bi-calendar-plus"></i> {% trans "Log appointment" %}</a></li>
+                    {% endif %}
+                    {% if perms.messaging.view_notification %}
+                    <li><a href="{% url 'admin:messaging_notification_changelist' %}"><i class="bi bi-bell"></i> {% trans "Review notifications" %}</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'admin:password_change' %}"><i class="bi bi-shield-lock"></i> {% trans "Update password" %}</a></li>
+                </ul>
+            </section>
+            <section class="aside-card">
+                <h3>{% trans "Recent activity" %}</h3>
+                {% get_admin_log 8 as admin_log for_user user %}
+                {% if not admin_log %}
+                <p class="empty-text">{% trans "Nothing logged yet." %}</p>
+                {% else %}
+                <ul class="activity-list">
+                    {% for entry in admin_log %}
+                    <li>
+                        <span class="activity-time">{{ entry.action_time|date:"M j, H:i" }}</span>
+                        <div class="activity-body">
+                            {% if entry.is_deletion or not entry.get_admin_url %}
+                            <span class="activity-object">{{ entry.object_repr }}</span>
+                            {% else %}
+                            <a class="activity-object" href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                            {% endif %}
+                            <span class="activity-message">{{ entry.get_change_message }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </section>
+            <section class="aside-card highlight">
+                <h3>{% trans "Need assistance?" %}</h3>
+                <p>{% trans "Reach the Medical Connect support desk for rapid help with configuration and accounts." %}</p>
+                <a class="pill pill-support" href="mailto:support@medicalconnect.com"><i class="bi bi-life-preserver"></i> {% trans "Contact support" %}</a>
+            </section>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+.portal {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+.portal-hero {
+    display: flex;
+    gap: 28px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, rgba(0, 137, 123, 0.18), rgba(4, 90, 82, 0.18));
+    padding: 32px 36px;
+    border-radius: 28px;
+    border: 1px solid rgba(0, 137, 123, 0.2);
+    box-shadow: 0 18px 40px rgba(0, 137, 123, 0.16);
+}
+.hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 460px;
+}
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: rgba(4, 90, 82, 0.12);
+    color: #045a52;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+.hero-copy h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    color: #0f3d37;
+}
+.hero-copy p {
+    margin: 0;
+    color: rgba(15, 61, 55, 0.75);
+    font-size: 1rem;
+}
+.hero-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    align-items: stretch;
+}
+.hero-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px solid rgba(0, 137, 123, 0.18);
+    box-shadow: 0 18px 36px rgba(15, 39, 65, 0.08);
+}
+.hero-card span {
+    color: rgba(15, 61, 55, 0.6);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.hero-card strong {
+    font-size: 1.8rem;
+    color: #045a52;
+}
+.hero-card small {
+    color: rgba(15, 61, 55, 0.55);
+}
+.portal-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+.portal-main {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 32px;
+    border: 1px solid rgba(0, 137, 123, 0.14);
+    box-shadow: 0 20px 42px rgba(15, 39, 65, 0.08);
+    display: grid;
+    gap: 24px;
+}
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.section-heading h2 {
+    margin: 0;
+    color: #045a52;
+    font-size: 1.6rem;
+}
+.section-heading p {
+    margin: 6px 0 0;
+    color: rgba(15, 61, 55, 0.65);
+}
+.heading-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.heading-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(0, 137, 123, 0.12);
+    color: #045a52;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.heading-link:hover {
+    background: rgba(4, 90, 82, 0.16);
+}
+.app-list {
+    display: grid;
+    gap: 18px;
+}
+.app-card {
+    border: 1px solid rgba(0, 137, 123, 0.16);
+    border-radius: 20px;
+    padding: 22px;
+    display: grid;
+    gap: 16px;
+    box-shadow: 0 16px 34px rgba(15, 39, 65, 0.08);
+}
+.app-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.app-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #045a52;
+}
+.app-label {
+    display: block;
+    font-size: 0.8rem;
+    color: rgba(15, 61, 55, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+.pill-open {
+    background: rgba(255, 255, 255, 0.2);
+    color: #045a52;
+    border: 1px solid rgba(4, 90, 82, 0.3);
+}
+.pill-view {
+    background: rgba(76, 110, 245, 0.15);
+    color: #1b3a4b;
+}
+.pill-add {
+    background: rgba(11, 165, 122, 0.16);
+    color: #0b6b58;
+}
+.pill-disabled {
+    background: rgba(108, 117, 125, 0.16);
+    color: rgba(108, 117, 125, 0.8);
+}
+.pill-support {
+    background: linear-gradient(135deg, #00897b, #045a52);
+    color: #ffffff;
+    justify-content: center;
+}
+.model-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+.model-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.model-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.model-info a {
+    color: #12344d;
+    font-weight: 600;
+    text-decoration: none;
+}
+.model-info a:hover {
+    text-decoration: underline;
+}
+.model-info span {
+    color: #12344d;
+    font-weight: 600;
+}
+.model-meta {
+    font-size: 0.8rem;
+    color: rgba(18, 52, 77, 0.55);
+}
+.model-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.empty-state {
+    background: rgba(0, 137, 123, 0.08);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    color: rgba(15, 61, 55, 0.65);
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+}
+.empty-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    background: rgba(4, 90, 82, 0.12);
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    color: #045a52;
+}
+.portal-aside {
+    display: grid;
+    gap: 20px;
+}
+.aside-card {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 24px;
+    border: 1px solid rgba(0, 137, 123, 0.14);
+    box-shadow: 0 18px 34px rgba(15, 39, 65, 0.08);
+    display: grid;
+    gap: 16px;
+}
+.aside-card h3 {
+    margin: 0;
+    color: #045a52;
+    font-size: 1.2rem;
+}
+.aside-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+.aside-card li a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #12344d;
+    text-decoration: none;
+    font-weight: 600;
+}
+.aside-card li a:hover {
+    text-decoration: underline;
+}
+.highlight {
+    background: linear-gradient(135deg, rgba(11, 165, 122, 0.18), rgba(4, 90, 82, 0.18));
+    border: 1px solid rgba(4, 90, 82, 0.24);
+}
+.highlight p {
+    margin: 0;
+    color: rgba(15, 61, 55, 0.75);
+}
+.activity-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+.activity-time {
+    font-size: 0.78rem;
+    color: rgba(18, 52, 77, 0.55);
+    font-weight: 600;
+}
+.activity-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.activity-object {
+    color: #12344d;
+    font-weight: 600;
+    text-decoration: none;
+}
+.activity-object:hover {
+    text-decoration: underline;
+}
+.activity-message {
+    font-size: 0.85rem;
+    color: rgba(18, 52, 77, 0.55);
+}
+.empty-text {
+    color: rgba(18, 52, 77, 0.55);
+}
+@media (max-width: 1080px) {
+    .portal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px) {
+    .portal-hero {
+        padding: 28px;
+    }
+    .portal-main {
+        padding: 24px;
+    }
+}
+</style>
+{% endblock %}

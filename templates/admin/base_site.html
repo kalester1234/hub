@@ -82,6 +82,134 @@
         border: 1px solid var(--doctor-border);
         grid-area: content;
         min-width: 0;
+        display: grid;
+        gap: clamp(18px, 3vw, 28px);
+    }
+
+    #app-filter {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid var(--doctor-border);
+        box-shadow: 0 12px 32px rgba(0, 137, 123, 0.12);
+        padding: 14px 18px;
+    }
+
+    #app-filter label {
+        width: 100%;
+    }
+
+    #app-filter input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 0.95rem;
+        color: var(--doctor-text);
+        font-weight: 500;
+    }
+
+    #app-filter input::placeholder {
+        color: rgba(15, 61, 55, 0.5);
+    }
+
+    #app-filter input:focus {
+        outline: none;
+    }
+
+    #content .app-list {
+        display: grid;
+        gap: clamp(18px, 3vw, 26px);
+    }
+
+    #content .app-list > section {
+        background: #ffffff;
+        border-radius: 22px;
+        border: 1px solid var(--doctor-border);
+        box-shadow: 0 18px 38px rgba(15, 39, 65, 0.1);
+        padding: clamp(22px, 4vw, 32px);
+        display: grid;
+        gap: clamp(16px, 3vw, 22px);
+    }
+
+    #content .app-list > section h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: var(--doctor-primary-dark);
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #content .app-list > section h2 .app-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--doctor-muted);
+        background: rgba(0, 137, 123, 0.12);
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    #content .app-list .module {
+        border: none;
+        border-radius: 16px;
+        box-shadow: none;
+        padding: 0;
+        background: transparent;
+    }
+
+    #content .app-list .module table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+        background: transparent;
+    }
+
+    #content .app-list .module table tbody tr {
+        background: rgba(0, 137, 123, 0.08);
+        border-radius: 14px;
+    }
+
+    #content .app-list .module table tbody tr td {
+        padding: 14px 16px;
+        border-bottom: none;
+    }
+
+    #content .app-list .module table tbody tr td:first-child a {
+        font-weight: 600;
+        color: var(--doctor-text);
+        text-decoration: none;
+    }
+
+    #content .app-list .module table tbody tr td:first-child a:hover {
+        color: var(--doctor-primary);
+    }
+
+    #content .app-list .module table tbody tr td:last-child {
+        text-align: right;
+    }
+
+    #content .app-list .module table tbody tr td .addlink,
+    #content .app-list .module table tbody tr td .changelink {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        background: rgba(11, 165, 122, 0.18);
+        color: var(--doctor-primary-dark);
+    }
+
+    #content .app-list .module table tbody tr td .addlink:hover,
+    #content .app-list .module table tbody tr td .changelink:hover {
+        background: rgba(4, 90, 82, 0.22);
+        color: #ffffff;
     }
 
     #content h1,
@@ -95,19 +223,34 @@
 
     body:not(.login) #container {
         display: grid;
-        grid-template-columns: minmax(220px, 280px) 1fr;
+        grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
         grid-template-rows: auto 1fr;
         grid-template-areas:
             "header header"
             "sidebar content";
         align-items: start;
-        gap: clamp(16px, 4vw, 32px);
-        margin: 0 clamp(16px, 4vw, 32px) clamp(32px, 5vw, 56px);
+        gap: clamp(16px, 3vw, 28px);
+        margin: 0 clamp(12px, 3vw, 24px) clamp(28px, 5vw, 52px);
     }
 
     body:not(.login) #content-main {
         display: grid;
         gap: clamp(16px, 3vw, 28px);
+    }
+
+    body.toggle-nav-sidebar #container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "content";
+    }
+
+    body.toggle-nav-sidebar #nav-sidebar {
+        display: none;
+    }
+
+    body.toggle-nav-sidebar #content {
+        margin-left: 0;
     }
 
     .breadcrumbs {
@@ -361,6 +504,7 @@
         overflow: auto;
         grid-area: sidebar;
         align-self: stretch;
+        width: min(240px, 100%);
     }
 
     #nav-sidebar h2 {
