@@ -39,7 +39,7 @@
     }
     .doctor-profile-card h4 {
         margin-bottom: 4px;
-        color: #1a3a4a;
+        color: #003366;
         font-weight: 700;
     }
     .doctor-profile-card span {
@@ -58,7 +58,7 @@
         gap: 12px;
         padding: 12px 16px;
         border-radius: 12px;
-        color: #1a3a4a;
+        color: #003366;
         text-decoration: none;
         font-weight: 500;
         transition: background 0.2s ease;
@@ -87,7 +87,7 @@
     .doctor-header h1 {
         margin: 0;
         font-size: 1.9rem;
-        color: #1a3a4a;
+        color: #003366;
         font-weight: 700;
     }
     .doctor-header p {
@@ -135,7 +135,7 @@
     }
     .doctor-stat-card h3 {
         margin: 0;
-        color: #1a3a4a;
+        color: #003366;
         font-size: 1.8rem;
         font-weight: 700;
     }
@@ -158,8 +158,13 @@
     }
     .doctor-card__header h3 {
         margin: 0;
-        color: #1a3a4a;
+        color: #003366;
         font-weight: 700;
+    }
+    .doctor-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
     }
     .doctor-card__tools {
         display: flex;
@@ -195,7 +200,7 @@
     .doctor-table td {
         padding: 14px 16px;
         text-align: left;
-        color: #1a3a4a;
+        color: #003366;
     }
     .doctor-table tbody tr {
         background: #ffffff;
@@ -206,7 +211,7 @@
     }
     .patient-name {
         font-weight: 600;
-        color: #1a3a4a;
+        color: #003366;
     }
     .patient-meta {
         font-size: 0.8rem;
@@ -241,6 +246,22 @@
         font-weight: 600;
         display: inline-block;
     }
+    .doctor-actions-cell {
+        min-width: 220px;
+    }
+    .doctor-action-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .doctor-action-group .btn-sm {
+        border-radius: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+    }
     .table-empty {
         padding: 32px;
         text-align: center;
@@ -259,7 +280,7 @@
     }
     .availability-tile h5 {
         margin: 0 0 6px 0;
-        color: #1a3a4a;
+        color: #003366;
         font-weight: 600;
     }
     .availability-tile span {
@@ -281,7 +302,7 @@
         background: #f9feff;
     }
     .leave-item strong {
-        color: #1a3a4a;
+        color: #003366;
     }
     .modal form .form-control,
     .modal form .form-select {
@@ -369,7 +390,10 @@
 
         <section class="doctor-card">
             <div class="doctor-card__header">
-                <h3>Patient Appointments</h3>
+                <div>
+                    <h3>Patient Appointments</h3>
+                    <p class="doctor-card__subtitle">Manage today's visits and complete prescriptions in one place</p>
+                </div>
                 <div class="doctor-card__tools">
                     <div class="doctor-search">
                         <input type="text" id="patient-search" placeholder="Search patients...">
@@ -415,10 +439,36 @@
                                     {% endif %}
                                 </td>
                                 <td><span class="token-badge">Token #{{ forloop.counter }}</span></td>
-                                <td>
-                                    <a class="btn btn-sm btn-outline-primary" href="{% url 'appointment_detail' appointment.id %}">
-                                        View
-                                    </a>
+                                <td class="doctor-actions-cell">
+                                    <div class="doctor-action-group">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'appointment_detail' appointment.id %}">
+                                            View
+                                        </a>
+                                        {% if appointment.status == 'confirmed' %}
+                                            <form method="post" action="{% url 'complete_appointment' appointment.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check2-circle"></i> Complete
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if appointment.status == 'completed' and not appointment.has_prescription %}
+                                            <a class="btn btn-sm btn-primary" href="{% url 'add_prescription' appointment.id %}">
+                                                <i class="bi bi-prescription2"></i> Add Rx
+                                            </a>
+                                        {% elif appointment.has_prescription %}
+                                            <a class="btn btn-sm btn-outline-success" href="{% url 'appointment_detail' appointment.id %}#prescription">
+                                                <i class="bi bi-eye"></i> View Rx
+                                            </a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'edit_prescription' appointment.id %}">
+                                                <i class="bi bi-pencil"></i> Edit Rx
+                                            </a>
+                                            <a class="btn btn-sm btn-outline-primary" href="{% url 'download_prescription' appointment.id %}">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -428,6 +478,90 @@
             {% else %}
                 <div class="table-empty">
                     <i class="bi bi-info-circle"></i> No upcoming appointments scheduled.
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>Consultation History</h3>
+                    <p class="doctor-card__subtitle">Review completed visits and manage prescriptions</p>
+                </div>
+                <div class="doctor-card__tools">
+                    <span class="token-badge">Pending prescriptions: {{ pending_prescriptions }}</span>
+                </div>
+            </div>
+            {% if recent_consultations %}
+                <div class="table-responsive">
+                    <table class="doctor-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Reason</th>
+                                <th>Prescription</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in recent_consultations %}
+                                <tr>
+                                    <td>
+                                        <div class="patient-name">{{ consultation.patient.get_full_name }}</div>
+                                        <div class="patient-meta">#{{ consultation.patient.id }}</div>
+                                    </td>
+                                    <td>
+                                        <div>{{ consultation.appointment_date|date:"M d, Y" }}</div>
+                                        <div class="patient-meta">{{ consultation.appointment_time|time:"h:i A" }}</div>
+                                    </td>
+                                    <td>{{ consultation.reason|default:"General Consultation" }}</td>
+                                    <td>
+                                        {% if consultation.has_prescription %}
+                                            <span class="status-chip status-confirmed"><i class="bi bi-check2-circle"></i> Added</span>
+                                        {% else %}
+                                            <span class="status-chip status-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="doctor-actions-cell">
+                                    <div class="doctor-action-group">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'appointment_detail' consultation.id %}">
+                                            View
+                                        </a>
+                                        {% if consultation.status == 'confirmed' %}
+                                            <form method="post" action="{% url 'complete_appointment' consultation.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check2-circle"></i> Complete
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if consultation.has_prescription %}
+                                            <a class="btn btn-sm btn-outline-success" href="{% url 'appointment_detail' consultation.id %}#prescription">
+                                                <i class="bi bi-eye"></i> View Rx
+                                            </a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'edit_prescription' consultation.id %}">
+                                                <i class="bi bi-pencil"></i> Edit Rx
+                                            </a>
+                                            <a class="btn btn-sm btn-outline-primary" href="{% url 'download_prescription' consultation.id %}">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <a class="btn btn-sm btn-primary" href="{% url 'add_prescription' consultation.id %}">
+                                                <i class="bi bi-prescription2"></i> Add Rx
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="table-empty">
+                    <i class="bi bi-clipboard-pulse"></i> No completed consultations yet.
                 </div>
             {% endif %}
         </section>
@@ -493,7 +627,7 @@
 <div class="modal fade" id="availabilityModal" tabindex="-1" aria-labelledby="availabilityModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background-color: #17a2b8; color: white;">
+            <div class="modal-header" style="background-color: #0A74DA; color: white;">
                 <h5 class="modal-title" id="availabilityModalLabel"><i class="bi bi-calendar-plus"></i> Add Availability Slot</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -554,7 +688,7 @@
 <div class="modal fade" id="leaveModal" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background-color: #17a2b8; color: white;">
+            <div class="modal-header" style="background-color: #0A74DA; color: white;">
                 <h5 class="modal-title" id="leaveModalLabel"><i class="bi bi-person-dash"></i> Request Leave</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

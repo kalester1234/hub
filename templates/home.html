@@ -1,15 +1,16 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Home - Medical Connect{% endblock %}
 
 {% block content %}
-<div style="background: linear-gradient(135deg, #f0f8f9 0%, #e0f7ff 100%);">
+<div style="background: linear-gradient(135deg, #F4F6F8 0%, #E8EEFB 100%);">
     <!-- Hero Section -->
     <div class="container py-5">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-4 mb-lg-0">
                 <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-                    <h1 style="color: #1a3a4a; font-weight: 700; margin-bottom: 30px;">
+                    <h1 style="color: #003366; font-weight: 700; margin-bottom: 30px;">
                         We help improve<br>your Medical<br>World
                     </h1>
                     <p style="color: #666; font-size: 1.1; line-height: 1.6;">
@@ -35,17 +36,8 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <div style="position: relative; height: 400px;">
-                    <svg viewBox="0 0 400 400" style="width: 100%; height: 100%;">
-                        <!-- Decorative shapes -->
-                        <path d="M 50 100 Q 50 50, 100 50 L 150 50 Q 200 50, 200 100 L 200 300 Q 200 350, 150 350 L 100 350 Q 50 350, 50 300 Z" fill="#20c997" opacity="0.2"/>
-                        <path d="M 150 150 Q 150 100, 200 100 L 250 100 Q 300 100, 300 150 L 300 300 Q 300 350, 250 350 L 200 350 Q 150 350, 150 300 Z" fill="#17a2b8" opacity="0.3"/>
-                        
-                        <!-- Heartbeat line -->
-                        <g stroke="#20c997" stroke-width="2" fill="none">
-                            <polyline points="50,200 100,200 110,150 130,250 160,200 200,200 220,100 240,250 260,200 300,200" opacity="0.8"/>
-                        </g>
-                    </svg>
+                <div style="position: relative; height: 400px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{% static 'hero-image.jpg' %}" alt="Healthcare Services" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
                 </div>
             </div>
         </div>
@@ -54,34 +46,72 @@
     <!-- Features Section -->
     <div class="container py-5">
         <div class="text-center mb-5">
-            <h2 style="color: #1a3a4a; font-weight: 700;">Our Features</h2>
+            <h2 style="color: #003366; font-weight: 700;">Our Features</h2>
             <p style="color: #666;">Everything you need for better healthcare management</p>
         </div>
         
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card text-center">
+                <div class="card text-center h-100">
+                    <div style="height: 180px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 200 180" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Calendar illustration -->
+                            <rect x="50" y="40" width="100" height="80" rx="8" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2"/>
+                            <rect x="50" y="40" width="100" height="20" fill="#0A74DA"/>
+                            <text x="100" y="56" text-anchor="middle" font-size="12" font-weight="bold" fill="#FFFFFF">Calendar</text>
+                            <circle cx="80" cy="85" r="6" fill="#0A74DA"/>
+                            <circle cx="120" cy="85" r="6" fill="#0A74DA"/>
+                            <circle cx="80" cy="110" r="6" fill="#0A74DA" opacity="0.5"/>
+                            <circle cx="120" cy="110" r="6" fill="#0A74DA" opacity="0.5"/>
+                            <path d="M 100 130 L 120 150 L 140 120" stroke="#0560c0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
                     <div class="card-body p-4">
-                        <i class="bi bi-calendar2-check" style="font-size: 3rem; color: #17a2b8;"></i>
-                        <h5 class="card-title mt-3">Easy Booking</h5>
+                        <h5 class="card-title mt-2">Easy Booking</h5>
                         <p class="card-text">Book appointments with doctors at your convenience with our simple calendar interface.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center">
+                <div class="card text-center h-100">
+                    <div style="height: 180px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 200 180" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Chat bubble illustration -->
+                            <ellipse cx="70" cy="70" rx="35" ry="30" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2"/>
+                            <path d="M 50 95 L 45 110 L 60 100 Z" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2"/>
+                            <line x1="55" y1="65" x2="85" y2="65" stroke="#0A74DA" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                            <line x1="55" y1="75" x2="85" y2="75" stroke="#0A74DA" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                            
+                            <ellipse cx="130" cy="110" rx="35" ry="30" fill="#0560c0" opacity="0.2" stroke="#0560c0" stroke-width="2"/>
+                            <path d="M 150 135 L 155 150 L 140 140 Z" fill="#0560c0" opacity="0.2" stroke="#0560c0" stroke-width="2"/>
+                            <circle cx="115" cy="105" r="3" fill="#0560c0"/>
+                            <circle cx="125" cy="105" r="3" fill="#0560c0"/>
+                            <circle cx="135" cy="105" r="3" fill="#0560c0"/>
+                        </svg>
+                    </div>
                     <div class="card-body p-4">
-                        <i class="bi bi-chat-dots" style="font-size: 3rem; color: #20c997;"></i>
-                        <h5 class="card-title mt-3">Real-time Chat</h5>
+                        <h5 class="card-title mt-2">Real-time Chat</h5>
                         <p class="card-text">Communicate instantly with your doctor for consultations and follow-ups.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center">
+                <div class="card text-center h-100">
+                    <div style="height: 180px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 200 180" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Medical records illustration -->
+                            <rect x="60" y="35" width="65" height="95" rx="4" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
+                            <rect x="65" y="40" width="55" height="8" fill="#0A74DA" rx="2"/>
+                            <line x1="70" y1="55" x2="110" y2="55" stroke="#0A74DA" stroke-width="2"/>
+                            <line x1="70" y1="65" x2="110" y2="65" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
+                            <line x1="70" y1="75" x2="110" y2="75" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
+                            <line x1="70" y1="85" x2="110" y2="85" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
+                            <line x1="70" y1="95" x2="100" y2="95" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
+                            <path d="M 100 120 L 120 140 L 85 140 Z" fill="#0560c0" opacity="0.7"/>
+                        </svg>
+                    </div>
                     <div class="card-body p-4">
-                        <i class="bi bi-file-earmark-medical" style="font-size: 3rem; color: #17a2b8;"></i>
-                        <h5 class="card-title mt-3">Medical Records</h5>
+                        <h5 class="card-title mt-2">Medical Records</h5>
                         <p class="card-text">Access your complete medical history and prescriptions anytime, anywhere.</p>
                     </div>
                 </div>
@@ -93,7 +123,7 @@
     <div class="container py-5 mt-5">
         <div class="row">
             <div class="col-lg-8 mx-auto">
-                <div style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%); padding: 60px 40px; border-radius: 15px; color: white; text-align: center;">
+                <div style="background: linear-gradient(135deg, #0A74DA 0%, #0560c0 100%); padding: 60px 40px; border-radius: 15px; color: white; text-align: center;">
                     <h2 style="font-weight: 700; margin-bottom: 20px;">Ready to Connect?</h2>
                     <p style="font-size: 1.1; margin-bottom: 30px;">Join thousands of users who trust Medical Connect for their healthcare needs.</p>
                     {% if user.is_authenticated %}

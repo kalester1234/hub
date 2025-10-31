@@ -28,10 +28,13 @@ def dashboard(request):
 def doctor_dashboard(request):
     doctor = request.user
     today = timezone.now().date()
-    upcoming_appointments = Appointment.objects.filter(
+    upcoming_qs = Appointment.objects.filter(
         doctor=doctor,
         appointment_date__gte=today
-    ).order_by('appointment_date', 'appointment_time')[:10]
+    ).select_related('patient').prefetch_related('prescription__items').order_by('appointment_date', 'appointment_time')[:10]
+    upcoming_appointments = list(upcoming_qs)
+    for appointment in upcoming_appointments:
+        appointment.has_prescription = hasattr(appointment, 'prescription')
     next_day_date = today + timedelta(days=1)
     next_day_appointments = Appointment.objects.filter(
         doctor=doctor,
@@ -52,6 +55,15 @@ def doctor_dashboard(request):
         doctor=doctor,
         status='completed'
     ).count()
+    now = timezone.localtime()
+    consultations_qs = Appointment.objects.filter(doctor=doctor).filter(
+        Q(appointment_date__lt=today) |
+        Q(appointment_date=today, appointment_time__lte=now.time())
+    ).exclude(status='cancelled').select_related('patient').prefetch_related('prescription__items')
+    recent_consultations = list(consultations_qs.order_by('-appointment_date', '-appointment_time')[:10])
+    for consultation in recent_consultations:
+        consultation.has_prescription = hasattr(consultation, 'prescription')
+    pending_prescriptions = consultations_qs.filter(status='completed', prescription__isnull=True).count()
     availability_form = AvailabilitySlotForm()
     leave_form = DoctorLeaveForm()
     if request.method == 'POST':
@@ -92,6 +104,8 @@ def doctor_dashboard(request):
         'total_appointments': total_appointments,
         'completed_appointments': completed_appointments,
         'next_day_appointments': next_day_appointments,
+        'pending_prescriptions': pending_prescriptions,
+        'recent_consultations': recent_consultations,
         'unread_notifications': unread_notifications,
         'unread_messages': unread_messages,
         'availability_form': availability_form,

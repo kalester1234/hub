@@ -27,11 +27,11 @@
                 <div class="row g-3">
                     {% for notification in notifications %}
                     <div class="col-12">
-                        <div class="card" style="border-left: 4px solid {% if notification.is_read %}#ddd{% else %}#17a2b8{% endif %};">
+                        <div class="card" style="border-left: 4px solid {% if notification.is_read %}#ddd{% else %}#0A74DA{% endif %};">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div style="flex: 1;">
-                                        <h5 style="color: #1a3a4a; margin-bottom: 5px;">
+                                        <h5 style="color: #003366; margin-bottom: 5px;">
                                             {% if notification.notification_type == 'appointment_request' %}
                                                 <i class="bi bi-calendar-plus" style="color: #ffc107;"></i>
                                             {% elif notification.notification_type == 'appointment_confirmed' %}
@@ -39,7 +39,7 @@
                                             {% elif notification.notification_type == 'appointment_cancelled' %}
                                                 <i class="bi bi-x-circle" style="color: #dc3545;"></i>
                                             {% elif notification.notification_type == 'message' %}
-                                                <i class="bi bi-chat-dots" style="color: #17a2b8;"></i>
+                                                <i class="bi bi-chat-dots" style="color: #0A74DA;"></i>
                                             {% elif notification.notification_type == 'doctor_approved' %}
                                                 <i class="bi bi-check2-square" style="color: #20c997;"></i>
                                             {% endif %}
@@ -50,7 +50,7 @@
                                     </div>
                                     <div>
                                         {% if not notification.is_read %}
-                                            <span class="badge badge-primary" style="background-color: #17a2b8;">New</span>
+                                            <span class="badge badge-primary" style="background-color: #0A74DA;">New</span>
                                         {% endif %}
                                         {% if notification.related_appointment %}
                                             <a href="{% url 'mark_notification_read' notification.id %}" class="btn btn-sm btn-primary ms-2">
@@ -67,8 +67,8 @@
             {% else %}
                 <div class="card">
                     <div class="card-body text-center py-5">
-                        <i class="bi bi-bell" style="font-size: 3rem; color: #17a2b8; opacity: 0.5;"></i>
-                        <h5 style="color: #1a3a4a; margin-top: 15px;">No notifications</h5>
+                        <i class="bi bi-bell" style="font-size: 3rem; color: #0A74DA; opacity: 0.5;"></i>
+                        <h5 style="color: #003366; margin-top: 15px;">No notifications</h5>
                         <p style="color: #666;">You're all caught up!</p>
                     </div>
                 </div>

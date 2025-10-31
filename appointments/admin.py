@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Appointment, AvailabilitySlot, Prescription
+from .models import Appointment, AvailabilitySlot, Prescription, PrescriptionItem
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
@@ -14,7 +14,14 @@ class AvailabilitySlotAdmin(admin.ModelAdmin):
     list_filter = ['is_active', 'day_of_week']
     search_fields = ['doctor__first_name']
 
+class PrescriptionItemInline(admin.TabularInline):
+    model = PrescriptionItem
+    extra = 0
+    fields = ['medicine_name', 'dosage', 'frequency', 'duration_days', 'instructions']
+
+
 @admin.register(Prescription)
 class PrescriptionAdmin(admin.ModelAdmin):
-    list_display = ['appointment', 'medicine_name', 'dosage', 'frequency']
-    search_fields = ['medicine_name']
+    list_display = ['appointment', 'created_at']
+    search_fields = ['appointment__patient__first_name']
+    inlines = [PrescriptionItemInline]

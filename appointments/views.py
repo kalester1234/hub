@@ -3,14 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
-from django.http import JsonResponse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from datetime import datetime, timedelta, time
 from django.contrib.auth import get_user_model
 import json
 import re
 from .models import Appointment, AvailabilitySlot, Prescription
-from .forms import AppointmentBookingForm, AvailabilitySlotForm, PrescriptionForm, AppointmentStatusForm
+from .forms import AppointmentBookingForm, AvailabilitySlotForm, PrescriptionForm, AppointmentStatusForm, PrescriptionItemFormSet
 from accounts.models import DoctorProfile
 from messaging.models import Notification, Conversation
 
@@ -163,7 +164,10 @@ def my_appointments(request):
 @login_required(login_url='login')
 def appointment_detail(request, appointment_id):
     """View appointment details"""
-    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment = get_object_or_404(
+        Appointment.objects.select_related('doctor', 'patient').prefetch_related('prescription__items'),
+        id=appointment_id
+    )
     
     # Check permission
     if request.user != appointment.doctor and request.user != appointment.patient:
@@ -236,22 +240,185 @@ def add_prescription(request, appointment_id):
         messages.error(request, 'Only the attending doctor can add prescriptions.')
         return redirect('my_appointments')
     
+    if appointment.status != 'completed':
+        messages.error(request, 'Prescriptions can only be created after the consultation is completed.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+    
+    if hasattr(appointment, 'prescription'):
+        messages.info(request, 'A prescription already exists for this consultation.')
+        return redirect('edit_prescription', appointment_id=appointment.id)
+    
+    placeholder_prescription = Prescription(appointment=appointment)
+
     if request.method == 'POST':
         form = PrescriptionForm(request.POST)
-        if form.is_valid():
+        formset = PrescriptionItemFormSet(request.POST, instance=placeholder_prescription, prefix='items')
+        if form.is_valid() and formset.is_valid():
             prescription = form.save(commit=False)
             prescription.appointment = appointment
+            prescription.last_modified_by = request.user
             prescription.save()
+            formset.instance = prescription
+            formset.save()
             messages.success(request, 'Prescription added successfully!')
             return redirect('appointment_detail', appointment_id=appointment.id)
     else:
         form = PrescriptionForm()
+        formset = PrescriptionItemFormSet(instance=placeholder_prescription, prefix='items')
     
     context = {
         'form': form,
-        'appointment': appointment
+        'formset': formset,
+        'appointment': appointment,
+        'is_edit': False,
+        'doctor_profile': getattr(request.user, 'doctor_profile', None)
     }
     return render(request, 'appointments/add_prescription.html', context)
+
+@login_required(login_url='login')
+def edit_prescription(request, appointment_id):
+    """Edit an existing prescription"""
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    if request.user != appointment.doctor:
+        messages.error(request, 'Only the attending doctor can edit prescriptions.')
+        return redirect('my_appointments')
+    
+    if appointment.status != 'completed':
+        messages.error(request, 'Prescriptions can only be updated after the consultation is completed.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+    
+    prescription = getattr(appointment, 'prescription', None)
+    if not prescription:
+        messages.error(request, 'No prescription found for this consultation.')
+        return redirect('add_prescription', appointment_id=appointment.id)
+    
+    if request.method == 'POST':
+        form = PrescriptionForm(request.POST, instance=prescription)
+        formset = PrescriptionItemFormSet(request.POST, instance=prescription, prefix='items')
+        if form.is_valid() and formset.is_valid():
+            updated_prescription = form.save(commit=False)
+            updated_prescription.last_modified_by = request.user
+            updated_prescription.save()
+            formset.save()
+            messages.success(request, 'Prescription updated successfully!')
+            return redirect('appointment_detail', appointment_id=appointment.id)
+    else:
+        form = PrescriptionForm(instance=prescription)
+        formset = PrescriptionItemFormSet(instance=prescription, prefix='items')
+    
+    context = {
+        'form': form,
+        'formset': formset,
+        'appointment': appointment,
+        'is_edit': True,
+        'prescription': prescription,
+        'doctor_profile': getattr(request.user, 'doctor_profile', None)
+    }
+    return render(request, 'appointments/add_prescription.html', context)
+
+
+@login_required(login_url='login')
+def download_prescription(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if request.user != appointment.doctor and request.user != appointment.patient:
+        messages.error(request, 'You do not have permission to download this prescription.')
+        return redirect('my_appointments')
+
+    prescription = getattr(appointment, 'prescription', None)
+    if not prescription:
+        messages.error(request, 'No prescription available for download.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+
+    items = list(prescription.items.all())
+    if not items:
+        messages.error(request, 'Prescription has no medicines to download yet.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+
+    updated_at = timezone.localtime(prescription.updated_at)
+    created_at = timezone.localtime(prescription.created_at)
+    doctor_name = f"Dr. {appointment.doctor.get_full_name()}"
+    patient_name = appointment.patient.get_full_name()
+    last_mod_by = prescription.last_modified_by.get_full_name() if prescription.last_modified_by else doctor_name
+
+    lines = [
+        f"Prescription Summary",
+        f"Appointment ID: {appointment.id}",
+        f"Patient: {patient_name}",
+        f"Doctor: {doctor_name}",
+        f"Consultation Date: {appointment.appointment_date.strftime('%b %d, %Y')}",
+        f"Consultation Time: {appointment.appointment_time.strftime('%H:%M')}",
+        "",
+        "Medicines:",
+    ]
+
+    for index, item in enumerate(items, start=1):
+        lines.extend([
+            f"  {index}. {item.medicine_name}",
+            f"     Dosage: {item.dosage or '—'}",
+            f"     Frequency: {item.frequency or '—'}",
+            f"     Duration (days): {item.duration_days if item.duration_days is not None else '—'}",
+        ])
+        if item.instructions:
+            lines.append(f"     Instructions: {item.instructions}")
+        lines.append("")
+
+    if prescription.instructions:
+        lines.extend([
+            "General Instructions:",
+            prescription.instructions,
+            "",
+        ])
+
+    lines.extend([
+        f"Created At: {created_at.strftime('%b %d, %Y %H:%M')}",
+        f"Last Updated: {updated_at.strftime('%b %d, %Y %H:%M')} by {last_mod_by}",
+    ])
+
+    content = "\n".join(line for line in lines if line is not None)
+
+    response = HttpResponse(content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename=prescription_{appointment.id}.txt'
+    return response
+
+
+@login_required(login_url='login')
+@require_POST
+def complete_appointment(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if request.user != appointment.doctor:
+        messages.error(request, 'Only the attending doctor can update this consultation.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+
+    if appointment.status == 'completed':
+        messages.info(request, 'This appointment is already marked as completed.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+
+    if appointment.status != 'confirmed':
+        messages.warning(request, 'Only confirmed appointments can be marked as completed.')
+        return redirect('appointment_detail', appointment_id=appointment.id)
+
+    appointment.status = 'completed'
+    appointment.save(update_fields=['status', 'updated_at'])
+
+    Notification.objects.create(
+        user=appointment.patient,
+        notification_type='appointment_completed',
+        title='Appointment Completed',
+        description=f'Dr. {request.user.get_full_name()} has marked your appointment on {appointment.appointment_date} as completed.',
+        related_appointment=appointment
+    )
+
+    messages.success(request, 'Appointment marked as completed.')
+
+    next_url = request.POST.get('next')
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+
+    return redirect('appointment_detail', appointment_id=appointment.id)
+
 
 @login_required(login_url='login')
 def cancel_appointment(request, appointment_id):

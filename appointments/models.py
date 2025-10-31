@@ -71,15 +71,30 @@ class Appointment(models.Model):
 
 class Prescription(models.Model):
     appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name='prescription')
-    medicine_name = models.CharField(max_length=200)
-    dosage = models.CharField(max_length=100)
-    frequency = models.CharField(max_length=100)
-    duration_days = models.IntegerField()
-    instructions = models.TextField()
+    instructions = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_modified_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, related_name='updated_prescriptions', null=True, blank=True)
     
     def __str__(self):
         return f"Prescription for {self.appointment}"
+
+
+class PrescriptionItem(models.Model):
+    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name='items')
+    medicine_name = models.CharField(max_length=200)
+    dosage = models.CharField(max_length=100, blank=True)
+    frequency = models.CharField(max_length=100, blank=True)
+    duration_days = models.IntegerField(null=True, blank=True)
+    instructions = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['created_at', 'id']
+    
+    def __str__(self):
+        return f"{self.medicine_name} for {self.prescription.appointment}"
 
 
 class DoctorLeave(models.Model):

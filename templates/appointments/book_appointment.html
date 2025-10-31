@@ -3,11 +3,18 @@
 {% block title %}Book Appointment - Medical Connect{% endblock %}
 
 {% block content %}
+<div style="background: linear-gradient(135deg, #0A74DA 0%, #0560c0 100%); padding: 50px 0; margin-bottom: 30px; color: white; text-align: center;">
+    <div class="container">
+        <h1 style="font-weight: 700; margin-bottom: 10px;">Book Your Appointment</h1>
+        <p style="font-size: 1.05; opacity: 0.95;">Schedule a consultation with Dr. {{ doctor.get_full_name }}</p>
+    </div>
+</div>
+
 <div class="container py-4">
     <div class="row">
         <div class="col-lg-6 mx-auto">
             <div class="card">
-                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                <div class="card-header" style="background-color: #0A74DA; color: white;">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-calendar-plus"></i> Book Appointment with Dr. {{ doctor.get_full_name }}
                     </h5>
@@ -49,8 +56,8 @@
 
                         <div class="card bg-light mb-3">
                             <div class="card-body">
-                                <h6 style="color: #1a3a4a;">Consultation Fee</h6>
-                                <p style="font-size: 1.5rem; color: #17a2b8; font-weight: 600; margin: 0;">
+                                <h6 style="color: #003366;">Consultation Fee</h6>
+                                <p style="font-size: 1.5rem; color: #0A74DA; font-weight: 600; margin: 0;">
                                     ${{ doctor.doctor_profile.consultation_fee }}
                                 </p>
                             </div>
@@ -69,8 +76,8 @@
             </div>
 
             <div class="card mt-4">
-                <div class="card-header" style="background-color: #f0f8f9;">
-                    <h5 class="card-title mb-0" style="color: #1a3a4a;">
+                <div class="card-header" style="background-color: #F4F6F8;">
+                    <h5 class="card-title mb-0" style="color: #003366;">
                         <i class="bi bi-info-circle"></i> Important Information
                     </h5>
                 </div>

@@ -1,5 +1,6 @@
 from django import forms
-from .models import Appointment, AvailabilitySlot, Prescription, DoctorLeave
+from django.forms import inlineformset_factory
+from .models import Appointment, AvailabilitySlot, Prescription, DoctorLeave, PrescriptionItem
 
 class AppointmentBookingForm(forms.ModelForm):
     class Meta:
@@ -49,14 +50,28 @@ class AvailabilitySlotForm(forms.ModelForm):
 class PrescriptionForm(forms.ModelForm):
     class Meta:
         model = Prescription
-        fields = ['medicine_name', 'dosage', 'frequency', 'duration_days', 'instructions']
+        fields = ['instructions']
         widgets = {
-            'medicine_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'dosage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 500mg'}),
-            'frequency': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Twice a day'}),
-            'duration_days': forms.NumberInput(attrs={'class': 'form-control'}),
-            'instructions': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'instructions': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Provide overall guidance or precautions'})
         }
+
+
+PrescriptionItemFormSet = inlineformset_factory(
+    Prescription,
+    PrescriptionItem,
+    fields=['medicine_name', 'dosage', 'frequency', 'duration_days', 'instructions'],
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+    widgets={
+        'medicine_name': forms.TextInput(attrs={'class': 'form-control'}),
+        'dosage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 500mg'}),
+        'frequency': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Twice a day'}),
+        'duration_days': forms.NumberInput(attrs={'class': 'form-control'}),
+        'instructions': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Directions for this medicine'}),
+    }
+)
 
 
 class DoctorLeaveForm(forms.ModelForm):

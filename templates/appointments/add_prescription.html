@@ -1,99 +1,556 @@
 {% extends "base.html" %}
 
-{% block title %}Add Prescription - Medical Connect{% endblock %}
+{% block title %}{% if is_edit %}Edit Prescription{% else %}Add Prescription{% endif %} - Medical Connect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doctor-dashboard {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f4fbfb;
+        border-radius: 24px;
+    }
+    .doctor-sidebar {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-profile-card {
+        text-align: center;
+    }
+    .doctor-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #11b5c5, #0f7186);
+        color: #ffffff;
+        font-size: 36px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+    }
+    .doctor-profile-card h4 {
+        margin-bottom: 4px;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-profile-card span {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        display: block;
+    }
+    .doctor-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #003366;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    .doctor-nav a:hover,
+    .doctor-nav a.active {
+        background: rgba(17, 181, 197, 0.1);
+        color: #0f7186;
+    }
+    .doctor-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+    }
+    .doctor-header h1 {
+        margin: 0;
+        font-size: 1.9rem;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-header p {
+        margin: 4px 0 0 0;
+        color: #5d6d7e;
+    }
+    .doctor-card {
+        background: #ffffff;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .doctor-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .doctor-card__header h3 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .token-badge {
+        background: rgba(23, 162, 184, 0.12);
+        color: #0f7186;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status-confirmed {
+        background: rgba(40, 167, 69, 0.12);
+        color: #1f8c3c;
+    }
+    .status-pending {
+        background: rgba(255, 193, 7, 0.18);
+        color: #ad7a00;
+    }
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.12);
+        color: #b11e31;
+    }
+    .patient-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        background: #f6ffff;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(17, 181, 197, 0.12);
+    }
+    .patient-summary h5 {
+        margin: 0 0 6px 0;
+        color: #003366;
+        font-weight: 600;
+    }
+    .patient-summary p {
+        margin: 0;
+        color: #5d6d7e;
+    }
+    .prescription-form {
+        display: grid;
+        gap: 20px;
+    }
+    .medicine-formset {
+        display: grid;
+        gap: 20px;
+    }
+    .medicine-card {
+        border: 1px solid rgba(17, 181, 197, 0.18);
+        border-radius: 16px;
+        padding: 20px;
+        background: #f9feff;
+        box-shadow: inset 0 0 0 1px rgba(17, 181, 197, 0.05);
+        position: relative;
+    }
+    .medicine-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    .medicine-card__header h4 {
+        margin: 0;
+        color: #0f7186;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    .form-group {
+        display: grid;
+        gap: 8px;
+    }
+    .form-group-full {
+        grid-column: 1 / -1;
+    }
+    .form-actions-split {
+        justify-content: space-between;
+        align-items: center;
+    }
+    .prescription-form label {
+        font-weight: 600;
+        color: #003366;
+    }
+    .prescription-form input,
+    .prescription-form textarea {
+        border-radius: 12px;
+        border: 1px solid rgba(17, 181, 197, 0.2);
+        padding: 12px 16px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .prescription-form input:focus,
+    .prescription-form textarea:focus {
+        outline: none;
+        border-color: #11b5c5;
+        box-shadow: 0 0 0 3px rgba(17, 181, 197, 0.18);
+    }
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+    .doctor-guidelines {
+        margin: 0;
+        padding-left: 20px;
+        color: #5d6d7e;
+        line-height: 1.8;
+        font-size: 0.95rem;
+        display: grid;
+        gap: 8px;
+    }
+    @media (max-width: 992px) {
+        .doctor-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .doctor-sidebar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .doctor-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .doctor-main {
+            padding: 24px;
+        }
+    }
+    @media (max-width: 600px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card">
-                <div class="card-header" style="background-color: #17a2b8; color: white;">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-prescription2"></i> Add Prescription
-                    </h5>
+<div class="doctor-dashboard">
+    <aside class="doctor-sidebar">
+        <div class="doctor-profile-card">
+            <div class="doctor-avatar">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</div>
+            <h4>Dr. {{ request.user.get_full_name }}</h4>
+            {% if doctor_profile %}
+                <span>{{ doctor_profile.get_specialization_display }}</span>
+            {% endif %}
+            <span>{{ request.user.email }}</span>
+        </div>
+        <nav class="doctor-nav">
+            <a href="{% url 'dashboard' %}"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{% url 'my_appointments' %}"><i class="bi bi-calendar-event"></i> My Appointments</a>
+            <a href="{% url 'manage_availability' %}"><i class="bi bi-clock-history"></i> Availability</a>
+            <a href="{% url 'appointment_detail' appointment.id %}" class="active"><i class="bi bi-journal-text"></i> Appointment Detail</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </aside>
+
+    <div class="doctor-main">
+        <header class="doctor-header">
+            <div>
+                <h1>{% if is_edit %}Edit Prescription{% else %}Create Prescription{% endif %}</h1>
+                <p>Consultation with {{ appointment.patient.get_full_name }} on {{ appointment.appointment_date|date:"M d, Y" }} at {{ appointment.appointment_time|time:"h:i A" }}</p>
+            </div>
+            <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Appointment</a>
+        </header>
+
+        <section class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>Prescription Details</h3>
+                    <p class="doctor-card__subtitle">Document medicines, dosage, and instructions for the patient</p>
                 </div>
-                <div class="card-body">
-                    <div class="mb-4 p-3" style="background-color: #f0f8f9; border-radius: 8px;">
-                        <p style="margin: 0; color: #666;">
-                            <strong>Patient:</strong> {{ appointment.patient.get_full_name }}<br>
-                            <strong>Appointment Date:</strong> {{ appointment.appointment_date|date:"M d, Y" }} at {{ appointment.appointment_time|time:"H:i" }}
-                        </p>
-                    </div>
-
-                    <form method="POST">
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.medicine_name.id_for_label }}" class="form-label">Medicine Name</label>
-                            {{ form.medicine_name }}
-                            {% if form.medicine_name.errors %}
-                                <div class="invalid-feedback d-block">{{ form.medicine_name.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.dosage.id_for_label }}" class="form-label">Dosage</label>
-                                {{ form.dosage }}
-                                {% if form.dosage.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.dosage.errors.0 }}</div>
-                                {% endif %}
+                <span class="token-badge"><i class="bi bi-hash"></i> Appointment {{ appointment.id }}</span>
+            </div>
+            <div class="patient-summary">
+                <div>
+                    <h5>Patient</h5>
+                    <p>{{ appointment.patient.get_full_name }}</p>
+                </div>
+                <div>
+                    <h5>Reason</h5>
+                    <p>{{ appointment.reason|default:"General Consultation" }}</p>
+                </div>
+                <div>
+                    <h5>Status</h5>
+                    {% if appointment.status == 'completed' %}
+                        <span class="status-chip status-confirmed">Completed</span>
+                    {% elif appointment.status == 'pending' %}
+                        <span class="status-chip status-pending">Pending</span>
+                    {% elif appointment.status == 'cancelled' %}
+                        <span class="status-chip status-cancelled">Cancelled</span>
+                    {% else %}
+                        <span class="status-chip status-confirmed">Confirmed</span>
+                    {% endif %}
+                </div>
+            </div>
+            <form method="POST" class="prescription-form" id="prescription-form">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                <div id="medicine-formset" class="medicine-formset" data-prefix="{{ formset.prefix }}">
+                    {% for medicine_form in formset %}
+                        <div class="medicine-card" data-form-index="{{ forloop.counter0 }}" data-is-new="false" {% if medicine_form.DELETE.value %}data-hidden="true" style="display:none"{% else %}data-hidden="false"{% endif %}>
+                            {% for hidden_field in medicine_form.hidden_fields %}
+                                {{ hidden_field }}
+                            {% endfor %}
+                            <div class="d-none">
+                                {{ medicine_form.DELETE }}
                             </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.frequency.id_for_label }}" class="form-label">Frequency</label>
-                                {{ form.frequency }}
-                                {% if form.frequency.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.frequency.errors.0 }}</div>
-                                {% endif %}
+                            <div class="medicine-card__header">
+                                <h4>Medicine {{ forloop.counter }}</h4>
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-medicine">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="{{ medicine_form.medicine_name.id_for_label }}">Medicine Name</label>
+                                    {{ medicine_form.medicine_name }}
+                                    {% if medicine_form.medicine_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ medicine_form.medicine_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ medicine_form.dosage.id_for_label }}">Dosage</label>
+                                    {{ medicine_form.dosage }}
+                                    {% if medicine_form.dosage.errors %}
+                                        <div class="invalid-feedback d-block">{{ medicine_form.dosage.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ medicine_form.frequency.id_for_label }}">Frequency</label>
+                                    {{ medicine_form.frequency }}
+                                    {% if medicine_form.frequency.errors %}
+                                        <div class="invalid-feedback d-block">{{ medicine_form.frequency.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ medicine_form.duration_days.id_for_label }}">Duration (Days)</label>
+                                    {{ medicine_form.duration_days }}
+                                    {% if medicine_form.duration_days.errors %}
+                                        <div class="invalid-feedback d-block">{{ medicine_form.duration_days.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group form-group-full">
+                                    <label for="{{ medicine_form.instructions.id_for_label }}">Instructions</label>
+                                    {{ medicine_form.instructions }}
+                                    {% if medicine_form.instructions.errors %}
+                                        <div class="invalid-feedback d-block">{{ medicine_form.instructions.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.duration_days.id_for_label }}" class="form-label">Duration (Days)</label>
-                            {{ form.duration_days }}
-                            {% if form.duration_days.errors %}
-                                <div class="invalid-feedback d-block">{{ form.duration_days.errors.0 }}</div>
-                            {% endif %}
+                    {% endfor %}
+                </div>
+                <template id="medicine-empty-template">
+                    <div class="medicine-card" data-form-index="__prefix__" data-hidden="false">
+                        {% for hidden_field in formset.empty_form.hidden_fields %}
+                            {{ hidden_field }}
+                        {% endfor %}
+                        <div class="d-none">
+                            {{ formset.empty_form.DELETE }}
                         </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.instructions.id_for_label }}" class="form-label">Instructions</label>
-                            {{ form.instructions }}
-                            {% if form.instructions.errors %}
-                                <div class="invalid-feedback d-block">{{ form.instructions.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-outline-secondary">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> Save Prescription
+                        <div class="medicine-card__header">
+                            <h4>Medicine __number__</h4>
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-medicine">
+                                <i class="bi bi-x"></i>
                             </button>
                         </div>
-                    </form>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ formset.empty_form.medicine_name.id_for_label }}">Medicine Name</label>
+                                {{ formset.empty_form.medicine_name }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ formset.empty_form.dosage.id_for_label }}">Dosage</label>
+                                {{ formset.empty_form.dosage }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ formset.empty_form.frequency.id_for_label }}">Frequency</label>
+                                {{ formset.empty_form.frequency }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ formset.empty_form.duration_days.id_for_label }}">Duration (Days)</label>
+                                {{ formset.empty_form.duration_days }}
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label for="{{ formset.empty_form.instructions.id_for_label }}">Instructions</label>
+                                {{ formset.empty_form.instructions }}
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div class="form-actions form-actions-split">
+                    <button type="button" class="btn btn-outline-primary" id="add-medicine">
+                        <i class="bi bi-plus"></i> Add Medicine
+                    </button>
+                    <div class="text-muted" style="font-size: 0.9rem;">
+                        Minimum 1 medicine required
+                    </div>
                 </div>
-            </div>
+                <div class="form-group form-group-full">
+                    <label for="{{ form.instructions.id_for_label }}">General Instructions</label>
+                    {{ form.instructions }}
+                    {% if form.instructions.errors %}
+                        <div class="invalid-feedback d-block">{{ form.instructions.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-actions">
+                    <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_edit %}
+                            <i class="bi bi-save"></i> Update Prescription
+                        {% else %}
+                            <i class="bi bi-check-circle"></i> Save Prescription
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </section>
 
-            <div class="card mt-4">
-                <div class="card-header" style="background-color: #f0f8f9;">
-                    <h5 class="card-title mb-0" style="color: #1a3a4a;">
-                        <i class="bi bi-info-circle"></i> Prescription Guidelines
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <ul style="color: #666; line-height: 1.8; font-size: 0.9rem;">
-                        <li><strong>Medicine Name:</strong> Complete brand or generic name</li>
-                        <li><strong>Dosage:</strong> e.g., "500mg", "10ml", "1 tablet"</li>
-                        <li><strong>Frequency:</strong> e.g., "Twice daily after meals"</li>
-                        <li><strong>Duration:</strong> Number of days the medication should be taken</li>
-                        <li><strong>Instructions:</strong> Special precautions or usage notes</li>
-                    </ul>
-                </div>
+        <section class="doctor-card">
+            <div class="doctor-card__header">
+                <h3>Prescription Guidelines</h3>
             </div>
-        </div>
+            <ul class="doctor-guidelines">
+                <li><strong>Medicine Name</strong> Ensure the brand or generic name is accurate.</li>
+                <li><strong>Dosage</strong> Specify strength, such as 500mg, 10ml, or 1 tablet.</li>
+                <li><strong>Frequency</strong> Clarify timing, for example twice daily after meals.</li>
+                <li><strong>Duration</strong> Provide the total number of days for medication.</li>
+                <li><strong>Instructions</strong> Include patient-friendly directions and important precautions.</li>
+            </ul>
+        </section>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const formsetContainer = document.getElementById('medicine-formset');
+        const addButton = document.getElementById('add-medicine');
+        const totalFormsInput = document.querySelector(`#id_${formsetContainer.dataset.prefix}-TOTAL_FORMS`);
+        const maxFormsInput = document.querySelector(`#id_${formsetContainer.dataset.prefix}-MAX_NUM_FORMS`);
+        const template = document.getElementById('medicine-empty-template').content.firstElementChild;
+
+        function renumberCards() {
+            const cards = formsetContainer.querySelectorAll('.medicine-card');
+            let visibleIndex = 0;
+            cards.forEach((card) => {
+                if (card.dataset.hidden === 'true') {
+                    return;
+                }
+                card.dataset.formIndex = visibleIndex;
+                const header = card.querySelector('.medicine-card__header h4');
+                if (header) {
+                    header.textContent = `Medicine ${visibleIndex + 1}`;
+                }
+                visibleIndex += 1;
+            });
+        }
+
+        function removeCard(card) {
+            const deleteInput = card.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (deleteInput) {
+                deleteInput.checked = true;
+            }
+            card.dataset.hidden = 'true';
+            card.style.display = 'none';
+            renumberCards();
+        }
+
+        formsetContainer.addEventListener('click', function (event) {
+            const trigger = event.target.closest('.remove-medicine');
+            if (trigger) {
+                const card = trigger.closest('.medicine-card');
+                if (card) {
+                    const deleteInput = card.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                    if (!deleteInput || !deleteInput.checked) {
+                        removeCard(card);
+                    }
+                }
+            }
+        });
+
+        addButton.addEventListener('click', function () {
+            const currentTotal = parseInt(totalFormsInput.value, 10);
+            const maxForms = parseInt(maxFormsInput ? maxFormsInput.value : '0', 10);
+            if (maxForms && currentTotal >= maxForms) {
+                return;
+            }
+
+            const newCard = template.cloneNode(true);
+            const newIndex = currentTotal;
+            const regex = new RegExp('__prefix__', 'g');
+            newCard.innerHTML = newCard.innerHTML.replace(regex, newIndex);
+
+            newCard.querySelectorAll('input, textarea, select').forEach((field) => {
+                if (field.name.includes('__prefix__')) {
+                    field.name = field.name.replace('__prefix__', newIndex);
+                }
+                if (field.id.includes('__prefix__')) {
+                    field.id = field.id.replace('__prefix__', newIndex);
+                }
+                if (!field.matches('input[type="hidden"]')) {
+                    field.value = '';
+                }
+            });
+
+            newCard.dataset.hidden = 'false';
+            formsetContainer.appendChild(newCard);
+            totalFormsInput.value = newIndex + 1;
+            renumberCards();
+        });
+
+        renumberCards();
+    });
+</script>
 {% endblock %}

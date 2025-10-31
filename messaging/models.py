@@ -38,6 +38,7 @@ class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('appointment_request', 'Appointment Request'),
         ('appointment_confirmed', 'Appointment Confirmed'),
+        ('appointment_completed', 'Appointment Completed'),
         ('appointment_cancelled', 'Appointment Cancelled'),
         ('message', 'New Message'),
         ('doctor_approved', 'Doctor Approved'),

@@ -37,7 +37,7 @@
                     {% if messages %}
                         {% for message in messages %}
                         <div style="margin-bottom: 15px; display: flex; {% if message.sender == user %}justify-content: flex-end;{% else %}justify-content: flex-start;{% endif %}">
-                            <div style="{% if message.sender == user %}background-color: #17a2b8; color: white;{% else %}background-color: #f0f8f9; color: #1a3a4a;{% endif %} padding: 10px 15px; border-radius: 10px; max-width: 70%;">
+                            <div style="{% if message.sender == user %}background-color: #0A74DA; color: white;{% else %}background-color: #F4F6F8; color: #003366;{% endif %} padding: 10px 15px; border-radius: 10px; max-width: 70%;">
                                 <p style="margin: 0; font-size: 0.9rem;">{{ message.content }}</p>
                                 {% if message.file %}
                                     <div style="margin-top: 10px;">

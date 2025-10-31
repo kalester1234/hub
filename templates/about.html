@@ -5,21 +5,21 @@
 {% block content %}
 <div class="about-wrapper">
     <style>
-        .about-wrapper { background: #f6fbf9; padding: 80px 0 100px; }
+        .about-wrapper { background: #F4F6F8; padding: 80px 0 100px; }
         .about-container { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
         .about-header { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 56px; text-align: center; }
-        .about-header h1 { font-size: 2.85rem; font-weight: 700; color: #0e2b3a; letter-spacing: -0.5px; }
+        .about-header h1 { font-size: 2.85rem; font-weight: 700; color: #003366; letter-spacing: -0.5px; }
         .about-header p { max-width: 720px; font-size: 1.08rem; color: #5a707a; line-height: 1.75; }
         .mission-card { background: #ffffff; border-radius: 24px; padding: 44px 48px; box-shadow: 0 28px 60px rgba(19, 67, 90, 0.1); margin-bottom: 72px; }
-        .mission-card h2 { font-size: 1.8rem; font-weight: 600; color: #0e2b3a; margin-bottom: 18px; }
+        .mission-card h2 { font-size: 1.8rem; font-weight: 600; color: #003366; margin-bottom: 18px; }
         .mission-card p { font-size: 1.05rem; color: #4f656e; line-height: 1.85; margin: 0; }
         .team-section { text-align: center; }
-        .team-section h2 { font-size: 2rem; font-weight: 600; color: #0e2b3a; margin-bottom: 14px; }
+        .team-section h2 { font-size: 2rem; font-weight: 600; color: #003366; margin-bottom: 14px; }
         .team-section p { font-size: 1.02rem; color: #5a707a; line-height: 1.75; margin-bottom: 48px; }
         .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; }
         .team-card { background: #ffffff; border-radius: 22px; padding: 36px 28px; box-shadow: 0 24px 50px rgba(19, 67, 90, 0.12); display: flex; flex-direction: column; align-items: center; gap: 16px; }
-        .team-initials { width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(140deg, #29e0c1, #16c3ca); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #ffffff; letter-spacing: 1px; }
-        .team-card h3 { font-size: 1.25rem; font-weight: 600; color: #0e2b3a; margin: 0; }
+        .team-initials { width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(140deg, #0A74DA, #0560c0); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #ffffff; letter-spacing: 1px; }
+        .team-card h3 { font-size: 1.25rem; font-weight: 600; color: #003366; margin: 0; }
         .team-role { font-size: 0.98rem; color: #667d88; margin: 0; }
         @media (max-width: 768px) {
             .about-wrapper { padding: 64px 0 80px; }
@@ -34,8 +34,46 @@
             <p>Our mission is to streamline the medical scheduling process, creating a seamless and efficient connection between patients and healthcare providers.</p>
         </div>
         <div class="mission-card">
-            <h2>Our Mission at Medical Connect</h2>
-            <p>We aim to reduce administrative burdens and improve access to care through innovative technology, empowering both patients and healthcare professionals with an intuitive platform built for meaningful connections.</p>
+            <div style="display: flex; align-items: center; gap: 32px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <svg viewBox="0 0 300 280" style="width: 100%; height: auto; max-width: 300px;" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background circle -->
+                        <circle cx="150" cy="140" r="130" fill="#E8EEFB" opacity="0.4"/>
+                        
+                        <!-- Main figure - doctor/person -->
+                        <circle cx="150" cy="80" r="30" fill="#D4A574"/>
+                        <path d="M 120 80 Q 120 55, 150 55 Q 180 55, 180 80" fill="#1a1a1a"/>
+                        
+                        <!-- Body in professional attire -->
+                        <ellipse cx="150" cy="140" rx="35" ry="45" fill="#0A74DA" opacity="0.9"/>
+                        <line x1="115" y1="130" x2="80" y2="160" stroke="#D4A574" stroke-width="7" stroke-linecap="round"/>
+                        <line x1="185" y1="130" x2="220" y2="160" stroke="#D4A574" stroke-width="7" stroke-linecap="round"/>
+                        
+                        <!-- Legs -->
+                        <line x1="135" y1="185" x2="135" y2="250" stroke="#333333" stroke-width="6" stroke-linecap="round"/>
+                        <line x1="165" y1="185" x2="165" y2="250" stroke="#333333" stroke-width="6" stroke-linecap="round"/>
+                        
+                        <!-- Heart icon in chest -->
+                        <path d="M 150 125 L 158 115 L 165 120 L 150 135 L 135 120 L 142 115 Z" fill="#FF6B6B" opacity="0.8"/>
+                        
+                        <!-- Tech connection lines -->
+                        <g stroke="#0560c0" stroke-width="2" opacity="0.5" stroke-dasharray="4,4">
+                            <line x1="100" y1="80" x2="120" y2="80"/>
+                            <line x1="180" y1="80" x2="200" y2="80"/>
+                            <line x1="150" y1="50" x2="150" y2="30"/>
+                        </g>
+                        
+                        <!-- Connection dots -->
+                        <circle cx="90" cy="80" r="5" fill="#0560c0" opacity="0.7"/>
+                        <circle cx="210" cy="80" r="5" fill="#0560c0" opacity="0.7"/>
+                        <circle cx="150" cy="20" r="5" fill="#0560c0" opacity="0.7"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <h2>Our Mission at Medical Connect</h2>
+                    <p>We aim to reduce administrative burdens and improve access to care through innovative technology, empowering both patients and healthcare professionals with an intuitive platform built for meaningful connections.</p>
+                </div>
+            </div>
         </div>
         <div class="team-section">
             <h2>Meet the Team: Run Time Error</h2>
