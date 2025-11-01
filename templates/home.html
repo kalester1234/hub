@@ -3,146 +3,209 @@
 
 {% block title %}Home - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+.explore-link:hover {
+    color: #000000 !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="background: linear-gradient(135deg, #F4F6F8 0%, #E8EEFB 100%);">
-    <!-- Hero Section -->
-    <div class="container py-5">
-        <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-                    <h1 style="color: #003366; font-weight: 700; margin-bottom: 30px;">
-                        We help improve<br>your Medical<br>World
-                    </h1>
-                    <p style="color: #666; font-size: 1.1; line-height: 1.6;">
-                        Providing trusted healthcare solutions to ensure your well-being.
-                    </p>
-                    <p style="color: #999; font-size: 1rem;">
-                        Your health, our priority — innovative care for a better tomorrow.
-                    </p>
-                    <div class="mt-4">
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg me-3">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                            </a>
-                        {% else %}
-                            <a href="{% url 'patient_signup' %}" class="btn btn-primary btn-lg me-3">
-                                <i class="bi bi-play-circle"></i> Get Started
-                            </a>
-                            <a href="{% url 'services' %}" class="btn btn-outline-primary btn-lg">
-                                <i class="bi bi-info-circle"></i> Learn More
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+<div style="background-color: #00897B; color: #FFFFFF;">
+    <section class="container py-5 text-white">
+        <div class="row align-items-center gy-4">
             <div class="col-lg-6">
-                <div style="position: relative; height: 400px; display: flex; align-items: center; justify-content: center;">
-                    <img src="{% static 'hero-image.jpg' %}" alt="Healthcare Services" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2 style="color: #003366; font-weight: 700;">Our Features</h2>
-            <p style="color: #666;">Everything you need for better healthcare management</p>
-        </div>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card text-center h-100">
-                    <div style="height: 180px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                        <svg viewBox="0 0 200 180" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Calendar illustration -->
-                            <rect x="50" y="40" width="100" height="80" rx="8" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2"/>
-                            <rect x="50" y="40" width="100" height="20" fill="#0A74DA"/>
-                            <text x="100" y="56" text-anchor="middle" font-size="12" font-weight="bold" fill="#FFFFFF">Calendar</text>
-                            <circle cx="80" cy="85" r="6" fill="#0A74DA"/>
-                            <circle cx="120" cy="85" r="6" fill="#0A74DA"/>
-                            <circle cx="80" cy="110" r="6" fill="#0A74DA" opacity="0.5"/>
-                            <circle cx="120" cy="110" r="6" fill="#0A74DA" opacity="0.5"/>
-                            <path d="M 100 130 L 120 150 L 140 120" stroke="#0560c0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="card-title mt-2">Easy Booking</h5>
-                        <p class="card-text">Book appointments with doctors at your convenience with our simple calendar interface.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center h-100">
-                    <div style="height: 180px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                        <svg viewBox="0 0 200 180" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Chat bubble illustration -->
-                            <ellipse cx="70" cy="70" rx="35" ry="30" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2"/>
-                            <path d="M 50 95 L 45 110 L 60 100 Z" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2"/>
-                            <line x1="55" y1="65" x2="85" y2="65" stroke="#0A74DA" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                            <line x1="55" y1="75" x2="85" y2="75" stroke="#0A74DA" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                            
-                            <ellipse cx="130" cy="110" rx="35" ry="30" fill="#0560c0" opacity="0.2" stroke="#0560c0" stroke-width="2"/>
-                            <path d="M 150 135 L 155 150 L 140 140 Z" fill="#0560c0" opacity="0.2" stroke="#0560c0" stroke-width="2"/>
-                            <circle cx="115" cy="105" r="3" fill="#0560c0"/>
-                            <circle cx="125" cy="105" r="3" fill="#0560c0"/>
-                            <circle cx="135" cy="105" r="3" fill="#0560c0"/>
-                        </svg>
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="card-title mt-2">Real-time Chat</h5>
-                        <p class="card-text">Communicate instantly with your doctor for consultations and follow-ups.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center h-100">
-                    <div style="height: 180px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                        <svg viewBox="0 0 200 180" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Medical records illustration -->
-                            <rect x="60" y="35" width="65" height="95" rx="4" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
-                            <rect x="65" y="40" width="55" height="8" fill="#0A74DA" rx="2"/>
-                            <line x1="70" y1="55" x2="110" y2="55" stroke="#0A74DA" stroke-width="2"/>
-                            <line x1="70" y1="65" x2="110" y2="65" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
-                            <line x1="70" y1="75" x2="110" y2="75" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
-                            <line x1="70" y1="85" x2="110" y2="85" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
-                            <line x1="70" y1="95" x2="100" y2="95" stroke="#0A74DA" stroke-width="2" opacity="0.6"/>
-                            <path d="M 100 120 L 120 140 L 85 140 Z" fill="#0560c0" opacity="0.7"/>
-                        </svg>
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="card-title mt-2">Medical Records</h5>
-                        <p class="card-text">Access your complete medical history and prescriptions anytime, anywhere.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- CTA Section -->
-    <div class="container py-5 mt-5">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div style="background: linear-gradient(135deg, #0A74DA 0%, #0560c0 100%); padding: 60px 40px; border-radius: 15px; color: white; text-align: center;">
-                    <h2 style="font-weight: 700; margin-bottom: 20px;">Ready to Connect?</h2>
-                    <p style="font-size: 1.1; margin-bottom: 30px;">Join thousands of users who trust Medical Connect for their healthcare needs.</p>
+                <span class="badge bg-white text-primary px-3 py-2 mb-3">MediSchedule</span>
+                <h1 class="display-5 fw-bold text-white">Healthcare Scheduling Made Simple</h1>
+                <p class="lead text-white-50 mb-4">Connect with healthcare professionals instantly. Book appointments, manage schedules, and receive care—all in one place.</p>
+                <div class="d-flex flex-wrap gap-3">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'browse_doctors' %}" class="btn btn-light btn-lg">
-                            <i class="bi bi-search"></i> Browse Doctors
-                        </a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg text-primary">Go to Dashboard</a>
+                        <a href="{% url 'browse_doctors' %}" class="btn btn-outline-light btn-lg text-white">Browse Doctors</a>
                     {% else %}
-                        <div>
-                            <a href="{% url 'patient_signup' %}" class="btn btn-light btn-lg me-3">
-                                <i class="bi bi-person-plus"></i> Patient Signup
-                            </a>
-                            <a href="{% url 'doctor_signup' %}" class="btn btn-outline-light btn-lg">
-                                <i class="bi bi-stethoscope"></i> Doctor Signup
-                            </a>
-                        </div>
+                        <a href="{% url 'patient_signup' %}" class="btn btn-light btn-lg text-primary">Get Started</a>
+                        <a href="{% url 'services' %}" class="btn btn-outline-light btn-lg text-white explore-link">Explore Services</a>
                     {% endif %}
                 </div>
             </div>
+            <div class="col-lg-6">
+                <div class="p-4 p-lg-5 rounded-4 h-100" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(6px);">
+                    <div class="d-flex flex-column gap-4">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white bg-opacity-25 text-white me-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                                <i class="bi bi-calendar-check fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-white">Online Booking</h5>
+                                <p class="mb-0 text-white-50">Schedule appointments 24/7 with instant confirmations.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white bg-opacity-25 text-white me-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                                <i class="bi bi-people fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-white">Patient Management</h5>
+                                <p class="mb-0 text-white-50">Comprehensive medical histories and communication tools.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white bg-opacity-25 text-white me-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                                <i class="bi bi-bell fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-white">Smart Reminders</h5>
+                                <p class="mb-0 text-white-50">Automated notifications that keep everyone informed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+    <section class="py-5" style="background-color: #FFFFFF;">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-dark">Our Services</h2>
+                <p class="text-muted mb-0">Comprehensive healthcare solutions designed for both patients and medical professionals</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 p-4 rounded-4 bg-white shadow-sm border border-light-subtle">
+                        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                            <i class="bi bi-clock-history fs-4"></i>
+                        </div>
+                        <h5 class="text-dark">Online Booking</h5>
+                        <p class="text-muted mb-0">Real-time availability with instant confirmations for every appointment.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 p-4 rounded-4 bg-white shadow-sm border border-light-subtle">
+                        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                            <i class="bi bi-person-vcard fs-4"></i>
+                        </div>
+                        <h5 class="text-dark">Patient Management</h5>
+                        <p class="text-muted mb-0">Maintain detailed records, track medical history, and coordinate care effortlessly.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 p-4 rounded-4 bg-white shadow-sm border border-light-subtle">
+                        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                            <i class="bi bi-bell fs-4"></i>
+                        </div>
+                        <h5 class="text-dark">Smart Reminders</h5>
+                        <p class="text-muted mb-0">Automated notifications reduce no-shows and keep patients engaged.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 p-4 rounded-4 bg-white shadow-sm border border-light-subtle">
+                        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                            <i class="bi bi-shield-lock fs-4"></i>
+                        </div>
+                        <h5 class="text-dark">Secure & Private</h5>
+                        <p class="text-muted mb-0">HIPAA-compliant platform with end-to-end encryption for all data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="py-5 text-white" style="background: rgba(255,255,255,0.04);">
+        <div class="container">
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-7">
+                    <h2 class="fw-bold text-white mb-4">About MediSchedule</h2>
+                    <p class="text-white-50">We're transforming healthcare access by bridging the gap between patients and healthcare providers. Our mission is to make quality healthcare accessible, efficient, and stress-free for everyone.</p>
+                    <p class="text-white-50 mb-0">Founded by healthcare professionals and technology experts, MediSchedule combines medical expertise with cutting-edge technology to deliver a seamless scheduling experience.</p>
+                </div>
+                <div class="col-lg-5">
+                    <div class="rounded-4 bg-white bg-opacity-10 text-white p-4 p-lg-5 h-100">
+                        <div class="mb-4">
+                            <h3 class="display-6 fw-bold mb-1">50,000+</h3>
+                            <p class="text-white-50 mb-0">Appointments successfully scheduled and managed</p>
+                        </div>
+                        <div class="border-top border-white border-opacity-25 pt-4">
+                            <h3 class="display-6 fw-bold mb-1">2,500+</h3>
+                            <p class="text-white-50 mb-0">Trusted doctors using MediSchedule nationwide</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="py-5" style="background-color: #FFFFFF;">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-5">
+                    <h3 class="fw-bold text-dark mb-3">Why Choose Us?</h3>
+                    <p class="text-muted mb-0">We simplify every step of your healthcare journey with modern scheduling tools, secure communication, and reliable support.</p>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                                <span class="text-muted">Instant appointment confirmations</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                                <span class="text-muted">Access to verified healthcare professionals</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                                <span class="text-muted">Secure medical records management</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                                <span class="text-muted">24/7 customer support</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                                <span class="text-muted">Mobile-friendly platform</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="py-5 text-white" style="background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0));">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-white">Get In Touch</h2>
+                <p class="text-white-50 mb-0">Have questions? We're here to help. Reach out to our team anytime.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="h-100 p-4 rounded-4 border border-white border-opacity-25 bg-white bg-opacity-10">
+                        <h5 class="text-white mb-2">Phone</h5>
+                        <p class="text-white-50 mb-1">+1 (555) 123-4567</p>
+                        <span class="text-white-50">Mon-Fri 8am-6pm EST</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="h-100 p-4 rounded-4 border border-white border-opacity-25 bg-white bg-opacity-10">
+                        <h5 class="text-white mb-2">Email</h5>
+                        <p class="mb-1"><a href="mailto:support@medischedule.com" class="text-decoration-none text-white">support@medischedule.com</a></p>
+                        <p class="mb-0"><a href="mailto:info@medischedule.com" class="text-decoration-none text-white">info@medischedule.com</a></p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="h-100 p-4 rounded-4 border border-white border-opacity-25 bg-white bg-opacity-10">
+                        <h5 class="text-white mb-2">Address</h5>
+                        <p class="text-white-50 mb-0">123 Healthcare Boulevard<br>Medical District, NY 10001</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}

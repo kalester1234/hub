@@ -1,49 +1,14 @@
-#!/usr/bin/env python
-import os
-import django
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'medical_connect.settings')
-django.setup()
-
 from datetime import time
 from decimal import Decimal
-from django.contrib.auth import get_user_model
-from accounts.models import PatientProfile, DoctorProfile
-
-User = get_user_model()
-
-def ensure_patient():
-    user, created = User.objects.get_or_create(
-        username='patient@test.com',
-        defaults={
-            'email': 'patient@test.com',
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'phone': '1234567890',
-            'role': 'patient',
-        },
-    )
-    user.first_name = 'John'
-    user.last_name = 'Doe'
-    user.email = 'patient@test.com'
-    user.phone = '1234567890'
-    user.role = 'patient'
-    user.set_password('patient123')
-    user.save()
-    PatientProfile.objects.get_or_create(user=user, defaults={'blood_type': 'O+'})
-    if created:
-        print("✓ Test Patient created")
-    else:
-        print("Patient account refreshed")
-    print("  Username: patient@test.com")
-    print("  Password: patient123")
+from django.db import migrations
 
 
-def ensure_doctors():
+def seed_doctors(apps, schema_editor):
+    User = apps.get_model('accounts', 'CustomUser')
+    DoctorProfile = apps.get_model('accounts', 'DoctorProfile')
     doctor_definitions = [
         {
             'username': 'asha.patel@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Asha',
             'last_name': 'Patel',
             'phone': '555010001',
@@ -58,7 +23,6 @@ def ensure_doctors():
         },
         {
             'username': 'miguel.reyes@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Miguel',
             'last_name': 'Reyes',
             'phone': '555010002',
@@ -73,7 +37,6 @@ def ensure_doctors():
         },
         {
             'username': 'lauren.chen@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Lauren',
             'last_name': 'Chen',
             'phone': '555010003',
@@ -88,7 +51,6 @@ def ensure_doctors():
         },
         {
             'username': 'priya.khanna@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Priya',
             'last_name': 'Khanna',
             'phone': '555020001',
@@ -103,7 +65,6 @@ def ensure_doctors():
         },
         {
             'username': 'aaron.brooks@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Aaron',
             'last_name': 'Brooks',
             'phone': '555020002',
@@ -118,7 +79,6 @@ def ensure_doctors():
         },
         {
             'username': 'elise.dubois@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Elise',
             'last_name': 'Dubois',
             'phone': '555020003',
@@ -133,7 +93,6 @@ def ensure_doctors():
         },
         {
             'username': 'kavita.menon@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Kavita',
             'last_name': 'Menon',
             'phone': '555030001',
@@ -148,7 +107,6 @@ def ensure_doctors():
         },
         {
             'username': 'daniel.harper@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Daniel',
             'last_name': 'Harper',
             'phone': '555030002',
@@ -163,7 +121,6 @@ def ensure_doctors():
         },
         {
             'username': 'sofia.rinaldi@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Sofia',
             'last_name': 'Rinaldi',
             'phone': '555030003',
@@ -178,14 +135,13 @@ def ensure_doctors():
         },
         {
             'username': 'lily.evans@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Lily',
             'last_name': 'Evans',
             'phone': '555040001',
             'specialization': 'pediatrics',
             'license_number': 'PEDS-24-001',
             'experience_years': 11,
-            'hospital_name': 'BrightStart Children\'s Hospital',
+            'hospital_name': "BrightStart Children's Hospital",
             'consultation_fee': Decimal('140.00'),
             'available_from': time(0, 0),
             'available_to': time(8, 0),
@@ -193,14 +149,13 @@ def ensure_doctors():
         },
         {
             'username': 'omar.siddiqi@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Omar',
             'last_name': 'Siddiqi',
             'phone': '555040002',
             'specialization': 'pediatrics',
             'license_number': 'PEDS-24-002',
             'experience_years': 9,
-            'hospital_name': 'BrightStart Children\'s Hospital',
+            'hospital_name': "BrightStart Children's Hospital",
             'consultation_fee': Decimal('135.00'),
             'available_from': time(8, 0),
             'available_to': time(16, 0),
@@ -208,14 +163,13 @@ def ensure_doctors():
         },
         {
             'username': 'hannah.morales@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Hannah',
             'last_name': 'Morales',
             'phone': '555040003',
             'specialization': 'pediatrics',
             'license_number': 'PEDS-24-003',
             'experience_years': 7,
-            'hospital_name': 'BrightStart Children\'s Hospital',
+            'hospital_name': "BrightStart Children's Hospital",
             'consultation_fee': Decimal('130.00'),
             'available_from': time(16, 0),
             'available_to': time(23, 59),
@@ -223,7 +177,6 @@ def ensure_doctors():
         },
         {
             'username': 'jason.wu@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Jason',
             'last_name': 'Wu',
             'phone': '555050001',
@@ -238,7 +191,6 @@ def ensure_doctors():
         },
         {
             'username': 'emily.rhodes@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Emily',
             'last_name': 'Rhodes',
             'phone': '555050002',
@@ -253,7 +205,6 @@ def ensure_doctors():
         },
         {
             'username': 'naveen.iyer@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Naveen',
             'last_name': 'Iyer',
             'phone': '555050003',
@@ -268,7 +219,6 @@ def ensure_doctors():
         },
         {
             'username': 'maria.gomez@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Maria',
             'last_name': 'Gomez',
             'phone': '555060001',
@@ -283,7 +233,6 @@ def ensure_doctors():
         },
         {
             'username': 'caleb.foster@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Caleb',
             'last_name': 'Foster',
             'phone': '555060002',
@@ -298,7 +247,6 @@ def ensure_doctors():
         },
         {
             'username': 'zainab.ali@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Zainab',
             'last_name': 'Ali',
             'phone': '555060003',
@@ -313,7 +261,6 @@ def ensure_doctors():
         },
         {
             'username': 'nisha.verma@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Nisha',
             'last_name': 'Verma',
             'phone': '555070001',
@@ -328,7 +275,6 @@ def ensure_doctors():
         },
         {
             'username': 'david.cho@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'David',
             'last_name': 'Cho',
             'phone': '555070002',
@@ -343,7 +289,6 @@ def ensure_doctors():
         },
         {
             'username': 'amelia.grant@demo.com',
-            'password': 'Doctor123!',
             'first_name': 'Amelia',
             'last_name': 'Grant',
             'phone': '555070003',
@@ -368,13 +313,13 @@ def ensure_doctors():
                 'role': 'doctor',
             },
         )
+        user.email = entry['username']
         user.first_name = entry['first_name']
         user.last_name = entry['last_name']
-        user.email = entry['username']
         user.phone = entry['phone']
         user.role = 'doctor'
         user.is_verified = True
-        user.set_password(entry['password'])
+        user.set_password('Doctor123!')
         user.save()
         DoctorProfile.objects.update_or_create(
             user=user,
@@ -391,14 +336,42 @@ def ensure_doctors():
                 'total_appointments': 0,
             },
         )
-        status = 'created' if created else 'updated'
-        print(f"✓ {entry['first_name']} {entry['last_name']} ({entry['username']}) {status}")
 
 
-def main():
-    ensure_patient()
-    ensure_doctors()
+def unseed_doctors(apps, schema_editor):
+    User = apps.get_model('accounts', 'CustomUser')
+    usernames = [
+        'asha.patel@demo.com',
+        'miguel.reyes@demo.com',
+        'lauren.chen@demo.com',
+        'priya.khanna@demo.com',
+        'aaron.brooks@demo.com',
+        'elise.dubois@demo.com',
+        'kavita.menon@demo.com',
+        'daniel.harper@demo.com',
+        'sofia.rinaldi@demo.com',
+        'lily.evans@demo.com',
+        'omar.siddiqi@demo.com',
+        'hannah.morales@demo.com',
+        'jason.wu@demo.com',
+        'emily.rhodes@demo.com',
+        'naveen.iyer@demo.com',
+        'maria.gomez@demo.com',
+        'caleb.foster@demo.com',
+        'zainab.ali@demo.com',
+        'nisha.verma@demo.com',
+        'david.cho@demo.com',
+        'amelia.grant@demo.com',
+    ]
+    User.objects.filter(username__in=usernames).delete()
 
 
-if __name__ == '__main__':
-    main()
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('accounts', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.RunPython(seed_doctors, unseed_doctors),
+    ]

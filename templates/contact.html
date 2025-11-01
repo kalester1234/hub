@@ -2,137 +2,128 @@
 
 {% block title %}Contact Us - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+.contact-hero { background: #00897B; color: #FFFFFF; padding: 80px 0; text-align: center; }
+.contact-hero h1 { font-weight: 700; margin-bottom: 20px; }
+.contact-hero p { max-width: 680px; margin: 0 auto; font-size: 1.05rem; color: rgba(255,255,255,0.75); }
+.contact-info-section { background: #FFFFFF; padding: 80px 0; }
+.contact-info-section .card-title { color: #003366; font-weight: 600; }
+.contact-info-section .card-text { color: #5a707a; }
+.contact-hours { background: #00897B; color: #FFFFFF; padding: 80px 0; }
+.contact-hours .card { background: rgba(255,255,255,0.12); border: none; }
+.contact-hours h4 { color: #FFFFFF; }
+.contact-hours table { color: #FFFFFF; }
+.contact-hours table strong { color: #FFFFFF; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-5">
-        <div class="col-lg-8 mx-auto">
-            <h1 style="color: #003366; font-weight: 700; margin-bottom: 30px; text-align: center;">Contact Us</h1>
-            <p style="font-size: 1.1; color: #666; text-align: center;">Have questions? We'd love to hear from you. Get in touch with us today.</p>
-        </div>
+<section class="contact-hero">
+    <div class="container">
+        <h1>Contact Us</h1>
+        <p>Have questions? We'd love to hear from you. Get in touch with us today.</p>
     </div>
-
-    <div class="row g-4">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div style="height: 160px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                    <svg viewBox="0 0 150 150" style="width: 80%; height: 80%;" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Envelope -->
-                        <rect x="35" y="45" width="80" height="55" rx="4" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
-                        <path d="M 35 45 L 75 75 L 115 45" stroke="#0A74DA" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
-                        <line x1="75" y1="75" x2="115" y2="100" stroke="#0A74DA" stroke-width="1.5" opacity="0.5"/>
-                        <!-- Animation pulse -->
-                        <circle cx="75" cy="72.5" r="40" fill="none" stroke="#0560c0" stroke-width="1" opacity="0">
-                            <animate attributeName="r" values="40; 55; 40" dur="2s" repeatCount="indefinite"/>
-                            <animate attributeName="opacity" values="0.8; 0; 0.8" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                    </svg>
-                </div>
-                <div class="card-body p-4 text-center">
-                    <h5 class="card-title mt-2">Email</h5>
-                    <p class="card-text">info@medicalconnect.com</p>
-                    <p class="card-text">support@medicalconnect.com</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div style="height: 160px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                    <svg viewBox="0 0 150 150" style="width: 80%; height: 80%;" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Phone -->
-                        <rect x="45" y="35" width="60" height="90" rx="6" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
-                        <rect x="48" y="38" width="54" height="50" rx="3" fill="#E8EEFB"/>
-                        <circle cx="75" cy="120" r="4" fill="#0A74DA"/>
-                        <!-- Signal waves -->
-                        <path d="M 35 75 L 40 70 L 40 80" stroke="#0560c0" stroke-width="2" fill="none" stroke-linecap="round"/>
-                        <path d="M 30 75 L 28 73 L 28 77" stroke="#0560c0" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
-                        <!-- Ringing animation -->
-                        <g opacity="0.5" transform-origin="75 75">
-                            <circle cx="75" cy="60" r="35" fill="none" stroke="#0560c0" stroke-width="1.5">
-                                <animate attributeName="r" values="35; 50; 35" dur="1.5s" repeatCount="indefinite"/>
-                                <animate attributeName="opacity" values="1; 0; 1" dur="1.5s" repeatCount="indefinite"/>
-                            </circle>
-                        </g>
-                    </svg>
-                </div>
-                <div class="card-body p-4 text-center">
-                    <h5 class="card-title mt-2">Phone</h5>
-                    <p class="card-text">+1-800-MEDICAL</p>
-                    <p class="card-text">+1-800-HEALTH</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div style="height: 160px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                    <svg viewBox="0 0 150 150" style="width: 80%; height: 80%;" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Map pin -->
-                        <path d="M 75 30 C 60 30, 50 40, 50 55 C 50 75, 75 110, 75 110 C 75 110, 100 75, 100 55 C 100 40, 90 30, 75 30 Z" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
-                        <circle cx="75" cy="55" r="10" fill="#0A74DA"/>
-                        <!-- Location indicator -->
-                        <circle cx="75" cy="55" r="20" fill="none" stroke="#0560c0" stroke-width="1.5" opacity="0.4">
-                            <animate attributeName="r" values="20; 30; 20" dur="2s" repeatCount="indefinite"/>
-                            <animate attributeName="opacity" values="0.8; 0; 0.8" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                    </svg>
-                </div>
-                <div class="card-body p-4 text-center">
-                    <h5 class="card-title mt-2">Location</h5>
-                    <p class="card-text">123 Healthcare Avenue</p>
-                    <p class="card-text">Medical City, MC 12345</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-5">
-        <div class="col-lg-8 mx-auto">
-            <div class="card">
-                <div style="display: flex; align-items: stretch;">
-                    <div style="flex: 1; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; min-height: 200px; padding: 20px;">
-                        <svg viewBox="0 0 200 200" style="width: 100%; height: 100%; max-width: 150px;" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Clock face -->
-                            <circle cx="100" cy="100" r="70" fill="#FFFFFF" stroke="#0A74DA" stroke-width="3"/>
-                            <circle cx="100" cy="100" r="5" fill="#0A74DA"/>
-                            <!-- Hour markers -->
-                            <g stroke="#0A74DA" stroke-width="2">
-                                <line x1="100" y1="35" x2="100" y2="45"/>
-                                <line x1="165" y1="100" x2="155" y2="100"/>
-                                <line x1="100" y1="165" x2="100" y2="155"/>
-                                <line x1="35" y1="100" x2="45" y2="100"/>
-                            </g>
-                            <!-- Clock hands -->
-                            <line x1="100" y1="100" x2="100" y2="60" stroke="#0A74DA" stroke-width="4" stroke-linecap="round"/>
-                            <line x1="100" y1="100" x2="130" y2="100" stroke="#0560c0" stroke-width="3" stroke-linecap="round"/>
-                            <!-- Animated indicator -->
-                            <circle cx="100" cy="100" r="80" fill="none" stroke="#0560c0" stroke-width="1" opacity="0.3">
-                                <animate attributeName="stroke-width" values="1; 2; 1" dur="1.5s" repeatCount="indefinite"/>
-                            </circle>
+</section>
+<section class="contact-info-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div style="height: 160px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 150 150" style="width: 80%; height: 80%;" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="35" y="45" width="80" height="55" rx="4" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
+                            <path d="M 35 45 L 75 75 L 115 45" stroke="#0A74DA" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+                            <line x1="75" y1="75" x2="115" y2="100" stroke="#0A74DA" stroke-width="1.5" opacity="0.5"/>
                         </svg>
                     </div>
-                    <div style="flex: 1; padding: 0;">
-                        <div class="card-body p-4">
-                            <h4 style="color: #003366; margin-bottom: 20px;">Business Hours</h4>
-                            <table class="table">
-                                <tr>
-                                    <td>Monday - Friday:</td>
-                                    <td><strong>8:00 AM - 8:00 PM</strong></td>
-                                </tr>
-                                <tr>
-                                    <td>Saturday:</td>
-                                    <td><strong>9:00 AM - 5:00 PM</strong></td>
-                                </tr>
-                                <tr>
-                                    <td>Sunday:</td>
-                                    <td><strong>Closed</strong></td>
-                                </tr>
-                            </table>
+                    <div class="card-body p-4">
+                        <h5 class="card-title mt-2">Email</h5>
+                        <p class="card-text mb-1">info@medicalconnect.com</p>
+                        <p class="card-text">support@medicalconnect.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div style="height: 160px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 150 150" style="width: 80%; height: 80%;" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="45" y="35" width="60" height="90" rx="6" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
+                            <rect x="48" y="38" width="54" height="50" rx="3" fill="#E8EEFB"/>
+                            <circle cx="75" cy="120" r="4" fill="#0A74DA"/>
+                            <path d="M 35 75 L 40 70 L 40 80" stroke="#0560c0" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 30 75 L 28 73 L 28 77" stroke="#0560c0" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title mt-2">Phone</h5>
+                        <p class="card-text mb-1">+1-800-MEDICAL</p>
+                        <p class="card-text">+1-800-HEALTH</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div style="height: 160px; background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 150 150" style="width: 80%; height: 80%;" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 75 30 C 60 30, 50 40, 50 55 C 50 75, 75 110, 75 110 C 75 110, 100 75, 100 55 C 100 40, 90 30, 75 30 Z" fill="#FFFFFF" stroke="#0A74DA" stroke-width="2.5"/>
+                            <circle cx="75" cy="55" r="10" fill="#0A74DA"/>
+                            <circle cx="75" cy="55" r="20" fill="none" stroke="#0560c0" stroke-width="1.5" opacity="0.4"/>
+                        </svg>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title mt-2">Location</h5>
+                        <p class="card-text mb-1">123 Healthcare Avenue</p>
+                        <p class="card-text">Medical City, MC 12345</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="contact-hours">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="row g-0 align-items-stretch">
+                        <div class="col-md-5 d-flex align-items-center justify-content-center p-4">
+                            <svg viewBox="0 0 200 200" style="width: 100%; height: 100%; max-width: 150px;" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="100" cy="100" r="70" fill="#FFFFFF" stroke="#0A74DA" stroke-width="3"/>
+                                <circle cx="100" cy="100" r="5" fill="#0A74DA"/>
+                                <g stroke="#0A74DA" stroke-width="2">
+                                    <line x1="100" y1="35" x2="100" y2="45"/>
+                                    <line x1="165" y1="100" x2="155" y2="100"/>
+                                    <line x1="100" y1="165" x2="100" y2="155"/>
+                                    <line x1="35" y1="100" x2="45" y2="100"/>
+                                </g>
+                                <line x1="100" y1="100" x2="100" y2="60" stroke="#0A74DA" stroke-width="4" stroke-linecap="round"/>
+                                <line x1="100" y1="100" x2="130" y2="100" stroke="#0560c0" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card-body p-4">
+                                <h4 class="mb-3">Business Hours</h4>
+                                <table class="table mb-0">
+                                    <tr>
+                                        <td>Monday - Friday:</td>
+                                        <td><strong>8:00 AM - 8:00 PM</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Saturday:</td>
+                                        <td><strong>9:00 AM - 5:00 PM</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sunday:</td>
+                                        <td><strong>Closed</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

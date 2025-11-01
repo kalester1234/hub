@@ -2,6 +2,23 @@
 
 {% block title %}Browse Doctors - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+.sample-doctor-section { background: #FFFFFF; padding: 80px 0; }
+.sample-doctor-section h2 { color: #00897B; font-weight: 700; margin-bottom: 16px; }
+.sample-doctor-section p { color: #5a707a; max-width: 760px; margin: 0 auto 40px; }
+.sample-card { background: #F5FFFC; border: 1px solid #CDEDE7; border-radius: 16px; padding: 24px; height: 100%; }
+.sample-card h5 { color: #003366; font-weight: 600; margin-bottom: 12px; }
+.sample-card p { color: #5a707a; margin-bottom: 20px; }
+.sample-card ul { list-style: none; padding: 0; margin: 0; }
+.sample-card li { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.sample-card li:last-child { margin-bottom: 0; }
+.sample-name { font-weight: 600; color: #00897B; }
+.sample-slot { color: #003366; font-weight: 500; }
+.sample-mode { color: #5a707a; font-size: 0.875rem; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div style="background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); padding: 40px 0; margin-bottom: 30px;">
     <div class="container">
@@ -130,4 +147,188 @@
         {% endif %}
     </div>
 </div>
+<section class="sample-doctor-section">
+    <div class="container">
+        <div class="text-center">
+            <h2>24/7 Specialist Coverage</h2>
+            <p>Our roster ensures every major specialization has dedicated doctors available in rotating shifts so you can connect whenever you need care.</p>
+        </div>
+        <div class="row g-4 mt-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="sample-card h-100">
+                    <h5>Cardiology</h5>
+                    <p>Advanced cardiac support for emergencies, chronic management, and recovery programs.</p>
+                    <ul>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Asha Patel</span>
+                                <div class="sample-mode">Electrophysiologist • Virtual &amp; In-person</div>
+                            </div>
+                            <span class="sample-slot">12:00 AM – 08:00 AM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Miguel Reyes</span>
+                                <div class="sample-mode">Interventional Cardiologist • In-clinic &amp; Video</div>
+                            </div>
+                            <span class="sample-slot">08:00 AM – 04:00 PM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Lauren Chen</span>
+                                <div class="sample-mode">Heart Failure Specialist • Virtual Follow-ups</div>
+                            </div>
+                            <span class="sample-slot">04:00 PM – 12:00 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="sample-card h-100">
+                    <h5>Dermatology</h5>
+                    <p>Comprehensive skin care specialists for preventative, cosmetic, and urgent needs.</p>
+                    <ul>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Priya Khanna</span>
+                                <div class="sample-mode">Pediatric Dermatologist • Virtual Consults</div>
+                            </div>
+                            <span class="sample-slot">12:00 AM – 08:00 AM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Aaron Brooks</span>
+                                <div class="sample-mode">Cosmetic Dermatologist • In-clinic Procedures</div>
+                            </div>
+                            <span class="sample-slot">08:00 AM – 04:00 PM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Elise Dubois</span>
+                                <div class="sample-mode">Clinical Dermatologist • Hybrid Visits</div>
+                            </div>
+                            <span class="sample-slot">04:00 PM – 12:00 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="sample-card h-100">
+                    <h5>Neurology</h5>
+                    <p>Neurological experts for stroke, seizure, and long-term neuro health management.</p>
+                    <ul>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Kavita Menon</span>
+                                <div class="sample-mode">Stroke Neurologist • Tele-neuro Coverage</div>
+                            </div>
+                            <span class="sample-slot">12:00 AM – 08:00 AM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Daniel Harper</span>
+                                <div class="sample-mode">Movement Disorder Specialist • In-person</div>
+                            </div>
+                            <span class="sample-slot">08:00 AM – 04:00 PM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Sofia Rinaldi</span>
+                                <div class="sample-mode">Epileptologist • Hybrid Care</div>
+                            </div>
+                            <span class="sample-slot">04:00 PM – 12:00 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="sample-card h-100">
+                    <h5>Pediatrics</h5>
+                    <p>Child-centered physicians covering wellness, urgent care, and adolescent support.</p>
+                    <ul>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Lily Evans</span>
+                                <div class="sample-mode">Urgent Care Pediatrician • Virtual Triage</div>
+                            </div>
+                            <span class="sample-slot">12:00 AM – 08:00 AM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Omar Siddiqi</span>
+                                <div class="sample-mode">General Pediatrician • Clinic Visits</div>
+                            </div>
+                            <span class="sample-slot">08:00 AM – 04:00 PM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Hannah Morales</span>
+                                <div class="sample-mode">Adolescent Medicine Specialist • Hybrid Care</div>
+                            </div>
+                            <span class="sample-slot">04:00 PM – 12:00 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="sample-card h-100">
+                    <h5>Orthopedics</h5>
+                    <p>Musculoskeletal specialists managing injuries, pain, and post-surgery recovery.</p>
+                    <ul>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Jason Wu</span>
+                                <div class="sample-mode">Sports Orthopedic Surgeon • On-call Teleconsults</div>
+                            </div>
+                            <span class="sample-slot">12:00 AM – 08:00 AM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Emily Rhodes</span>
+                                <div class="sample-mode">Joint Replacement Specialist • In-person Assessments</div>
+                            </div>
+                            <span class="sample-slot">08:00 AM – 04:00 PM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Naveen Iyer</span>
+                                <div class="sample-mode">Spine Specialist • Hybrid Follow-ups</div>
+                            </div>
+                            <span class="sample-slot">04:00 PM – 12:00 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="sample-card h-100">
+                    <h5>General Medicine</h5>
+                    <p>Primary care doctors coordinating preventive, chronic, and acute care day and night.</p>
+                    <ul>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Maria Gomez</span>
+                                <div class="sample-mode">Hospitalist • Virtual &amp; Ward Rounds</div>
+                            </div>
+                            <span class="sample-slot">12:00 AM – 08:00 AM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Caleb Foster</span>
+                                <div class="sample-mode">Family Physician • Primary Care Clinic</div>
+                            </div>
+                            <span class="sample-slot">08:00 AM – 04:00 PM</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="sample-name">Dr. Zainab Ali</span>
+                                <div class="sample-mode">Internal Medicine Consultant • Evening Telehealth</div>
+                            </div>
+                            <span class="sample-slot">04:00 PM – 12:00 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

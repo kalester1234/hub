@@ -2,337 +2,455 @@
 {% load i18n log %}
 
 {% block content %}
-<div class="portal">
-    <section class="portal-hero">
-        <div class="hero-copy">
-            <span class="hero-badge">{% trans "Administration" %}</span>
-            <h1>{% blocktrans with name=user.get_full_name|default:user.get_username %}Welcome back, {{ name }}{% endblocktrans %}</h1>
-            <p>{% trans "Oversee platform data, coordinate teams, and keep every record in sync." %}</p>
-        </div>
-        <div class="hero-cards">
-            <div class="hero-card">
-                <span>{% trans "Signed in as" %}</span>
-                <strong>{{ user.username }}</strong>
-                <small>{% trans "Last login" %}: {{ user.last_login|date:"M j, Y H:i"|default:_("Just now") }}</small>
-            </div>
-            <div class="hero-card">
-                <span>{% trans "Applications" %}</span>
-                <strong>{{ app_list|length }}</strong>
-                <small>{% trans "Modules available" %}</small>
+<div class="mc-admin-hub">
+    <aside class="hub-rail">
+        <div class="rail-brand">
+            <span class="rail-mark">MC</span>
+            <div class="rail-copy">
+                <span class="rail-name">Medical Connect</span>
+                <span class="rail-tag">{% trans "Admin" %}</span>
             </div>
         </div>
-    </section>
-    <div class="portal-grid">
-        <section class="portal-main">
-            <header class="section-heading">
-                <div>
-                    <h2>{% trans "Data hubs" %}</h2>
-                    <p>{% trans "Jump straight into any area and manage records with confidence." %}</p>
-                </div>
-                <div class="heading-actions">
-                    <a class="heading-link" href="{% url 'admin:index' %}"><i class="bi bi-arrow-clockwise"></i> {% trans "Refresh" %}</a>
-                    <a class="heading-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i> {% trans "Custom dashboard" %}</a>
-                </div>
-            </header>
-            {% if app_list %}
-            <div class="app-list">
+        <div class="rail-user">
+            <span class="rail-user-label">{% trans "Signed in" %}</span>
+            <span class="rail-user-name">{{ user.get_full_name|default:user.get_username }}</span>
+        </div>
+        <nav class="rail-menu">
+            <ul>
+                <li class="active"><a href="{% url 'admin:index' %}"><i class="bi bi-speedometer2"></i> {% trans "Overview" %}</a></li>
                 {% for app in app_list %}
-                <article class="app-card">
-                    <header class="app-card-head">
-                        <div>
-                            <span class="app-name">{{ app.name }}</span>
-                            <span class="app-label">{{ app.app_label }}</span>
-                        </div>
-                        {% if app.app_url %}
-                        <a class="pill pill-open" href="{{ app.app_url }}"><i class="bi bi-box-arrow-up-right"></i> {% trans "Open" %}</a>
-                        {% endif %}
-                    </header>
-                    <ul class="model-list">
-                        {% for model in app.models %}
-                        <li class="model-item">
-                            <div class="model-info">
-                                {% if model.admin_url %}
-                                <a href="{{ model.admin_url }}">{{ model.name }}</a>
-                                {% else %}
-                                <span>{{ model.name }}</span>
-                                {% endif %}
-                                <small class="model-meta">{{ model.object_name }}</small>
-                            </div>
-                            <div class="model-actions">
-                                {% if model.admin_url %}
-                                <a class="pill pill-view" href="{{ model.admin_url }}">{% trans "Browse" %}</a>
-                                {% endif %}
-                                {% if model.add_url %}
-                                <a class="pill pill-add" href="{{ model.add_url }}">{% trans "Add" %}</a>
-                                {% elif model.view_only %}
-                                <span class="pill pill-disabled">{% trans "View only" %}</span>
-                                {% endif %}
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </article>
+                <li>
+                    {% if app.app_url %}
+                    <a href="{{ app.app_url }}">{{ app.name }}</a>
+                    {% else %}
+                    <span>{{ app.name }}</span>
+                    {% endif %}
+                </li>
                 {% endfor %}
+            </ul>
+        </nav>
+        <div class="rail-help">
+            <a href="mailto:support@medicalconnect.com"><i class="bi bi-life-preserver"></i> {% trans "Support" %}</a>
+        </div>
+    </aside>
+    <main class="hub-main">
+        <header class="hub-hero">
+            <div class="hero-text">
+                <span class="hero-label">{% trans "Welcome back" %}</span>
+                <h1>{% blocktrans with name=user.get_full_name|default:user.get_username %}Dashboard for {{ name }}{% endblocktrans %}</h1>
+                <p>{% trans "Track hospitals, doctors, appointments, and patient communication from one command center." %}</p>
             </div>
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-icon"><i class="bi bi-inboxes"></i></div>
-                <p>{% trans "No applications are configured for this admin yet." %}</p>
+            <div class="hero-stamp">
+                <span class="stamp-label">{% trans "Last login" %}</span>
+                <span class="stamp-value">{{ user.last_login|date:"M j, Y · H:i"|default:_("Just now") }}</span>
             </div>
-            {% endif %}
+        </header>
+        {% get_admin_log 8 as admin_log for_user user %}
+        <section class="hub-metrics">
+            <article class="metric">
+                <span class="metric-title">{% trans "Applications" %}</span>
+                <span class="metric-value">{{ app_list|length }}</span>
+                <span class="metric-note">{% trans "Registered modules" %}</span>
+            </article>
+            <article class="metric">
+                <span class="metric-title">{% trans "Recent updates" %}</span>
+                <span class="metric-value">{{ admin_log|length }}</span>
+                <span class="metric-note">{% trans "Tracked changes" %}</span>
+            </article>
+            <article class="metric">
+                <span class="metric-title">{% trans "Today" %}</span>
+                <span class="metric-value">{% now "M j" %}</span>
+                <span class="metric-note">{% trans "Daily overview" %}</span>
+            </article>
+            <article class="metric">
+                <span class="metric-title">{% trans "Users online" %}</span>
+                <span class="metric-value">{% firstof online_count 0 %}</span>
+                <span class="metric-note">{% trans "Connected staff" %}</span>
+            </article>
         </section>
-        <aside class="portal-aside">
-            <section class="aside-card">
-                <h3>{% trans "Quick actions" %}</h3>
-                <ul>
-                    {% if perms.accounts.add_customuser %}
-                    <li><a href="{% url 'admin:accounts_customuser_add' %}"><i class="bi bi-person-plus"></i> {% trans "Create user" %}</a></li>
+        <section class="hub-grid">
+            <section class="hub-panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>{% trans "Operational hubs" %}</h2>
+                        <p>{% trans "Open any application to manage its data and workflow." %}</p>
+                    </div>
+                    {% if has_permission and app_list %}
+                    <form id="app-filter" class="panel-search" method="get">
+                        <label for="app-filter-input"><i class="bi bi-search"></i></label>
+                        <input id="app-filter-input" type="text" placeholder="{% trans "Filter applications" %}" autocomplete="off">
+                    </form>
                     {% endif %}
-                    {% if perms.appointments.add_appointment %}
-                    <li><a href="{% url 'admin:appointments_appointment_add' %}"><i class="bi bi-calendar-plus"></i> {% trans "Log appointment" %}</a></li>
-                    {% endif %}
-                    {% if perms.messaging.view_notification %}
-                    <li><a href="{% url 'admin:messaging_notification_changelist' %}"><i class="bi bi-bell"></i> {% trans "Review notifications" %}</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'admin:password_change' %}"><i class="bi bi-shield-lock"></i> {% trans "Update password" %}</a></li>
-                </ul>
-            </section>
-            <section class="aside-card">
-                <h3>{% trans "Recent activity" %}</h3>
-                {% get_admin_log 8 as admin_log for_user user %}
-                {% if not admin_log %}
-                <p class="empty-text">{% trans "Nothing logged yet." %}</p>
+                </div>
+                {% if app_list %}
+                <div class="app-collection" id="app-grid">
+                    {% for app in app_list %}
+                    <article class="app-tile" data-app="{{ app.name|lower }} {{ app.app_label|lower }}">
+                        <header class="tile-head">
+                            <div class="tile-titles">
+                                <h3>{{ app.name }}</h3>
+                                <span class="tile-label">{{ app.app_label }}</span>
+                            </div>
+                            {% if app.app_url %}
+                            <a class="pill pill-open" href="{{ app.app_url }}"><i class="bi bi-box-arrow-up-right"></i> {% trans "Open" %}</a>
+                            {% endif %}
+                        </header>
+                        <ul class="tile-models">
+                            {% for model in app.models %}
+                            <li class="model-entry">
+                                <div class="model-info">
+                                    {% if model.admin_url %}
+                                    <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                                    {% else %}
+                                    <span>{{ model.name }}</span>
+                                    {% endif %}
+                                    <span class="model-meta">{{ model.object_name }}</span>
+                                </div>
+                                <div class="model-actions">
+                                    {% if model.admin_url %}
+                                    <a class="pill pill-view" href="{{ model.admin_url }}">{% trans "Browse" %}</a>
+                                    {% endif %}
+                                    {% if model.add_url %}
+                                    <a class="pill pill-add" href="{{ model.add_url }}">{% trans "Add" %}</a>
+                                    {% elif model.view_only %}
+                                    <span class="pill pill-disabled">{% trans "View only" %}</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                    {% endfor %}
+                </div>
+                <p class="filter-empty" id="filter-empty" hidden>{% trans "No applications match your search." %}</p>
                 {% else %}
-                <ul class="activity-list">
-                    {% for entry in admin_log %}
-                    <li>
-                        <span class="activity-time">{{ entry.action_time|date:"M j, H:i" }}</span>
-                        <div class="activity-body">
+                <div class="empty-state">
+                    <h3>{% trans "No applications configured" %}</h3>
+                    <p>{% trans "Register models with the admin to manage them from this dashboard." %}</p>
+                </div>
+                {% endif %}
+            </section>
+            <aside class="hub-sidebar">
+                <section class="side-card">
+                    <h3>{% trans "Quick actions" %}</h3>
+                    <ul>
+                        {% if perms.accounts.add_customuser %}
+                        <li><a href="{% url 'admin:accounts_customuser_add' %}"><i class="bi bi-person-plus"></i> {% trans "Create user" %}</a></li>
+                        {% endif %}
+                        {% if perms.appointments.add_appointment %}
+                        <li><a href="{% url 'admin:appointments_appointment_add' %}"><i class="bi bi-calendar-plus"></i> {% trans "Log appointment" %}</a></li>
+                        {% endif %}
+                        {% if perms.messaging.view_notification %}
+                        <li><a href="{% url 'admin:messaging_notification_changelist' %}"><i class="bi bi-bell"></i> {% trans "Notifications" %}</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'admin:password_change' %}"><i class="bi bi-shield-lock"></i> {% trans "Update password" %}</a></li>
+                    </ul>
+                </section>
+                <section class="side-card">
+                    <h3>{% trans "Recent activity" %}</h3>
+                    {% if admin_log %}
+                    <ul class="activity">
+                        {% for entry in admin_log %}
+                        <li>
+                            <span class="activity-time">{{ entry.action_time|date:"M j · H:i" }}</span>
                             {% if entry.is_deletion or not entry.get_admin_url %}
                             <span class="activity-object">{{ entry.object_repr }}</span>
                             {% else %}
                             <a class="activity-object" href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
                             {% endif %}
-                            <span class="activity-message">{{ entry.get_change_message }}</span>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            </section>
-            <section class="aside-card highlight">
-                <h3>{% trans "Need assistance?" %}</h3>
-                <p>{% trans "Reach the Medical Connect support desk for rapid help with configuration and accounts." %}</p>
-                <a class="pill pill-support" href="mailto:support@medicalconnect.com"><i class="bi bi-life-preserver"></i> {% trans "Contact support" %}</a>
-            </section>
-        </aside>
-    </div>
+                            <span class="activity-note">{{ entry.get_change_message }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-text">{% trans "No updates yet." %}</p>
+                    {% endif %}
+                </section>
+                <section class="side-card support">
+                    <h3>{% trans "Need assistance?" %}</h3>
+                    <p>{% trans "Message the Medical Connect support desk for configuration help." %}</p>
+                    <a class="pill pill-support" href="mailto:support@medicalconnect.com"><i class="bi bi-envelope"></i> {% trans "Email support" %}</a>
+                </section>
+            </aside>
+        </section>
+    </main>
 </div>
 {% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
 <style>
-.portal {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
+.mc-admin-hub {
+    display: grid;
+    grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 44px);
+    width: 100%;
+    min-height: calc(100vh - clamp(120px, 12vw, 160px));
+    padding: clamp(32px, 5vw, 60px);
+    box-sizing: border-box;
 }
-.portal-hero {
-    display: flex;
-    gap: 28px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    background: linear-gradient(135deg, rgba(0, 137, 123, 0.18), rgba(4, 90, 82, 0.18));
-    padding: 32px 36px;
+.hub-rail {
+    background: linear-gradient(180deg, rgba(0, 137, 123, 0.92), rgba(4, 90, 82, 0.95));
     border-radius: 28px;
-    border: 1px solid rgba(0, 137, 123, 0.2);
-    box-shadow: 0 18px 40px rgba(0, 137, 123, 0.16);
-}
-.hero-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 460px;
-}
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 16px;
-    border-radius: 999px;
-    background: rgba(4, 90, 82, 0.12);
-    color: #045a52;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-}
-.hero-copy h1 {
-    margin: 0;
-    font-size: 2.2rem;
-    color: #0f3d37;
-}
-.hero-copy p {
-    margin: 0;
-    color: rgba(15, 61, 55, 0.75);
-    font-size: 1rem;
-}
-.hero-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 18px;
-    align-items: stretch;
-}
-.hero-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border: 1px solid rgba(0, 137, 123, 0.18);
-    box-shadow: 0 18px 36px rgba(15, 39, 65, 0.08);
-}
-.hero-card span {
-    color: rgba(15, 61, 55, 0.6);
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-.hero-card strong {
-    font-size: 1.8rem;
-    color: #045a52;
-}
-.hero-card small {
-    color: rgba(15, 61, 55, 0.55);
-}
-.portal-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
-    gap: 28px;
-    align-items: start;
-}
-.portal-main {
-    background: #ffffff;
-    border-radius: 24px;
-    padding: 28px 32px;
-    border: 1px solid rgba(0, 137, 123, 0.14);
-    box-shadow: 0 20px 42px rgba(15, 39, 65, 0.08);
-    display: grid;
-    gap: 24px;
-}
-.section-heading {
-    display: flex;
-    justify-content: space-between;
-    gap: 18px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.section-heading h2 {
-    margin: 0;
-    color: #045a52;
-    font-size: 1.6rem;
-}
-.section-heading p {
-    margin: 6px 0 0;
-    color: rgba(15, 61, 55, 0.65);
-}
-.heading-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.heading-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(0, 137, 123, 0.12);
-    color: #045a52;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-.heading-link:hover {
-    background: rgba(4, 90, 82, 0.16);
-}
-.app-list {
-    display: grid;
-    gap: 18px;
-}
-.app-card {
-    border: 1px solid rgba(0, 137, 123, 0.16);
-    border-radius: 20px;
-    padding: 22px;
-    display: grid;
-    gap: 16px;
-    box-shadow: 0 16px 34px rgba(15, 39, 65, 0.08);
-}
-.app-card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-}
-.app-name {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #045a52;
-}
-.app-label {
-    display: block;
-    font-size: 0.8rem;
-    color: rgba(15, 61, 55, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-decoration: none;
-}
-.pill-open {
-    background: rgba(255, 255, 255, 0.2);
-    color: #045a52;
-    border: 1px solid rgba(4, 90, 82, 0.3);
-}
-.pill-view {
-    background: rgba(76, 110, 245, 0.15);
-    color: #1b3a4b;
-}
-.pill-add {
-    background: rgba(11, 165, 122, 0.16);
-    color: #0b6b58;
-}
-.pill-disabled {
-    background: rgba(108, 117, 125, 0.16);
-    color: rgba(108, 117, 125, 0.8);
-}
-.pill-support {
-    background: linear-gradient(135deg, #00897b, #045a52);
+    padding: clamp(26px, 4vw, 36px);
     color: #ffffff;
-    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(18px, 3vw, 26px);
+    box-shadow: 0 24px 50px rgba(0, 137, 123, 0.28);
 }
-.model-list {
+.rail-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.rail-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.16);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+.rail-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.rail-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+.rail-tag {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+.rail-user {
+    display: grid;
+    gap: 4px;
+}
+.rail-user-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.75;
+}
+.rail-user-name {
+    font-weight: 600;
+}
+.rail-menu ul {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    gap: 10px;
+}
+.rail-menu a,
+.rail-menu span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    text-decoration: none;
+}
+.rail-menu li.active a,
+.rail-menu a:hover,
+.rail-menu span:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+.rail-help a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 600;
+}
+.hub-main {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(28px, 4vw, 40px);
+    width: 100%;
+}
+.hub-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: clamp(22px, 4vw, 32px);
+    background: #ffffff;
+    border-radius: 30px;
+    padding: clamp(32px, 6vw, 50px);
+    box-shadow: 0 22px 48px rgba(16, 30, 115, 0.12);
+    align-items: flex-start;
+}
+.hero-text {
+    display: grid;
     gap: 12px;
 }
-.model-item {
+.hero-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(4, 90, 82, 0.75);
+    font-weight: 600;
+}
+.hero-text h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 4vw, 3rem);
+    color: #0f3d37;
+}
+.hero-text p {
+    margin: 0;
+    color: rgba(15, 61, 55, 0.72);
+}
+.hero-stamp {
+    display: grid;
+    gap: 4px;
+    text-align: right;
+}
+.stamp-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(15, 61, 55, 0.62);
+}
+.stamp-value {
+    font-weight: 600;
+    color: #045a52;
+}
+.hub-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: clamp(20px, 4vw, 32px);
+}
+.metric {
+    background: linear-gradient(135deg, rgba(0, 137, 123, 0.16), rgba(4, 90, 82, 0.2));
+    border-radius: 26px;
+    padding: clamp(24px, 4vw, 32px);
+    display: grid;
+    gap: 8px;
+    color: #ffffff;
+    box-shadow: 0 20px 44px rgba(16, 30, 115, 0.12);
+}
+.metric-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+.metric-value {
+    font-size: clamp(2.4rem, 5vw, 3.1rem);
+    font-weight: 700;
+}
+.metric-note {
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+.hub-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2.6fr) minmax(320px, 1fr);
+    gap: clamp(28px, 4vw, 40px);
+    align-items: start;
+}
+.hub-panel {
+    background: #ffffff;
+    border-radius: 32px;
+    padding: clamp(32px, 5vw, 44px);
+    box-shadow: 0 24px 54px rgba(16, 30, 115, 0.12);
+    display: grid;
+    gap: clamp(22px, 3vw, 30px);
+}
+.panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+}
+.panel-head h2 {
+    margin: 0;
+    color: #0f3d37;
+    font-size: 1.7rem;
+}
+.panel-head p {
+    margin: 6px 0 0;
+    color: rgba(15, 61, 55, 0.65);
+}
+.panel-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    background: rgba(0, 137, 123, 0.1);
+    padding: 10px 16px;
+}
+.panel-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-weight: 600;
+    color: #045a52;
+}
+.app-collection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(22px, 4vw, 34px);
+}
+.app-tile {
+    border: 1px solid rgba(0, 137, 123, 0.16);
+    border-radius: 26px;
+    padding: clamp(24px, 4vw, 34px);
+    display: grid;
+    gap: clamp(18px, 3vw, 24px);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 20px 44px rgba(16, 30, 115, 0.1);
+}
+.tile-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+}
+.tile-titles h3 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #045a52;
+}
+.tile-label {
+    display: inline-flex;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(0, 137, 123, 0.12);
+    color: rgba(4, 90, 82, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.tile-models {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+}
+.model-entry {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 137, 123, 0.12);
+    padding-bottom: 12px;
+}
+.model-entry:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 .model-info {
     display: flex;
@@ -347,127 +465,173 @@
 .model-info a:hover {
     text-decoration: underline;
 }
-.model-info span {
-    color: #12344d;
-    font-weight: 600;
-}
 .model-meta {
     font-size: 0.8rem;
     color: rgba(18, 52, 77, 0.55);
 }
 .model-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
 }
-.empty-state {
-    background: rgba(0, 137, 123, 0.08);
-    border-radius: 20px;
-    padding: 32px;
-    text-align: center;
-    color: rgba(15, 61, 55, 0.65);
-    display: grid;
-    gap: 12px;
-    justify-items: center;
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
 }
-.empty-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 20px;
-    background: rgba(4, 90, 82, 0.12);
-    display: grid;
-    place-items: center;
-    font-size: 1.6rem;
+.pill-open {
+    background: rgba(0, 137, 123, 0.16);
     color: #045a52;
 }
-.portal-aside {
-    display: grid;
-    gap: 20px;
+.pill-view {
+    background: rgba(10, 116, 218, 0.15);
+    color: #0b4a6f;
 }
-.aside-card {
+.pill-add {
+    background: rgba(11, 165, 122, 0.18);
+    color: #0b6b58;
+}
+.pill-disabled {
+    background: rgba(108, 117, 125, 0.16);
+    color: rgba(108, 117, 125, 0.75);
+}
+.pill-support {
+    background: linear-gradient(135deg, #00897b, #045a52);
+    color: #ffffff;
+}
+.hub-sidebar {
+    display: grid;
+    gap: clamp(20px, 3vw, 28px);
+}
+.side-card {
     background: #ffffff;
-    border-radius: 22px;
-    padding: 24px;
-    border: 1px solid rgba(0, 137, 123, 0.14);
-    box-shadow: 0 18px 34px rgba(15, 39, 65, 0.08);
+    border-radius: 28px;
+    padding: clamp(24px, 4vw, 32px);
+    box-shadow: 0 20px 44px rgba(16, 30, 115, 0.1);
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
-.aside-card h3 {
+.side-card h3 {
     margin: 0;
     color: #045a52;
     font-size: 1.2rem;
 }
-.aside-card ul {
+.side-card ul {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 12px;
-}
-.aside-card li a {
-    display: inline-flex;
-    align-items: center;
     gap: 10px;
-    color: #12344d;
+}
+.side-card ul a {
     text-decoration: none;
+    color: #12344d;
     font-weight: 600;
 }
-.aside-card li a:hover {
-    text-decoration: underline;
-}
-.highlight {
-    background: linear-gradient(135deg, rgba(11, 165, 122, 0.18), rgba(4, 90, 82, 0.18));
-    border: 1px solid rgba(4, 90, 82, 0.24);
-}
-.highlight p {
-    margin: 0;
-    color: rgba(15, 61, 55, 0.75);
-}
-.activity-list {
+.activity {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 12px;
+    gap: 10px;
 }
 .activity-time {
-    font-size: 0.78rem;
-    color: rgba(18, 52, 77, 0.55);
+    font-size: 0.8rem;
     font-weight: 600;
-}
-.activity-body {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    color: rgba(18, 52, 77, 0.55);
 }
 .activity-object {
-    color: #12344d;
     font-weight: 600;
+    color: #045a52;
     text-decoration: none;
 }
 .activity-object:hover {
     text-decoration: underline;
 }
-.activity-message {
+.activity-note {
     font-size: 0.85rem;
-    color: rgba(18, 52, 77, 0.55);
+    color: rgba(18, 52, 77, 0.72);
 }
-.empty-text {
-    color: rgba(18, 52, 77, 0.55);
+.support {
+    background: linear-gradient(135deg, rgba(0, 137, 123, 0.08), rgba(4, 90, 82, 0.1));
 }
-@media (max-width: 1080px) {
-    .portal-grid {
+.filter-empty {
+    margin: 0;
+    font-weight: 600;
+    color: #b02a37;
+}
+.empty-state {
+    background: rgba(0, 137, 123, 0.08);
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    color: rgba(4, 90, 82, 0.7);
+}
+@media (max-width: 1280px) {
+    .mc-admin-hub {
+        grid-template-columns: 1fr;
+    }
+    .hub-rail {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        border-radius: 24px;
+    }
+    .hub-grid {
         grid-template-columns: 1fr;
     }
 }
 @media (max-width: 768px) {
-    .portal-hero {
-        padding: 28px;
+    .hub-hero {
+        flex-direction: column;
+        text-align: left;
     }
-    .portal-main {
+    .hero-stamp {
+        text-align: left;
+    }
+}
+@media (max-width: 576px) {
+    .mc-admin-hub {
+        padding: clamp(20px, 6vw, 32px);
+    }
+    .hub-rail {
+        padding: 20px;
+    }
+    .hub-hero {
         padding: 24px;
     }
 }
 </style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var input = document.getElementById("app-filter-input");
+    if (!input) return;
+    var tiles = Array.from(document.querySelectorAll(".app-tile"));
+    var emptyNotice = document.getElementById("filter-empty");
+    input.addEventListener("input", function () {
+        var term = input.value.trim().toLowerCase();
+        var visible = 0;
+        tiles.forEach(function (tile) {
+            if (!term || tile.dataset.app.indexOf(term) !== -1) {
+                tile.hidden = false;
+                visible += 1;
+            } else {
+                tile.hidden = true;
+            }
+        });
+        if (emptyNotice) {
+            emptyNotice.hidden = visible !== 0;
+        }
+    });
+});
+</script>
 {% endblock %}
