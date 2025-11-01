@@ -1,533 +1,666 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard - Medical Connect{% endblock %}
+{% block title %}Admin Console - Medical Connect{% endblock %}
 
 {% block content %}
-<div class="admin-shell">
-    <aside class="admin-shell-sidebar">
-        <div class="sidebar-brand">
-            <div class="sidebar-icon"><i class="bi bi-heart-pulse"></i></div>
-            <div>
-                <span class="sidebar-label">Medical Connect</span>
+<div class="admin-console">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="brand-icon"><i class="bi bi-hospital"></i></div>
+            <div class="brand-text">
+                <span>Medical Connect</span>
                 <strong>Admin Console</strong>
             </div>
         </div>
-        <nav class="sidebar-nav">
-            <ul>
-                <li class="active"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i> Overview</a></li>
-                <li><a href="{% url 'admin:index' %}"><i class="bi bi-kanban"></i> Manage Data</a></li>
-                <li><a href="{% url 'admin:accounts_customuser_changelist' %}"><i class="bi bi-people"></i> Users</a></li>
-                <li><a href="{% url 'admin:appointments_appointment_changelist' %}"><i class="bi bi-calendar-event"></i> Appointments</a></li>
-                <li><a href="{% url 'notifications' %}"><i class="bi bi-bell"></i> Notifications</a></li>
-            </ul>
+        <nav class="admin-nav">
+            <a href="#overview" class="admin-nav-link active" data-section="overview"><i class="bi bi-speedometer2"></i><span>Overview</span></a>
+            <a href="#manage-data" class="admin-nav-link" data-section="manage-data"><i class="bi bi-kanban"></i><span>Manage Data</span></a>
+            <a href="#users" class="admin-nav-link" data-section="users"><i class="bi bi-people"></i><span>Users</span></a>
+            <a href="#appointments" class="admin-nav-link" data-section="appointments"><i class="bi bi-calendar-event"></i><span>Appointments</span></a>
+            <a href="#notifications" class="admin-nav-link" data-section="notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
         </nav>
-        <div class="sidebar-footer">
-            <a href="{% url 'logout' %}" class="sidebar-button"><i class="bi bi-box-arrow-right"></i> Sign out</a>
+        <div class="admin-sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-button"><i class="bi bi-box-arrow-right"></i> Sign out</a>
         </div>
     </aside>
-    <section class="admin-shell-main">
-        <header class="admin-shell-header">
-            <div class="header-intro">
-                <span class="header-role">{{ user_summary.role }}</span>
+    <section class="admin-main">
+        <header class="admin-header">
+            <div class="header-text">
+                <span class="role-tag">{{ user_summary.role }}</span>
                 <h1>Welcome {{ user_summary.name }}</h1>
                 <p>{{ user_summary.status_text }}</p>
             </div>
-            <div class="header-metrics">
-                <div class="metric-block">
-                    <span>Total appointments</span>
-                    <strong>{{ appointment_overview.total }}</strong>
-                </div>
-                <div class="metric-block">
-                    <span>Total users</span>
+            <div class="header-summary">
+                <div class="summary-card">
+                    <span>Total Users</span>
                     <strong>{{ total_users }}</strong>
                 </div>
-                <div class="metric-avatar">{{ user_summary.initials }}</div>
+                <div class="summary-card">
+                    <span>Pending Doctors</span>
+                    <strong>{{ pending_doctors }}</strong>
+                </div>
+                <div class="user-avatar">{{ user_summary.initials }}</div>
             </div>
         </header>
-        <section class="admin-stat-grid">
-            {% for card in stat_cards %}
-            <div class="admin-stat-card">
-                <div class="stat-icon" style="color: {{ card.accent }}; background: {{ card.accent }}1A;">
-                    <i class="bi {{ card.icon }}"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-label">{{ card.label }}</span>
-                    <h3>{{ card.count }}</h3>
-                    {% if card.hint %}
-                    <span class="stat-hint">{{ card.hint }}</span>
-                    {% endif %}
-                    <div class="stat-progress">
-                        <div class="stat-progress-bar" style="width: {{ card.progress }}%; background: {{ card.accent }};"></div>
-                    </div>
-                    <span class="stat-progress-value">{{ card.progress }}%</span>
-                </div>
-            </div>
-            {% endfor %}
-        </section>
-        <section class="admin-overview-grid">
-            {% for item in overview_cards %}
-            <div class="admin-overview-card">
-                <div class="overview-icon" style="color: {{ item.accent }}; background: {{ item.accent }}1A;">
-                    <i class="bi {{ item.icon }}"></i>
-                </div>
-                <div class="overview-body">
-                    <span>{{ item.label }}</span>
-                    <strong>{{ item.value }}</strong>
-                    <small>{{ item.description }}</small>
-                </div>
-            </div>
-            {% endfor %}
-        </section>
-        <section class="admin-lower-grid">
-            <div class="admin-chart-card">
-                <div class="card-header">
+        <div class="admin-sections">
+            <section id="overview" class="admin-section active">
+                <div class="section-header">
                     <div>
-                        <h2>Appointment status</h2>
-                        <span>{{ appointment_overview.completed }} completed ({{ appointment_overview.completed_percent }}%)</span>
+                        <h2>Overview</h2>
+                        <p>Key metrics that keep the platform running smoothly</p>
                     </div>
                 </div>
-                {% if has_chart_data %}
-                <div class="chart-grid">
-                    {% for item in chart_data %}
-                    <div class="chart-bar">
-                        <div class="chart-bar-fill" style="height: {{ item.height }}%; background: {{ item.color }};"></div>
-                        <span class="chart-bar-count">{{ item.count }}</span>
-                        <span class="chart-bar-label">{{ item.label }}</span>
+                <div class="card-grid">
+                    {% for card in stat_cards %}
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background: {{ card.accent }}1a; color: {{ card.accent }};">
+                            <i class="bi {{ card.icon }}"></i>
+                        </div>
+                        <div class="metric-details">
+                            <span>{{ card.label }}</span>
+                            <h3>{{ card.count }}</h3>
+                            {% if card.hint %}<p>{{ card.hint }}</p>{% endif %}
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: {{ card.progress }}%; background: {{ card.accent }};"></div>
+                            </div>
+                            <small>{{ card.progress }}%</small>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
-                <div class="chart-legend">
-                    {% for item in chart_data %}
-                    <div class="legend-item">
-                        <span class="legend-dot" style="background: {{ item.color }};"></span>
-                        <span>{{ item.label }}</span>
+                <div class="summary-grid">
+                    {% for item in overview_cards %}
+                    <div class="summary-widget">
+                        <div class="summary-icon" style="background: {{ item.accent }}1a; color: {{ item.accent }};">
+                            <i class="bi {{ item.icon }}"></i>
+                        </div>
+                        <div>
+                            <span>{{ item.label }}</span>
+                            <strong>{{ item.value }}</strong>
+                            <small>{{ item.description }}</small>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
-                {% else %}
-                <div class="chart-empty">No appointment activity yet.</div>
-                {% endif %}
-            </div>
-            <div class="admin-table-card">
-                <div class="card-header">
+                <div class="lower-grid">
+                    <div class="chart-card">
+                        <div class="card-title">
+                            <div>
+                                <h3>Appointment status</h3>
+                                <span>{{ appointment_overview.completed }} completed ({{ appointment_overview.completed_percent }}%)</span>
+                            </div>
+                        </div>
+                        {% if has_chart_data %}
+                        <div class="chart-bars">
+                            {% for item in chart_data %}
+                            <div class="chart-column">
+                                <div class="chart-value" style="height: {{ item.height }}%; background: {{ item.color }};"></div>
+                                <span class="chart-count">{{ item.count }}</span>
+                                <span class="chart-label">{{ item.label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="chart-legend">
+                            {% for item in chart_data %}
+                            <div class="legend-entry">
+                                <span class="legend-dot" style="background: {{ item.color }};"></span>
+                                <span>{{ item.label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No appointment activity yet.</div>
+                        {% endif %}
+                    </div>
+                    <div class="table-card">
+                        <div class="card-title">
+                            <div>
+                                <h3>Hospitals snapshot</h3>
+                                <span>{{ total_hospitals }} connected {% if total_hospitals == 1 %}hospital{% else %}hospitals{% endif %}</span>
+                            </div>
+                        </div>
+                        {% if hospital_list %}
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    {% for header in hospital_headers %}
+                                    <th>{{ header }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hospital in hospital_list %}
+                                <tr>
+                                    <td>{{ hospital.name }}</td>
+                                    <td>{{ hospital.count }}</td>
+                                    <td>{{ hospital.contact }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-state">No hospitals connected yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+            <section id="manage-data" class="admin-section">
+                <div class="section-header">
                     <div>
-                        <h2>Hospitals</h2>
-                        <span>{{ total_hospitals }} connected {% if total_hospitals == 1 %}hospital{% else %}hospitals{% endif %}</span>
+                        <h2>Manage Data</h2>
+                        <p>Manage doctors and hospitals information</p>
                     </div>
-                    <a href="{% url 'admin:accounts_doctorprofile_changelist' %}" class="card-link"><i class="bi bi-building"></i> Manage</a>
+                    <div class="section-actions">
+                        <a href="{% url 'doctor_signup' %}" class="primary-button"><i class="bi bi-person-plus"></i> Add Doctor</a>
+                    </div>
                 </div>
-                {% if hospital_list %}
-                <div class="table-grid">
-                    <div class="table-head">
-                        {% for header in hospital_headers %}
-                        <span>{{ header }}</span>
-                        {% endfor %}
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab-group="manage" data-tab-target="doctors">Doctors <span>{{ doctor_metrics.total }}</span></button>
+                    <button class="tab-button" data-tab-group="manage" data-tab-target="hospitals">Hospitals <span>{{ hospital_metrics.total }}</span></button>
+                </div>
+                <div class="tab-panel active" data-tab-group="manage" data-tab-id="doctors">
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <span>Total Doctors</span>
+                            <strong>{{ doctor_metrics.total }}</strong>
+                        </div>
+                        <div class="info-card">
+                            <span>Approved</span>
+                            <strong>{{ doctor_metrics.approved }}</strong>
+                        </div>
+                        <div class="info-card">
+                            <span>Pending</span>
+                            <strong>{{ doctor_metrics.pending }}</strong>
+                        </div>
                     </div>
-                    {% for hospital in hospital_list %}
-                    <div class="table-row">
-                        <span class="primary">{{ hospital.name }}</span>
-                        <span>{{ hospital.count }}</span>
-                        <span>{{ hospital.contact }}</span>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Specialization</th>
+                                    <th>Hospital</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in doctor_rows %}
+                                <tr>
+                                    <td>
+                                        <div class="person">
+                                            <div class="avatar">{{ row.name|slice:":1"|upper }}</div>
+                                            <div>
+                                                <span class="person-name">{{ row.name }}</span>
+                                                <small>{{ row.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ row.specialization }}</td>
+                                    <td>{{ row.hospital }}</td>
+                                    <td>
+                                        <div class="contact-block">
+                                            <span>{{ row.phone }}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="status-chip {{ row.status_class }}">{{ row.status }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No doctors available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+                <div class="tab-panel" data-tab-group="manage" data-tab-id="hospitals">
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <span>Total Hospitals</span>
+                            <strong>{{ hospital_metrics.total }}</strong>
+                        </div>
+                        <div class="info-card">
+                            <span>Doctors Linked</span>
+                            <strong>{{ hospital_metrics.with_doctors }}</strong>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Hospital</th>
+                                    <th>Doctors</th>
+                                    <th>Primary Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hospital in hospital_rows %}
+                                <tr>
+                                    <td>{{ hospital.name }}</td>
+                                    <td>{{ hospital.count }}</td>
+                                    <td>{{ hospital.contact }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-cell">No hospitals available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section id="users" class="admin-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Users</h2>
+                        <p>Manage patients and admin users</p>
+                    </div>
+                    <div class="section-actions">
+                        <a href="{% url 'patient_signup' %}" class="primary-button"><i class="bi bi-person-plus"></i> Add Patient</a>
+                    </div>
+                </div>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <span>Total Patients</span>
+                        <strong>{{ user_metrics.patients_total }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Active</span>
+                        <strong>{{ user_metrics.patients_active }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Inactive</span>
+                        <strong>{{ user_metrics.patients_inactive }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Admin Users</span>
+                        <strong>{{ user_metrics.admins_total }}</strong>
+                    </div>
+                </div>
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab-group="users" data-tab-target="patients">Patients <span>{{ user_metrics.patients_total }}</span></button>
+                    <button class="tab-button" data-tab-group="users" data-tab-target="admins">Admins <span>{{ user_metrics.admins_total }}</span></button>
+                </div>
+                <div class="tab-panel active" data-tab-group="users" data-tab-id="patients">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Contact</th>
+                                    <th>Date of Birth</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in patient_rows %}
+                                <tr>
+                                    <td>
+                                        <div class="person">
+                                            <div class="avatar">{{ row.name|slice:":1"|upper }}</div>
+                                            <div>
+                                                <span class="person-name">{{ row.name }}</span>
+                                                <small>{{ row.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ row.phone }}</td>
+                                    <td>{% if row.dob %}{{ row.dob|date:"Y-m-d" }}{% else %}Not provided{% endif %}</td>
+                                    <td>{{ row.joined|date:"Y-m-d" }}</td>
+                                    <td><span class="status-chip {{ row.status_class }}">{{ row.status }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No patients available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-panel" data-tab-group="users" data-tab-id="admins">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Admin</th>
+                                    <th>Contact</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in admin_rows %}
+                                <tr>
+                                    <td>
+                                        <div class="person">
+                                            <div class="avatar">{{ row.name|slice:":1"|upper }}</div>
+                                            <div>
+                                                <span class="person-name">{{ row.name }}</span>
+                                                <small>{{ row.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ row.phone }}</td>
+                                    <td>{{ row.joined|date:"Y-m-d" }}</td>
+                                    <td><span class="status-chip {{ row.status_class }}">{{ row.status }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="empty-cell">No admin users available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section id="appointments" class="admin-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Appointments</h2>
+                        <p>Track appointment activity across the platform</p>
+                    </div>
+                </div>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <span>Total</span>
+                        <strong>{{ appointment_counts.total }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Pending</span>
+                        <strong>{{ appointment_counts.pending }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Upcoming</span>
+                        <strong>{{ appointment_counts.upcoming }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Completed</span>
+                        <strong>{{ appointment_counts.completed }}</strong>
+                    </div>
+                </div>
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab-group="appointments" data-tab-target="pending">Pending</button>
+                    <button class="tab-button" data-tab-group="appointments" data-tab-target="upcoming">Upcoming</button>
+                    <button class="tab-button" data-tab-group="appointments" data-tab-target="recent">Recent</button>
+                </div>
+                <div class="tab-panel active" data-tab-group="appointments" data-tab-id="pending">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments_pending_list %}
+                                <tr>
+                                    <td>{{ appointment.patient.get_full_name|default:appointment.patient.username }}</td>
+                                    <td>Dr. {{ appointment.doctor.get_full_name|default:appointment.doctor.username }}</td>
+                                    <td>{{ appointment.appointment_date|date:"Y-m-d" }}</td>
+                                    <td>{{ appointment.appointment_time|time:"H:i" }}</td>
+                                    <td><span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No pending appointments.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-panel" data-tab-group="appointments" data-tab-id="upcoming">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments_upcoming_list %}
+                                <tr>
+                                    <td>{{ appointment.patient.get_full_name|default:appointment.patient.username }}</td>
+                                    <td>Dr. {{ appointment.doctor.get_full_name|default:appointment.doctor.username }}</td>
+                                    <td>{{ appointment.appointment_date|date:"Y-m-d" }}</td>
+                                    <td>{{ appointment.appointment_time|time:"H:i" }}</td>
+                                    <td><span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No upcoming appointments.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-panel" data-tab-group="appointments" data-tab-id="recent">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments_recent %}
+                                <tr>
+                                    <td>{{ appointment.patient.get_full_name|default:appointment.patient.username }}</td>
+                                    <td>Dr. {{ appointment.doctor.get_full_name|default:appointment.doctor.username }}</td>
+                                    <td>{{ appointment.appointment_date|date:"Y-m-d" }}</td>
+                                    <td>{{ appointment.appointment_time|time:"H:i" }}</td>
+                                    <td><span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No recent appointments.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section id="notifications" class="admin-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Notifications</h2>
+                        <p>Stay updated with platform activities</p>
+                    </div>
+                    <div class="section-actions">
+                        <button type="button" class="ghost-button" disabled>Mark all as read</button>
+                    </div>
+                </div>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <span>Total</span>
+                        <strong>{{ notification_metrics.total }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Unread</span>
+                        <strong>{{ notification_metrics.unread }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Read</span>
+                        <strong>{{ notification_metrics.read }}</strong>
+                    </div>
+                </div>
+                <div class="notification-list">
+                    {% for item in notifications_recent %}
+                    <div class="notification-item {% if not item.is_read %}unread{% endif %}">
+                        <div class="notification-icon">
+                            <i class="bi bi-dot"></i>
+                        </div>
+                        <div>
+                            <div class="notification-title">{{ item.title }}</div>
+                            <div class="notification-meta">{{ item.description }}</div>
+                            <div class="notification-footer">
+                                <span>{{ item.user.get_full_name|default:item.user.username }}</span>
+                                <span>{{ item.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">No notifications yet.</div>
                     {% endfor %}
                 </div>
-                {% else %}
-                <div class="table-empty">No hospitals connected yet.</div>
-                {% endif %}
-            </div>
-        </section>
+            </section>
+        </div>
     </section>
 </div>
+<script>
+const sidebarLinks = document.querySelectorAll('.admin-nav-link');
+const sections = document.querySelectorAll('.admin-section');
+sidebarLinks.forEach(link => {
+    link.addEventListener('click', event => {
+        event.preventDefault();
+        const target = link.dataset.section;
+        sidebarLinks.forEach(item => item.classList.remove('active'));
+        link.classList.add('active');
+        sections.forEach(section => {
+            section.classList.toggle('active', section.id === target);
+        });
+        document.querySelector('.admin-main').scrollTop = 0;
+    });
+});
+const tabButtons = document.querySelectorAll('.tab-button');
+tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const group = button.dataset.tabGroup;
+        const target = button.dataset.tabTarget;
+        document.querySelectorAll(`.tab-button[data-tab-group="${group}"]`).forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        document.querySelectorAll(`.tab-panel[data-tab-group="${group}"]`).forEach(panel => {
+            panel.classList.toggle('active', panel.dataset.tabId === target);
+        });
+    });
+});
+</script>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.admin-shell {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: calc(100vh - 80px);
-    background: #f5f7fb;
-}
-.admin-shell-sidebar {
-    background: linear-gradient(180deg, #0ba57a 0%, #0d8c9b 100%);
-    color: #ffffff;
-    padding: 36px 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-.sidebar-brand {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-}
-.sidebar-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    background: rgba(255, 255, 255, 0.16);
-    font-size: 24px;
-}
-.sidebar-label {
-    font-size: 0.9rem;
-    opacity: 0.85;
-}
-.sidebar-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 12px;
-}
-.sidebar-nav li a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 14px;
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.86);
-    transition: background 0.2s ease, color 0.2s ease;
-}
-.sidebar-nav li.active a {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
-}
-.sidebar-nav li a:hover {
-    background: rgba(255, 255, 255, 0.12);
-}
-.sidebar-footer {
-    margin-top: auto;
-}
-.sidebar-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 14px;
-    text-decoration: none;
-    color: #0d8c9b;
-    background: #ffffff;
-    font-weight: 600;
-}
-.sidebar-button:hover {
-    background: rgba(255, 255, 255, 0.9);
-}
-.admin-shell-main {
-    padding: 40px 48px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-}
-.admin-shell-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 24px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.header-intro {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.header-role {
-    display: inline-flex;
-    padding: 6px 16px;
-    border-radius: 999px;
-    background: rgba(11, 165, 122, 0.12);
-    color: #0ba57a;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-.header-intro h1 {
-    margin: 0;
-    font-size: 2.2rem;
-    color: #1b3a4b;
-}
-.header-intro p {
-    margin: 0;
-    color: #607b8a;
-}
-.header-metrics {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.metric-block {
-    display: flex;
-    flex-direction: column;
-    padding: 12px 16px;
-    border-radius: 16px;
-    background: #ffffff;
-    box-shadow: 0 18px 30px rgba(15, 39, 65, 0.08);
-    min-width: 140px;
-}
-.metric-block span {
-    font-size: 0.85rem;
-    color: #6c7a89;
-}
-.metric-block strong {
-    font-size: 1.4rem;
-    color: #1b3a4b;
-}
-.metric-avatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: #12344d;
-    color: #ffffff;
-    display: grid;
-    place-items: center;
-    font-weight: 600;
-}
-.admin-stat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 22px;
-}
-.admin-stat-card {
-    display: flex;
-    gap: 16px;
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 18px 30px rgba(15, 39, 65, 0.08);
-}
-.stat-icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    font-size: 1.4rem;
-}
-.stat-content {
-    display: grid;
-    gap: 6px;
-    flex: 1;
-}
-.stat-label {
-    font-size: 0.85rem;
-    color: #7a8aa0;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-.stat-content h3 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: #1b3a4b;
-}
-.stat-hint {
-    color: #6c7a89;
-}
-.stat-progress {
-    height: 6px;
-    border-radius: 6px;
-    background: rgba(99, 116, 138, 0.12);
-    overflow: hidden;
-}
-.stat-progress-bar {
-    height: 100%;
-    border-radius: 6px;
-}
-.stat-progress-value {
-    font-size: 0.8rem;
-    color: #6c7a89;
-}
-.admin-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 22px;
-}
-.admin-overview-card {
-    display: flex;
-    gap: 16px;
-    padding: 20px;
-    border-radius: 18px;
-    background: #ffffff;
-    box-shadow: 0 18px 30px rgba(15, 39, 65, 0.08);
-}
-.overview-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 16px;
-    display: grid;
-    place-items: center;
-    font-size: 1.3rem;
-}
-.overview-body {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.overview-body span {
-    font-size: 0.85rem;
-    color: #7a8aa0;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-.overview-body strong {
-    font-size: 1.6rem;
-    color: #1b3a4b;
-}
-.overview-body small {
-    color: #6c7a89;
-}
-.admin-lower-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px;
-}
-.admin-chart-card,
-.admin-table-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 22px 40px rgba(15, 39, 65, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-}
-.card-header h2 {
-    margin: 0;
-    font-size: 1.4rem;
-    color: #1b3a4b;
-}
-.card-header span {
-    color: #6c7a89;
-}
-.card-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-    color: #0d8c9b;
-    font-weight: 600;
-}
-.card-link:hover {
-    text-decoration: underline;
-}
-.chart-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    gap: 18px;
-    align-items: end;
-}
-.chart-bar {
-    display: grid;
-    gap: 10px;
-    justify-items: center;
-}
-.chart-bar-fill {
-    width: 40px;
-    border-radius: 14px 14px 6px 6px;
-    background: #0d8c9b;
-}
-.chart-bar-count {
-    font-weight: 600;
-    color: #1b3a4b;
-}
-.chart-bar-label {
-    font-size: 0.85rem;
-    color: #7a8aa0;
-    text-align: center;
-}
-.chart-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-.legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #6c7a89;
-}
-.legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-.chart-empty {
-    color: #6c7a89;
-}
-.table-grid {
-    display: grid;
-    gap: 12px;
-}
-.table-head,
-.table-row {
-    display: grid;
-    grid-template-columns: 1.4fr 0.5fr 1fr;
-    gap: 12px;
-    align-items: center;
-}
-.table-head span {
-    font-size: 0.85rem;
-    color: #7a8aa0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.table-row {
-    background: rgba(13, 140, 155, 0.08);
-    padding: 14px 16px;
-    border-radius: 14px;
-}
-.table-row .primary {
-    font-weight: 600;
-    color: #1b3a4b;
-}
-.table-empty {
-    color: #6c7a89;
-}
-@media (max-width: 1024px) {
-    .admin-shell {
-        grid-template-columns: 1fr;
-    }
-    .admin-shell-sidebar {
-        border-radius: 0 0 28px 28px;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .sidebar-nav {
-        width: 100%;
-    }
-    .sidebar-nav ul {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-    .sidebar-footer {
-        width: 100%;
-    }
-    .sidebar-button {
-        width: auto;
-    }
-}
-@media (max-width: 768px) {
-    .admin-shell-main {
-        padding: 32px 24px;
-    }
-    .admin-shell-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .header-metrics {
-        width: 100%;
-    }
-}
+.admin-console { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 80px); background: #eef5f4; }
+.admin-sidebar { background: linear-gradient(180deg, #00897B 0%, #00695C 100%); color: #ffffff; padding: 36px 28px; display: flex; flex-direction: column; gap: 24px; }
+.admin-brand { display: flex; align-items: center; gap: 14px; }
+.brand-icon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.2); font-size: 22px; }
+.brand-text span { display: block; font-size: 0.85rem; opacity: 0.8; }
+.brand-text strong { font-size: 1.1rem; }
+.admin-nav { display: grid; gap: 12px; }
+.admin-nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px; color: rgba(255, 255, 255, 0.85); text-decoration: none; transition: background 0.2s ease, color 0.2s ease; }
+.admin-nav-link.active { background: rgba(255, 255, 255, 0.22); color: #ffffff; }
+.admin-nav-link:hover { background: rgba(255, 255, 255, 0.16); }
+.admin-sidebar-footer { margin-top: auto; }
+.logout-button { display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; background: #ffffff; color: #00695C; text-decoration: none; border-radius: 14px; font-weight: 600; }
+.logout-button:hover { background: rgba(255, 255, 255, 0.85); }
+.admin-main { background: #f8fbfb; padding: 40px; display: flex; flex-direction: column; gap: 32px; overflow-y: auto; }
+.admin-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 24px; align-items: center; }
+.header-text { display: flex; flex-direction: column; gap: 10px; }
+.role-tag { display: inline-flex; padding: 6px 16px; border-radius: 999px; background: rgba(0, 137, 123, 0.15); color: #00897B; font-weight: 600; font-size: 0.85rem; }
+.header-text h1 { margin: 0; font-size: 2.1rem; color: #183a37; }
+.header-text p { margin: 0; color: #4f7069; }
+.header-summary { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.summary-card { background: #ffffff; padding: 12px 18px; border-radius: 16px; box-shadow: 0 10px 24px rgba(0, 60, 52, 0.12); display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+.summary-card span { font-size: 0.85rem; color: #4f7069; }
+.summary-card strong { font-size: 1.4rem; color: #183a37; }
+.user-avatar { width: 52px; height: 52px; border-radius: 50%; background: #004d40; color: #ffffff; display: grid; place-items: center; font-weight: 700; }
+.admin-sections { display: flex; flex-direction: column; gap: 48px; }
+.admin-section { display: none; flex-direction: column; gap: 24px; }
+.admin-section.active { display: flex; }
+.section-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.section-header h2 { margin: 0; font-size: 1.8rem; color: #183a37; }
+.section-header p { margin: 0; color: #61837d; }
+.section-actions { display: flex; gap: 12px; }
+.primary-button { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 12px; background: #00897B; color: #ffffff; text-decoration: none; font-weight: 600; }
+.primary-button:hover { background: #00695C; }
+.ghost-button { padding: 10px 18px; border-radius: 12px; border: 1px solid #b0c9c5; background: transparent; color: #4f7069; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.metric-card { display: flex; gap: 16px; background: #ffffff; padding: 20px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 60, 52, 0.08); }
+.metric-icon { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; font-size: 1.5rem; }
+.metric-details { display: grid; gap: 6px; }
+.metric-details span { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #61837d; }
+.metric-details h3 { margin: 0; font-size: 1.9rem; color: #183a37; }
+.metric-details p { margin: 0; color: #4f7069; }
+.progress-track { height: 6px; border-radius: 6px; background: rgba(0, 137, 123, 0.1); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 6px; }
+.metric-details small { font-size: 0.75rem; color: #4f7069; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.summary-widget { display: flex; gap: 14px; background: #ffffff; padding: 20px; border-radius: 18px; box-shadow: 0 20px 40px rgba(0, 60, 52, 0.08); }
+.summary-widget span { font-size: 0.85rem; color: #61837d; text-transform: uppercase; letter-spacing: 0.05em; }
+.summary-widget strong { display: block; font-size: 1.6rem; color: #183a37; }
+.summary-widget small { color: #4f7069; }
+.summary-icon { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; font-size: 1.3rem; }
+.lower-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+.chart-card, .table-card { background: #ffffff; border-radius: 20px; padding: 24px; box-shadow: 0 24px 48px rgba(0, 60, 52, 0.1); display: flex; flex-direction: column; gap: 20px; }
+.card-title { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-title h3 { margin: 0; font-size: 1.4rem; color: #183a37; }
+.card-title span { color: #4f7069; }
+.chart-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 18px; align-items: end; }
+.chart-column { display: grid; gap: 10px; justify-items: center; }
+.chart-value { width: 44px; border-radius: 16px 16px 6px 6px; }
+.chart-count { font-weight: 600; color: #183a37; }
+.chart-label { font-size: 0.85rem; color: #61837d; text-align: center; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 12px; }
+.legend-entry { display: inline-flex; align-items: center; gap: 8px; color: #4f7069; font-size: 0.85rem; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+.empty-state { padding: 24px; border-radius: 16px; background: rgba(0, 137, 123, 0.08); color: #4f7069; text-align: center; }
+.tab-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+.tab-button { padding: 10px 18px; border-radius: 12px; border: 1px solid #b0c9c5; background: #ffffff; color: #4f7069; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.tab-button span { display: inline-flex; padding: 2px 10px; border-radius: 999px; background: rgba(0, 137, 123, 0.1); color: #00897B; font-size: 0.75rem; }
+.tab-button.active { background: #00897B; color: #ffffff; border-color: #00897B; }
+.tab-button.active span { background: rgba(255, 255, 255, 0.2); color: #ffffff; }
+.tab-panel { display: none; flex-direction: column; gap: 20px; }
+.tab-panel.active { display: flex; }
+.info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+.info-card { background: #ffffff; border-radius: 16px; padding: 18px; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); display: flex; flex-direction: column; gap: 6px; }
+.info-card span { font-size: 0.85rem; color: #61837d; }
+.info-card strong { font-size: 1.5rem; color: #183a37; }
+.table-wrapper { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 640px; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); }
+.data-table thead { background: rgba(0, 137, 123, 0.08); color: #00695C; }
+.data-table th { text-align: left; padding: 14px 18px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.data-table td { padding: 16px 18px; border-top: 1px solid rgba(0, 0, 0, 0.05); color: #345c56; }
+.person { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(0, 137, 123, 0.12); color: #00897B; display: grid; place-items: center; font-weight: 700; }
+.person-name { font-weight: 600; color: #183a37; display: block; }
+.person small { color: #61837d; }
+.contact-block { display: flex; flex-direction: column; gap: 4px; }
+.status-chip { display: inline-flex; padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; text-transform: capitalize; }
+.status-chip.approved { background: rgba(0, 137, 123, 0.15); color: #00897B; }
+.status-chip.pending { background: rgba(244, 183, 64, 0.2); color: #b26a00; }
+.status-chip.active { background: rgba(0, 137, 123, 0.15); color: #00897B; }
+.status-chip.inactive { background: rgba(244, 67, 54, 0.15); color: #c62828; }
+.status-chip.status-pending { background: rgba(244, 183, 64, 0.2); color: #b26a00; }
+.status-chip.status-confirmed { background: rgba(76, 110, 245, 0.2); color: #1a36b8; }
+.status-chip.status-completed { background: rgba(11, 165, 122, 0.2); color: #00897B; }
+.status-chip.status-cancelled { background: rgba(239, 68, 68, 0.2); color: #c62828; }
+.empty-cell { text-align: center; padding: 24px; color: #4f7069; }
+.notification-list { display: grid; gap: 16px; }
+.notification-item { display: grid; grid-template-columns: auto 1fr; gap: 16px; background: #ffffff; padding: 18px; border-radius: 16px; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); border-left: 4px solid transparent; }
+.notification-item.unread { border-left-color: #00897B; }
+.notification-icon { width: 18px; color: #00897B; font-size: 1.4rem; display: grid; place-items: center; }
+.notification-title { font-weight: 600; color: #183a37; }
+.notification-meta { color: #4f7069; margin-top: 4px; }
+.notification-footer { display: flex; gap: 16px; margin-top: 8px; color: #61837d; font-size: 0.85rem; }
+@media (max-width: 1100px) { .admin-console { grid-template-columns: 1fr; } .admin-sidebar { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; border-radius: 0 0 24px 24px; } .admin-nav { width: 100%; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } .admin-sidebar-footer { width: 100%; } .admin-main { padding: 32px 24px; } }
+@media (max-width: 768px) { .data-table { min-width: 520px; } .card-grid, .summary-grid, .lower-grid, .info-cards { grid-template-columns: 1fr; } .admin-header { flex-direction: column; align-items: flex-start; } }
 </style>
 {% endblock %}

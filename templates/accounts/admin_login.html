@@ -3,256 +3,107 @@
 {% block title %}Admin Login - Medical Connect{% endblock %}
 
 {% block content %}
-<div class="admin-auth-wrapper py-5">
-    <div class="admin-auth-card">
-        <div class="admin-auth-panel">
-            <div class="admin-auth-brand">
-                <div class="admin-auth-icon"><i class="bi bi-heart-pulse-fill"></i></div>
-                <div>
-                    <h2>HealthStack</h2>
-                    <span>Admin Console</span>
-                </div>
-            </div>
-            <p class="admin-auth-copy">
-                Empower your healthcare operations with actionable insights, team management, and streamlined appointment tracking.
-            </p>
-            <div class="admin-auth-support">
-                <strong>Need support?</strong>
-                <span>Email help@healthstack.com or call +1-800-555-0123.</span>
-            </div>
-        </div>
-        <div class="admin-auth-form">
-            <div class="admin-auth-header">
-                <h1>Welcome Back</h1>
-                <p>Sign in with your administrator credentials to continue.</p>
-            </div>
-            {% if messages %}
-            <div class="admin-auth-messages">
-                {% for message in messages %}
-                <div class="admin-auth-message">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% if form.non_field_errors %}
-            <div class="admin-auth-messages">
-                {% for error in form.non_field_errors %}
-                <div class="admin-auth-message">{{ error }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <div class="admin-auth-field">
-                    <label for="{{ form.username.id_for_label }}">Username</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                    <div class="admin-auth-error">{{ form.username.errors|join:' ' }}</div>
+<div style="background: linear-gradient(135deg, #F4F6F8 0%, #E8EEF5 100%); min-height: calc(100vh - 200px); display: flex; align-items: center;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 mx-auto">
+                <div style="background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="font-size: 3rem; color: #0BA57A; margin-bottom: 10px;">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <h1 style="color: #1a3a4a; font-weight: 700;">Admin Login</h1>
+                        <p style="color: #666;">Access the administrative dashboard.</p>
+                    </div>
+
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div style="background-color: rgba(13, 140, 155, 0.12); color: #0D8C9B; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-weight: 600;">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
-                </div>
-                <div class="admin-auth-field admin-auth-password">
-                    <label for="{{ form.password.id_for_label }}">Password</label>
-                    {{ form.password }}
-                    <button type="button" class="admin-auth-toggle" id="togglePassword"><i class="bi bi-eye"></i></button>
-                    {% if form.password.errors %}
-                    <div class="admin-auth-error">{{ form.password.errors|join:' ' }}</div>
+
+                    {% if form.non_field_errors %}
+                    <div class="mb-4">
+                        {% for error in form.non_field_errors %}
+                        <div style="background-color: rgba(239, 68, 68, 0.12); color: #B91C1C; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-weight: 600;">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">User Name</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div style="color: #B91C1C; font-size: 0.9rem; margin-top: 6px;">{{ form.username.errors|join:' ' }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                            <div class="input-group">
+                                {{ form.password }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordAdmin">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password.errors %}
+                            <div style="color: #B91C1C; font-size: 0.9rem; margin-top: 6px;">{{ form.password.errors|join:' ' }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="showPasswordAdmin">
+                            <label class="form-check-label" for="showPasswordAdmin">Show Password</label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #0BA57A 0%, #0D8C9B 100%); border: none;">
+                                <i class="bi bi-box-arrow-in-right"></i> Sign In
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <p style="color: #666;">Not an admin?
+                                <a href="{% url 'login' %}" style="color: #17a2b8; text-decoration: none;">Return to user login</a>
+                            </p>
+                        </div>
+                    </form>
                 </div>
-                <button type="submit" class="admin-auth-submit">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    Sign in
-                </button>
-            </form>
-            <div class="admin-auth-alt">
-                Not an admin? <a href="{% url 'login' %}">Return to user login</a>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-.admin-auth-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #F0FDF9 0%, #ECF3FF 100%);
-    min-height: calc(100vh - 200px);
-}
-.admin-auth-card {
-    display: grid;
-    grid-template-columns: minmax(260px, 320px) minmax(320px, 420px);
-    width: min(820px, 100%);
-    background: #ffffff;
-    border-radius: 28px;
-    overflow: hidden;
-    box-shadow: 0 40px 80px rgba(15, 39, 65, 0.12);
-}
-.admin-auth-panel {
-    background: linear-gradient(180deg, #0BA57A 0%, #0D8C9B 100%);
-    color: #ffffff;
-    padding: 48px 36px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-.admin-auth-brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-.admin-auth-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.18);
-    display: grid;
-    place-items: center;
-    font-size: 26px;
-}
-.admin-auth-brand h2 {
-    margin: 0;
-    font-size: 1.7rem;
-    font-weight: 700;
-}
-.admin-auth-brand span {
-    font-size: 0.95rem;
-    opacity: 0.85;
-}
-.admin-auth-copy {
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    opacity: 0.9;
-}
-.admin-auth-support {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 0.9rem;
-}
-.admin-auth-form {
-    padding: 48px 52px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-.admin-auth-header h1 {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #12344D;
-}
-.admin-auth-header p {
-    margin: 8px 0 0;
-    color: #607B8A;
-}
-.admin-auth-field {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.admin-auth-field label {
-    font-weight: 600;
-    color: #12344D;
-}
-.admin-auth-form .form-control {
-    border-radius: 14px;
-    border: 1px solid #D7E1EA;
-    padding: 14px 16px;
-    font-size: 1rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.admin-auth-form .form-control:focus {
-    border-color: #0BA57A;
-    box-shadow: 0 0 0 4px rgba(11, 165, 122, 0.18);
-}
-.admin-auth-password {
-    position: relative;
-}
-.admin-auth-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    color: #607B8A;
-    font-size: 1.1rem;
-    cursor: pointer;
-}
-.admin-auth-error {
-    color: #C0392B;
-    font-size: 0.9rem;
-}
-.admin-auth-messages {
-    display: grid;
-    gap: 10px;
-}
-.admin-auth-message {
-    background: rgba(192, 57, 43, 0.12);
-    color: #922B21;
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-weight: 600;
-}
-.admin-auth-submit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 15px 18px;
-    border-radius: 14px;
-    border: none;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #ffffff;
-    background: linear-gradient(135deg, #0BA57A 0%, #0D8C9B 100%);
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.admin-auth-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 30px rgba(13, 140, 155, 0.22);
-}
-.admin-auth-alt {
-    text-align: center;
-    color: #607B8A;
-    font-size: 0.95rem;
-}
-.admin-auth-alt a {
-    color: #0BA57A;
-    font-weight: 600;
-    text-decoration: none;
-}
-.admin-auth-alt a:hover {
-    text-decoration: underline;
-}
-@media (max-width: 992px) {
-    .admin-auth-card {
-        grid-template-columns: 1fr;
-    }
-    .admin-auth-panel {
-        display: none;
-    }
-    .admin-auth-form {
-        padding: 40px 32px;
-    }
-}
-</style>
-{% endblock %}
-
 {% block extra_js %}
 <script>
-const togglePassword = document.getElementById('togglePassword');
-const passwordField = document.getElementById('{{ form.password.id_for_label }}');
-if (togglePassword && passwordField) {
-    togglePassword.addEventListener('click', () => {
-        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordField.setAttribute('type', type);
-        togglePassword.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
-    });
-}
+    const togglePasswordAdmin = document.getElementById('togglePasswordAdmin');
+    const passwordFieldAdmin = document.getElementById('{{ form.password.id_for_label }}');
+    const showPasswordCheckboxAdmin = document.getElementById('showPasswordAdmin');
+
+    if (togglePasswordAdmin && passwordFieldAdmin && showPasswordCheckboxAdmin) {
+        showPasswordCheckboxAdmin.addEventListener('change', function() {
+            if (this.checked) {
+                passwordFieldAdmin.type = 'text';
+            } else {
+                passwordFieldAdmin.type = 'password';
+            }
+        });
+
+        togglePasswordAdmin.addEventListener('click', function() {
+            showPasswordCheckboxAdmin.checked = !showPasswordCheckboxAdmin.checked;
+            showPasswordCheckboxAdmin.dispatchEvent(new Event('change'));
+            togglePasswordAdmin.innerHTML = passwordFieldAdmin.type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+        });
+    }
 </script>
 {% endblock %}

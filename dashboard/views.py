@@ -174,8 +174,9 @@ def admin_dashboard(request):
         return redirect('dashboard')
     from accounts.models import CustomUser
 
-    doctors_qs = CustomUser.objects.filter(role='doctor')
-    patients_qs = CustomUser.objects.filter(role='patient')
+    doctors_qs = CustomUser.objects.filter(role='doctor').select_related('doctor_profile')
+    patients_qs = CustomUser.objects.filter(role='patient').select_related('patient_profile')
+    admin_qs = CustomUser.objects.filter(role='admin')
     total_users = CustomUser.objects.count()
     total_doctors = doctors_qs.count()
     total_patients = patients_qs.count()
@@ -260,6 +261,89 @@ def admin_dashboard(request):
     total_hospitals = len(hospital_list_full)
     hospital_list = hospital_list_full[:5]
     doctors_with_hospital = len(hospital_profiles)
+
+    doctor_rows = []
+    for doctor in doctors_qs.order_by('first_name', 'last_name'):
+        profile = getattr(doctor, 'doctor_profile', None)
+        doctor_rows.append({
+            'name': doctor.get_full_name() or doctor.username,
+            'specialization': profile.get_specialization_display() if profile else 'Not specified',
+            'hospital': profile.hospital_name if profile and profile.hospital_name else 'Not provided',
+            'email': doctor.email or 'Not provided',
+            'phone': doctor.phone or 'Not provided',
+            'status': 'Approved' if profile and profile.is_approved else 'Pending',
+            'status_class': 'approved' if profile and profile.is_approved else 'pending'
+        })
+
+    patient_rows = []
+    for patient in patients_qs.order_by('-date_joined'):
+        profile = getattr(patient, 'patient_profile', None)
+        patient_rows.append({
+            'name': patient.get_full_name() or patient.username,
+            'email': patient.email or 'Not provided',
+            'phone': patient.phone or 'Not provided',
+            'dob': profile.date_of_birth if profile and profile.date_of_birth else None,
+            'joined': patient.date_joined,
+            'status': 'Active' if patient.is_active else 'Inactive',
+            'status_class': 'active' if patient.is_active else 'inactive'
+        })
+
+    admin_rows = []
+    for admin_user in admin_qs.order_by('first_name', 'last_name'):
+        admin_rows.append({
+            'name': admin_user.get_full_name() or admin_user.username,
+            'email': admin_user.email or 'Not provided',
+            'phone': admin_user.phone or 'Not provided',
+            'status': 'Active' if admin_user.is_active else 'Inactive',
+            'status_class': 'active' if admin_user.is_active else 'inactive',
+            'joined': admin_user.date_joined
+        })
+
+    appointments_recent = list(
+        Appointment.objects.select_related('doctor', 'patient').order_by('-appointment_date', '-appointment_time')[:8]
+    )
+    appointments_pending_list = list(
+        Appointment.objects.filter(status='pending').select_related('doctor', 'patient').order_by('appointment_date', 'appointment_time')[:8]
+    )
+    appointments_upcoming_list = list(
+        Appointment.objects.filter(appointment_date__gte=today).select_related('doctor', 'patient').order_by('appointment_date', 'appointment_time')[:8]
+    )
+
+    notification_total = Notification.objects.count()
+    notification_unread = Notification.objects.filter(is_read=False).count()
+    notification_read = notification_total - notification_unread
+    notifications_recent = list(
+        Notification.objects.select_related('user').order_by('-created_at')[:10]
+    )
+
+    total_admins = admin_qs.count()
+
+    doctor_metrics = {
+        'total': total_doctors,
+        'approved': approved_doctors,
+        'pending': pending_doctors
+    }
+    hospital_metrics = {
+        'total': total_hospitals,
+        'with_doctors': doctors_with_hospital
+    }
+    user_metrics = {
+        'patients_total': total_patients,
+        'patients_active': active_patients,
+        'patients_inactive': total_patients - active_patients,
+        'admins_total': total_admins
+    }
+    appointment_counts = {
+        'total': total_appointments,
+        'pending': pending_appointments,
+        'upcoming': upcoming_appointments,
+        'completed': completed_appointments
+    }
+    notification_metrics = {
+        'total': notification_total,
+        'unread': notification_unread,
+        'read': notification_read
+    }
 
     def percentage(part, whole):
         return int((part / whole) * 100) if whole else 0
@@ -354,6 +438,19 @@ def admin_dashboard(request):
         'total_users': total_users,
         'pending_doctors': pending_doctors,
         'has_chart_data': has_chart_data,
+        'doctor_rows': doctor_rows,
+        'hospital_rows': hospital_list_full,
+        'doctor_metrics': doctor_metrics,
+        'hospital_metrics': hospital_metrics,
+        'patient_rows': patient_rows,
+        'admin_rows': admin_rows,
+        'user_metrics': user_metrics,
+        'appointments_recent': appointments_recent,
+        'appointments_pending_list': appointments_pending_list,
+        'appointments_upcoming_list': appointments_upcoming_list,
+        'appointment_counts': appointment_counts,
+        'notifications_recent': notifications_recent,
+        'notification_metrics': notification_metrics,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 
