@@ -299,6 +299,16 @@
         flex-direction: column;
         gap: 24px;
     }
+    .admin-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        font-weight: 600;
+    }
     .admin-card__header {
         display: flex;
         justify-content: space-between;
@@ -471,6 +481,75 @@
             </div>
         </div>
     </div>
+</div>
+{% elif user.role == 'admin' %}
+<div class="admin-dashboard">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="admin-brand__icon"><i class="bi bi-heart-pulse"></i></div>
+            <div class="admin-brand__text">
+                <span class="admin-brand__label">Medical Connect</span>
+                <strong>Admin Console</strong>
+            </div>
+        </div>
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Overview</a>
+            <a href="{% url 'admin:index' %}"><i class="bi bi-kanban"></i> Manage Data</a>
+            <a href="{% url 'admin:accounts_customuser_changelist' %}"><i class="bi bi-people"></i> Users</a>
+            <a href="{% url 'admin:appointments_appointment_changelist' %}"><i class="bi bi-calendar-event"></i> Appointment Models</a>
+            <a href="{% url 'my_appointments' %}"><i class="bi bi-list-check"></i> Appointments</a>
+            <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i> Notifications</a>
+            <a href="{% url 'conversations_list' %}" class="{% if request.resolver_match.url_name == 'conversations_list' %}active{% endif %}"><i class="bi bi-chat-dots"></i> Messages</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="{% url 'logout' %}" class="admin-logout"><i class="bi bi-box-arrow-right"></i> Sign out</a>
+        </div>
+    </aside>
+    <section class="admin-main">
+        <div class="admin-card">
+            <div class="admin-card__header">
+                <div>
+                    <h3>Conversations Directory</h3>
+                    <p class="admin-card__subtitle">Monitor all platform discussions</p>
+                </div>
+                {% if unread_count > 0 %}
+                <span class="admin-chip"><i class="bi bi-envelope"></i> {{ unread_count }} unread</span>
+                {% endif %}
+            </div>
+            <div class="admin-card__body">
+                {% if conversations %}
+                    {% for conversation in conversations %}
+                    <a href="{% url 'conversation_detail' conversation.id %}" class="admin-conversation-card">
+                        <div class="admin-conversation-meta">
+                            <h5>{{ conversation.patient.get_full_name }} &middot; Dr. {{ conversation.doctor.get_full_name }}</h5>
+                            <p>
+                                {% with last_message=conversation.messages.last %}
+                                    {% if last_message %}
+                                        {% if last_message.sender == user %}You: {% endif %}{{ last_message.content|truncatewords:12 }}
+                                    {% else %}
+                                        No messages yet
+                                    {% endif %}
+                                {% endwith %}
+                            </p>
+                        </div>
+                        <div class="admin-conversation-stats">
+                            {% if conversation.messages.count > 0 %}
+                                <span class="admin-chip"><i class="bi bi-chat-dots"></i> {{ conversation.messages.count }} msgs</span>
+                            {% endif %}
+                            <small style="color: #607b8a;">Updated {{ conversation.updated_at|timesince }} ago</small>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="admin-empty">
+                        <i class="bi bi-chat-dots" style="font-size: 2rem; color: #ffffff;"></i>
+                        <div style="margin-top: 12px; font-weight: 600; color: #ffffff;">No conversations yet</div>
+                        <div style="margin-top: 6px; color: rgba(255, 255, 255, 0.8);">Waiting for communication activity.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 </div>
 {% else %}
 <div class="container py-4">

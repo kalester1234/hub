@@ -171,6 +171,190 @@
         border-radius: 20px;
         border: 1px dashed rgba(17, 181, 197, 0.24);
     }
+    .admin-dashboard {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f5f7fb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .admin-sidebar {
+        background: linear-gradient(180deg, #0ba57a 0%, #0d8c9b 100%);
+        color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.12);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .admin-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .admin-brand__icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 24px;
+    }
+    .admin-brand__text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .admin-brand__label {
+        font-size: 0.9rem;
+        opacity: 0.85;
+    }
+    .admin-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .admin-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.88);
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+    }
+    .admin-sidebar-footer {
+        margin-top: auto;
+    }
+    .admin-logout {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: #0d8c9b;
+        background: #ffffff;
+        font-weight: 600;
+    }
+    .admin-logout:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    .admin-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .admin-card {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .admin-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .admin-card__header h3 {
+        margin: 0;
+        color: #12344d;
+        font-weight: 700;
+    }
+    .admin-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #607b8a;
+        font-size: 0.9rem;
+    }
+    .admin-card__body {
+        display: grid;
+        gap: 16px;
+    }
+    .admin-notification-list {
+        display: grid;
+        gap: 16px;
+    }
+    .admin-notification-card {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        padding: 20px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .admin-notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        font-size: 1.4rem;
+    }
+    .admin-notification-content {
+        display: grid;
+        gap: 6px;
+        flex: 1;
+    }
+    .admin-notification-title {
+        font-weight: 700;
+        color: #ffffff;
+    }
+    .admin-notification-description {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .admin-notification-meta {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .admin-notification-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+        min-width: 120px;
+    }
+    .admin-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        font-weight: 600;
+    }
+    .admin-empty {
+        padding: 48px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        border: 1px dashed rgba(255, 255, 255, 0.24);
+    }
     @media (max-width: 992px) {
         .doctor-dashboard {
             grid-template-columns: 1fr;
@@ -194,6 +378,32 @@
             flex-direction: column;
         }
         .doctor-notification-actions {
+            align-items: flex-start;
+        }
+        .admin-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .admin-sidebar {
+            position: static;
+            max-height: none;
+            overflow: visible;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .admin-main {
+            padding: 24px;
+        }
+        .admin-notification-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .admin-notification-actions {
             align-items: flex-start;
         }
     }
@@ -286,6 +496,95 @@
             </div>
         </div>
     </div>
+</div>
+{% elif user.role == 'admin' %}
+<div class="admin-dashboard">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="admin-brand__icon"><i class="bi bi-heart-pulse"></i></div>
+            <div class="admin-brand__text">
+                <span class="admin-brand__label">Medical Connect</span>
+                <strong>Admin Console</strong>
+            </div>
+        </div>
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Overview</a>
+            <a href="{% url 'admin:index' %}"><i class="bi bi-kanban"></i> Manage Data</a>
+            <a href="{% url 'admin:accounts_customuser_changelist' %}"><i class="bi bi-people"></i> Users</a>
+            <a href="{% url 'admin:appointments_appointment_changelist' %}"><i class="bi bi-calendar-event"></i> Appointment Models</a>
+            <a href="{% url 'my_appointments' %}"><i class="bi bi-list-check"></i> Appointments</a>
+            <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i> Notifications</a>
+            <a href="{% url 'conversations_list' %}"><i class="bi bi-chat-dots"></i> Messages</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="{% url 'logout' %}" class="admin-logout"><i class="bi bi-box-arrow-right"></i> Sign out</a>
+        </div>
+    </aside>
+    <section class="admin-main">
+        <div class="admin-card">
+            <div class="admin-card__header">
+                <div>
+                    <h3>Notification Center</h3>
+                    <p class="admin-card__subtitle">Stay informed about platform activity</p>
+                </div>
+                {% if has_unread_notifications %}
+                    <form method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_all_read">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-check-all"></i> Mark all as read
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="admin-card__body">
+                {% if notifications %}
+                    <div class="admin-notification-list">
+                        {% for notification in notifications %}
+                            <div class="admin-notification-card" style="border-left: 4px solid {% if notification.is_read %}rgba(255,255,255,0.24){% else %}#ffffff{% endif %};">
+                                <div class="admin-notification-icon">
+                                    {% if notification.notification_type == 'appointment_request' %}
+                                        <i class="bi bi-calendar-plus"></i>
+                                    {% elif notification.notification_type == 'appointment_confirmed' %}
+                                        <i class="bi bi-check-circle"></i>
+                                    {% elif notification.notification_type == 'appointment_cancelled' %}
+                                        <i class="bi bi-x-circle"></i>
+                                    {% elif notification.notification_type == 'message' %}
+                                        <i class="bi bi-chat-dots"></i>
+                                    {% elif notification.notification_type == 'doctor_approved' %}
+                                        <i class="bi bi-check2-square"></i>
+                                    {% else %}
+                                        <i class="bi bi-bell"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="admin-notification-content">
+                                    <div class="admin-notification-title">{{ notification.title }}</div>
+                                    <div class="admin-notification-description">{{ notification.description }}</div>
+                                    <small class="admin-notification-meta">{{ notification.created_at|timesince }} ago</small>
+                                </div>
+                                <div class="admin-notification-actions">
+                                    {% if not notification.is_read %}
+                                        <span class="admin-chip"><i class="bi bi-dot"></i> New</span>
+                                    {% endif %}
+                                    {% if notification.related_appointment %}
+                                        <a href="{% url 'mark_notification_read' notification.id %}" class="btn btn-sm btn-light">
+                                            <i class="bi bi-arrow-right"></i> View
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="admin-empty">
+                        <i class="bi bi-bell" style="font-size: 2rem; color: #ffffff;"></i>
+                        <div style="margin-top: 12px; font-weight: 600; color: #ffffff;">No notifications</div>
+                        <div style="margin-top: 6px; color: rgba(255, 255, 255, 0.82);">Platform activity will appear here.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 </div>
 {% else %}
 <div class="container py-4">
