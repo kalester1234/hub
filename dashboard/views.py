@@ -6,6 +6,8 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from datetime import timedelta
+from collections import defaultdict
+import json
 from appointments.models import Appointment, AvailabilitySlot, DoctorLeave
 from appointments.forms import AvailabilitySlotForm, DoctorLeaveForm
 from messaging.models import Notification
@@ -173,9 +175,56 @@ def admin_dashboard(request):
     if request.user.role != 'admin':
         return redirect('dashboard')
     from accounts.models import CustomUser
+    doctor_search_query = request.GET.get('doctor_search', '').strip()
+    patient_search_query = request.GET.get('patient_search', '').strip()
+    focus = request.GET.get('focus', '').strip()
+    active_section = 'overview'
+    manage_tab = 'doctors'
+    users_tab = 'patients'
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'mark_all_notifications_read':
+            Notification.objects.filter(is_read=False).update(is_read=True)
+            messages.success(request, 'All notifications marked as read.')
+            return redirect('admin_dashboard')
+        if action == 'delete_patient':
+            user_id = request.POST.get('user_id')
+            patient = get_object_or_404(CustomUser, id=user_id, role='patient')
+            patient.delete()
+            messages.success(request, 'Patient removed successfully.')
+            return redirect('admin_dashboard')
+        if action == 'delete_doctor':
+            user_id = request.POST.get('user_id')
+            doctor = get_object_or_404(CustomUser, id=user_id, role='doctor')
+            doctor.delete()
+            messages.success(request, 'Doctor removed successfully.')
+            return redirect('admin_dashboard')
 
     doctors_qs = CustomUser.objects.filter(role='doctor').select_related('doctor_profile')
+    if doctor_search_query:
+        doctors_qs = doctors_qs.filter(
+            Q(first_name__icontains=doctor_search_query) |
+            Q(last_name__icontains=doctor_search_query) |
+            Q(username__icontains=doctor_search_query) |
+            Q(email__icontains=doctor_search_query) |
+            Q(phone__icontains=doctor_search_query) |
+            Q(doctor_profile__hospital_name__icontains=doctor_search_query) |
+            Q(doctor_profile__specialization__icontains=doctor_search_query)
+        ).distinct()
+        active_section = 'manage-data'
+        manage_tab = 'doctors'
     patients_qs = CustomUser.objects.filter(role='patient').select_related('patient_profile')
+    if patient_search_query:
+        patients_qs = patients_qs.filter(
+            Q(first_name__icontains=patient_search_query) |
+            Q(last_name__icontains=patient_search_query) |
+            Q(username__icontains=patient_search_query) |
+            Q(email__icontains=patient_search_query) |
+            Q(phone__icontains=patient_search_query) |
+            Q(patient_profile__medical_history__icontains=patient_search_query)
+        ).distinct()
+        active_section = 'users'
+        users_tab = 'patients'
     admin_qs = CustomUser.objects.filter(role='admin')
     total_users = CustomUser.objects.count()
     total_doctors = doctors_qs.count()
@@ -262,23 +311,47 @@ def admin_dashboard(request):
     hospital_list = hospital_list_full[:5]
     doctors_with_hospital = len(hospital_profiles)
 
+    doctor_ids = list(doctors_qs.values_list('id', flat=True))
+    doctor_records_map = defaultdict(list)
+    doctor_records_total = defaultdict(int)
+    if doctor_ids:
+        current_time = timezone.localtime().time()
+        doctor_appointments = Appointment.objects.filter(doctor_id__in=doctor_ids).filter(
+            Q(appointment_date__lt=today) |
+            Q(appointment_date=today, appointment_time__lte=current_time)
+        ).select_related('patient').order_by('-appointment_date', '-appointment_time')
+        for appointment in doctor_appointments:
+            doctor_records_total[appointment.doctor_id] += 1
+            if len(doctor_records_map[appointment.doctor_id]) < 5:
+                doctor_records_map[appointment.doctor_id].append({
+                    'patient': appointment.patient.get_full_name() or appointment.patient.username,
+                    'date': appointment.appointment_date.strftime('%Y-%m-%d'),
+                    'time': appointment.appointment_time.strftime('%H:%M'),
+                    'status': appointment.get_status_display()
+                })
+
     doctor_rows = []
     for doctor in doctors_qs.order_by('first_name', 'last_name'):
         profile = getattr(doctor, 'doctor_profile', None)
+        records = doctor_records_map.get(doctor.id, [])
         doctor_rows.append({
+            'id': doctor.id,
             'name': doctor.get_full_name() or doctor.username,
             'specialization': profile.get_specialization_display() if profile else 'Not specified',
             'hospital': profile.hospital_name if profile and profile.hospital_name else 'Not provided',
             'email': doctor.email or 'Not provided',
             'phone': doctor.phone or 'Not provided',
             'status': 'Approved' if profile and profile.is_approved else 'Pending',
-            'status_class': 'approved' if profile and profile.is_approved else 'pending'
+            'status_class': 'approved' if profile and profile.is_approved else 'pending',
+            'records_json': json.dumps(records),
+            'records_total': doctor_records_total.get(doctor.id, 0)
         })
 
     patient_rows = []
     for patient in patients_qs.order_by('-date_joined'):
         profile = getattr(patient, 'patient_profile', None)
         patient_rows.append({
+            'id': patient.id,
             'name': patient.get_full_name() or patient.username,
             'email': patient.email or 'Not provided',
             'phone': patient.phone or 'Not provided',
@@ -451,6 +524,11 @@ def admin_dashboard(request):
         'appointment_counts': appointment_counts,
         'notifications_recent': notifications_recent,
         'notification_metrics': notification_metrics,
+        'doctor_search_query': doctor_search_query,
+        'patient_search_query': patient_search_query,
+        'active_section': focus or active_section,
+        'manage_tab': manage_tab,
+        'users_tab': users_tab,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 

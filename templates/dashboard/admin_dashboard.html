@@ -43,7 +43,7 @@
             </div>
         </header>
         <div class="admin-sections">
-            <section id="overview" class="admin-section active">
+            <section id="overview" class="admin-section {% if active_section == 'overview' %}active{% endif %}">
                 <div class="section-header">
                     <div>
                         <h2>Overview</h2>
@@ -120,31 +120,33 @@
                             </div>
                         </div>
                         {% if hospital_list %}
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    {% for header in hospital_headers %}
-                                    <th>{{ header }}</th>
+                        <div class="table-wrapper horizontal-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        {% for header in hospital_headers %}
+                                        <th>{{ header }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for hospital in hospital_list %}
+                                    <tr>
+                                        <td>{{ hospital.name }}</td>
+                                        <td>{{ hospital.count }}</td>
+                                        <td>{{ hospital.contact }}</td>
+                                    </tr>
                                     {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for hospital in hospital_list %}
-                                <tr>
-                                    <td>{{ hospital.name }}</td>
-                                    <td>{{ hospital.count }}</td>
-                                    <td>{{ hospital.contact }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                         {% else %}
                         <div class="empty-state">No hospitals connected yet.</div>
                         {% endif %}
                     </div>
                 </div>
             </section>
-            <section id="manage-data" class="admin-section">
+            <section id="manage-data" class="admin-section {% if active_section == 'manage-data' %}active{% endif %}">
                 <div class="section-header">
                     <div>
                         <h2>Manage Data</h2>
@@ -155,10 +157,10 @@
                     </div>
                 </div>
                 <div class="tab-buttons">
-                    <button class="tab-button active" data-tab-group="manage" data-tab-target="doctors">Doctors <span>{{ doctor_metrics.total }}</span></button>
-                    <button class="tab-button" data-tab-group="manage" data-tab-target="hospitals">Hospitals <span>{{ hospital_metrics.total }}</span></button>
+                    <button class="tab-button {% if manage_tab == 'doctors' %}active{% endif %}" data-tab-group="manage" data-tab-target="doctors">Doctors <span>{{ doctor_metrics.total }}</span></button>
+                    <button class="tab-button {% if manage_tab == 'hospitals' %}active{% endif %}" data-tab-group="manage" data-tab-target="hospitals">Hospitals <span>{{ hospital_metrics.total }}</span></button>
                 </div>
-                <div class="tab-panel active" data-tab-group="manage" data-tab-id="doctors">
+                <div class="tab-panel {% if manage_tab == 'doctors' %}active{% endif %}" data-tab-group="manage" data-tab-id="doctors">
                     <div class="info-cards">
                         <div class="info-card">
                             <span>Total Doctors</span>
@@ -173,6 +175,19 @@
                             <strong>{{ doctor_metrics.pending }}</strong>
                         </div>
                     </div>
+                    <div class="table-actions">
+                        <form method="get" class="search-form">
+                            <input type="hidden" name="patient_search" value="{{ patient_search_query }}">
+                            <div class="search-field">
+                                <i class="bi bi-search"></i>
+                                <input type="text" name="doctor_search" value="{{ doctor_search_query }}" placeholder="Search doctors">
+                            </div>
+                            {% if doctor_search_query %}
+                            <a href="{% url 'admin_dashboard' %}?patient_search={{ patient_search_query|urlencode }}" class="clear-search">Clear</a>
+                            {% endif %}
+                            <button type="submit" class="search-button">Search</button>
+                        </form>
+                    </div>
                     <div class="table-wrapper">
                         <table class="data-table">
                             <thead>
@@ -182,6 +197,7 @@
                                     <th>Hospital</th>
                                     <th>Contact</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -203,11 +219,27 @@
                                             <span>{{ row.phone }}</span>
                                         </div>
                                     </td>
-                                    <td><span class="status-chip {{ row.status_class }}">{{ row.status }}</span></td>
+                                    <td>
+                                        <span class="status-chip {{ row.status_class }}">{{ row.status }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-menu" data-records="{{ row.records_json|escapejs }}" data-total="{{ row.records_total }}" data-name="{{ row.name }}" data-doctor-id="{{ row.id }}">
+                                            <button type="button" class="action-toggle"><i class="bi bi-three-dots"></i> Actions</button>
+                                            <div class="action-dropdown">
+                                                <form method="post" action="{% url 'admin_dashboard' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="delete_doctor">
+                                                    <input type="hidden" name="user_id" value="{{ row.id }}">
+                                                    <button type="submit" class="dropdown-item danger"><i class="bi bi-person-x"></i> Remove doctor</button>
+                                                </form>
+                                                <button type="button" class="dropdown-item records-trigger"><i class="bi bi-journal-text"></i> View records</button>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="empty-cell">No doctors available.</td>
+                                    <td colspan="6" class="empty-cell">No doctors available.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -251,7 +283,7 @@
                     </div>
                 </div>
             </section>
-            <section id="users" class="admin-section">
+            <section id="users" class="admin-section {% if active_section == 'users' %}active{% endif %}">
                 <div class="section-header">
                     <div>
                         <h2>Users</h2>
@@ -280,10 +312,23 @@
                     </div>
                 </div>
                 <div class="tab-buttons">
-                    <button class="tab-button active" data-tab-group="users" data-tab-target="patients">Patients <span>{{ user_metrics.patients_total }}</span></button>
-                    <button class="tab-button" data-tab-group="users" data-tab-target="admins">Admins <span>{{ user_metrics.admins_total }}</span></button>
+                    <button class="tab-button {% if users_tab == 'patients' %}active{% endif %}" data-tab-group="users" data-tab-target="patients">Patients <span>{{ user_metrics.patients_total }}</span></button>
+                    <button class="tab-button {% if users_tab == 'admins' %}active{% endif %}" data-tab-group="users" data-tab-target="admins">Admins <span>{{ user_metrics.admins_total }}</span></button>
                 </div>
-                <div class="tab-panel active" data-tab-group="users" data-tab-id="patients">
+                <div class="tab-panel {% if users_tab == 'patients' %}active{% endif %}" data-tab-group="users" data-tab-id="patients">
+                    <div class="table-actions">
+                        <form method="get" class="search-form">
+                            <input type="hidden" name="doctor_search" value="{{ doctor_search_query }}">
+                            <div class="search-field">
+                                <i class="bi bi-search"></i>
+                                <input type="text" name="patient_search" value="{{ patient_search_query }}" placeholder="Search patients">
+                            </div>
+                            {% if patient_search_query %}
+                            <a href="{% url 'admin_dashboard' %}?doctor_search={{ doctor_search_query|urlencode }}" class="clear-search">Clear</a>
+                            {% endif %}
+                            <button type="submit" class="search-button">Search</button>
+                        </form>
+                    </div>
                     <div class="table-wrapper">
                         <table class="data-table">
                             <thead>
@@ -310,7 +355,15 @@
                                     <td>{{ row.phone }}</td>
                                     <td>{% if row.dob %}{{ row.dob|date:"Y-m-d" }}{% else %}Not provided{% endif %}</td>
                                     <td>{{ row.joined|date:"Y-m-d" }}</td>
-                                    <td><span class="status-chip {{ row.status_class }}">{{ row.status }}</span></td>
+                                    <td>
+                                        <span class="status-chip {{ row.status_class }}">{{ row.status }}</span>
+                                        <form method="post" action="{% url 'admin_dashboard' %}" class="inline-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="delete_patient">
+                                            <input type="hidden" name="user_id" value="{{ row.id }}">
+                                            <button type="submit" class="action-button danger">Remove</button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -358,7 +411,7 @@
                     </div>
                 </div>
             </section>
-            <section id="appointments" class="admin-section">
+            <section id="appointments" class="admin-section {% if active_section == 'appointments' %}active{% endif %}">
                 <div class="section-header">
                     <div>
                         <h2>Appointments</h2>
@@ -502,14 +555,18 @@
                     </div>
                 </div>
             </section>
-            <section id="notifications" class="admin-section">
+            <section id="notifications" class="admin-section {% if active_section == 'notifications' %}active{% endif %}">
                 <div class="section-header">
                     <div>
                         <h2>Notifications</h2>
                         <p>Stay updated with platform activities</p>
                     </div>
                     <div class="section-actions">
-                        <button type="button" class="ghost-button" disabled>Mark all as read</button>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="mark_all_notifications_read">
+                            <button type="submit" class="ghost-button"{% if not notification_metrics.unread %} disabled{% endif %}>Mark all as read</button>
+                        </form>
                     </div>
                 </div>
                 <div class="info-cards">
@@ -550,33 +607,152 @@
     </section>
 </div>
 <script>
-const sidebarLinks = document.querySelectorAll('.admin-nav-link');
-const sections = document.querySelectorAll('.admin-section');
-sidebarLinks.forEach(link => {
-    link.addEventListener('click', event => {
-        event.preventDefault();
-        const target = link.dataset.section;
-        sidebarLinks.forEach(item => item.classList.remove('active'));
-        link.classList.add('active');
+document.addEventListener('DOMContentLoaded', () => {
+        const sidebarLinks = document.querySelectorAll('.admin-nav-link');
+    const sections = document.querySelectorAll('.admin-section');
+    const activeSection = '{{ active_section }}';
+    if (activeSection) {
         sections.forEach(section => {
-            section.classList.toggle('active', section.id === target);
+            section.classList.toggle('active', section.id === activeSection);
         });
-        document.querySelector('.admin-main').scrollTop = 0;
+        sidebarLinks.forEach(link => {
+            link.classList.toggle('active', link.dataset.section === activeSection);
+        });
+    }
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', event => {
+            event.preventDefault();
+            const target = link.dataset.section;
+            sidebarLinks.forEach(item => item.classList.remove('active'));
+            link.classList.add('active');
+            sections.forEach(section => {
+                section.classList.toggle('active', section.id === target);
+            });
+            document.querySelector('.admin-main').scrollTop = 0;
+        });
     });
-});
-const tabButtons = document.querySelectorAll('.tab-button');
-tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const group = button.dataset.tabGroup;
-        const target = button.dataset.tabTarget;
-        document.querySelectorAll(`.tab-button[data-tab-group="${group}"]`).forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        document.querySelectorAll(`.tab-panel[data-tab-group="${group}"]`).forEach(panel => {
-            panel.classList.toggle('active', panel.dataset.tabId === target);
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const manageTab = '{{ manage_tab }}';
+    const usersTab = '{{ users_tab }}';
+    if (manageTab) {
+        document.querySelectorAll('.tab-button[data-tab-group="manage"]').forEach(button => {
+            const target = button.dataset.tabTarget;
+            button.classList.toggle('active', target === manageTab);
+            const panel = document.querySelector(`.tab-panel[data-tab-group="manage"][data-tab-id="${target}"]`);
+            if (panel) {
+                panel.classList.toggle('active', target === manageTab);
+            }
         });
+    }
+    if (usersTab) {
+        document.querySelectorAll('.tab-button[data-tab-group="users"]').forEach(button => {
+            const target = button.dataset.tabTarget;
+            button.classList.toggle('active', target === usersTab);
+            const panel = document.querySelector(`.tab-panel[data-tab-group="users"][data-tab-id="${target}"]`);
+            if (panel) {
+                panel.classList.toggle('active', target === usersTab);
+            }
+        });
+    }
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const group = button.dataset.tabGroup;
+            const target = button.dataset.tabTarget;
+            document.querySelectorAll(`.tab-button[data-tab-group="${group}"]`).forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            document.querySelectorAll(`.tab-panel[data-tab-group="${group}"]`).forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.tabId === target);
+            });
+        });
+    });
+    const actionMenus = document.querySelectorAll('.action-menu');
+    const recordsModal = document.getElementById('doctor-records-modal');
+    const recordsList = recordsModal.querySelector('.records-list');
+    const recordsName = recordsModal.querySelector('.records-name');
+    const recordsTotal = recordsModal.querySelector('.records-total');
+    const recordsClose = recordsModal.querySelector('.records-close');
+    const recordsOverlay = recordsModal.querySelector('.records-overlay');
+
+    function closeRecordsModal() {
+        recordsModal.setAttribute('hidden', '');
+        recordsList.innerHTML = '';
+    }
+
+    function openRecordsModal(name, total, records) {
+        recordsName.textContent = name;
+        recordsTotal.textContent = `${total} past appointments`;
+        recordsList.scrollTop = 0;
+        if (records.length === 0) {
+            recordsList.innerHTML = '<div class="records-empty">No past records available.</div>';
+        } else {
+            const listItems = records.map(record => `
+                <div class="records-item">
+                    <div>
+                        <strong>${record.patient}</strong>
+                        <span>${record.status}</span>
+                    </div>
+                    <div class="records-meta">
+                        <span>${record.date}</span>
+                        <span>${record.time}</span>
+                    </div>
+                </div>
+            `).join('');
+            recordsList.innerHTML = listItems;
+        }
+        recordsModal.removeAttribute('hidden');
+    }
+
+    actionMenus.forEach(menu => {
+        const toggle = menu.querySelector('.action-toggle');
+        const dropdown = menu.querySelector('.action-dropdown');
+        const recordsTrigger = menu.querySelector('.records-trigger');
+        toggle.addEventListener('click', event => {
+            event.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+        recordsTrigger.addEventListener('click', () => {
+            dropdown.classList.remove('open');
+            const name = menu.dataset.name;
+            const total = menu.dataset.total;
+            const records = JSON.parse(menu.dataset.records);
+            openRecordsModal(name, total, records);
+        });
+    });
+
+    document.addEventListener('click', event => {
+        actionMenus.forEach(menu => {
+            const dropdown = menu.querySelector('.action-dropdown');
+            if (!menu.contains(event.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+    });
+
+    recordsClose.addEventListener('click', closeRecordsModal);
+    recordsOverlay.addEventListener('click', closeRecordsModal);
+    window.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !recordsModal.hasAttribute('hidden')) {
+            closeRecordsModal();
+        }
     });
 });
 </script>
+<div id="doctor-records-modal" class="records-modal" hidden>
+    <div class="records-overlay"></div>
+    <div class="records-dialog">
+        <div class="records-header">
+            <h3>Doctor records</h3>
+            <button type="button" class="records-close"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="records-body">
+            <div class="records-summary">
+                <span class="records-name"></span>
+                <span class="records-total"></span>
+            </div>
+            <div class="records-list"></div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
@@ -656,15 +832,52 @@ tabButtons.forEach(button => {
 .info-card { background: #ffffff; border-radius: 16px; padding: 18px; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); display: flex; flex-direction: column; gap: 6px; }
 .info-card span { font-size: 0.85rem; color: #61837d; }
 .info-card strong { font-size: 1.5rem; color: #183a37; }
+.table-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+.search-form { display: flex; align-items: center; gap: 12px; }
+.search-field { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid rgba(0, 137, 123, 0.25); border-radius: 999px; background: #ffffff; box-shadow: 0 8px 20px rgba(0, 60, 52, 0.08); }
+.search-field i { color: #00897B; }
+.search-field input { border: none; outline: none; font-size: 0.95rem; color: #183a37; min-width: 200px; }
+.search-button { padding: 8px 18px; border-radius: 999px; border: none; background: #0D8C9B; color: #ffffff; font-weight: 600; cursor: pointer; }
+.search-button:hover { background: #0a7280; }
+.clear-search { color: #d93c3c; font-weight: 600; text-decoration: none; }
+.clear-search:hover { text-decoration: underline; }
 .table-action-buttons { display: flex; gap: 10px; align-items: center; }
 .table-action-form { margin: 0; }
+.inline-form { display: inline; margin-left: 8px; }
 .action-button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; color: #ffffff; }
 .action-button i { font-size: 1rem; }
 .action-button.approve { background: linear-gradient(135deg, #0BA57A 0%, #0D8C9B 100%); }
 .action-button.reject { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); }
+.action-button.danger { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); }
 .action-button:hover { transform: translateY(-1px); box-shadow: 0 12px 20px rgba(0, 60, 52, 0.18); }
 .action-placeholder { color: #89a19b; font-style: italic; }
+.action-menu { position: relative; display: inline-flex; align-items: center; }
+.action-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 999px; background: #0D8C9B; color: #ffffff; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.action-toggle:hover { transform: translateY(-1px); box-shadow: 0 12px 20px rgba(0, 60, 52, 0.18); }
+.action-dropdown { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: #ffffff; border-radius: 12px; box-shadow: 0 18px 30px rgba(0, 0, 0, 0.12); padding: 8px; display: none; flex-direction: column; gap: 6px; z-index: 20; }
+.action-dropdown.open { display: flex; }
+.dropdown-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: none; background: transparent; color: #183a37; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; width: 100%; text-align: left; }
+.dropdown-item:hover { background: rgba(0, 137, 123, 0.08); color: #00897B; }
+.dropdown-item.danger { color: #d93c3c; }
+.dropdown-item.danger:hover { background: rgba(239, 68, 68, 0.1); color: #b91c1c; }
+.records-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.records-modal[hidden] { display: none; }
+.records-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(2px); }
+.records-dialog { position: relative; background: #ffffff; border-radius: 18px; padding: 24px; width: min(480px, calc(100% - 48px)); box-shadow: 0 28px 60px rgba(0, 0, 0, 0.18); display: flex; flex-direction: column; gap: 18px; z-index: 2100; }
+.records-header { display: flex; justify-content: space-between; align-items: center; }
+.records-header h3 { margin: 0; font-size: 1.4rem; color: #183a37; }
+.records-close { border: none; background: transparent; color: #4f7069; cursor: pointer; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; padding: 6px; border-radius: 10px; }
+.records-close:hover { background: rgba(0, 137, 123, 0.08); color: #00897B; }
+.records-body { display: flex; flex-direction: column; gap: 16px; max-height: 360px; }
+.records-summary { display: flex; justify-content: space-between; color: #4f7069; font-weight: 600; }
+.records-list { display: grid; gap: 12px; overflow-y: auto; padding-right: 6px; }
+.records-item { display: flex; justify-content: space-between; background: rgba(0, 137, 123, 0.08); border-radius: 14px; padding: 12px 16px; color: #183a37; }
+.records-item strong { display: block; font-size: 1rem; }
+.records-item span { display: block; font-size: 0.85rem; color: #4f7069; }
+.records-meta { display: flex; gap: 12px; align-items: center; font-size: 0.85rem; color: #4f7069; }
+.records-empty { text-align: center; padding: 24px; background: rgba(0, 0, 0, 0.04); border-radius: 14px; color: #4f7069; font-weight: 600; }
 .table-wrapper { overflow-x: auto; }
+.horizontal-scroll { max-width: 100%; }
 .data-table { width: 100%; border-collapse: collapse; min-width: 640px; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); }
 .data-table thead { background: rgba(0, 137, 123, 0.08); color: #00695C; }
 .data-table th { text-align: left; padding: 14px 18px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }

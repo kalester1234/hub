@@ -76,13 +76,17 @@ def doctor_login(request):
 
 def patient_signup(request):
     """Patient signup view"""
-    if request.user.is_authenticated:
+    is_admin_user = request.user.is_authenticated and request.user.role == 'admin'
+    if request.user.is_authenticated and not is_admin_user:
         return redirect('dashboard')
     
     if request.method == 'POST':
         form = PatientSignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            if is_admin_user:
+                messages.success(request, 'Patient account created successfully!')
+                return redirect('admin_dashboard')
             login(request, user)
             messages.success(request, 'Account created successfully! Welcome aboard.')
             return redirect('dashboard')
@@ -97,13 +101,17 @@ def patient_signup(request):
 
 def doctor_signup(request):
     """Doctor signup view"""
-    if request.user.is_authenticated:
+    is_admin_user = request.user.is_authenticated and request.user.role == 'admin'
+    if request.user.is_authenticated and not is_admin_user:
         return redirect('dashboard')
     
     if request.method == 'POST':
         form = DoctorSignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            if is_admin_user:
+                messages.success(request, 'Doctor account created successfully!')
+                return redirect('admin_dashboard')
             messages.success(request, 'Application submitted successfully! Your account is pending approval.')
             return redirect('login')
         else:
