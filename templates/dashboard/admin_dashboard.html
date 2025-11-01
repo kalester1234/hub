@@ -398,6 +398,7 @@
                                     <th>Date</th>
                                     <th>Time</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -408,10 +409,28 @@
                                     <td>{{ appointment.appointment_date|date:"Y-m-d" }}</td>
                                     <td>{{ appointment.appointment_time|time:"H:i" }}</td>
                                     <td><span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                                    <td>
+                                        <div class="table-action-buttons">
+                                            <form method="post" action="{% url 'admin_update_appointment_status' appointment.id %}" class="table-action-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="confirmed">
+                                                <button type="submit" class="action-button approve">
+                                                    <i class="bi bi-check-circle"></i> Approve
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'admin_update_appointment_status' appointment.id %}" class="table-action-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="cancelled">
+                                                <button type="submit" class="action-button reject">
+                                                    <i class="bi bi-x-circle"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="empty-cell">No pending appointments.</td>
+                                    <td colspan="6" class="empty-cell">No pending appointments.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -428,6 +447,7 @@
                                     <th>Date</th>
                                     <th>Time</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -438,10 +458,11 @@
                                     <td>{{ appointment.appointment_date|date:"Y-m-d" }}</td>
                                     <td>{{ appointment.appointment_time|time:"H:i" }}</td>
                                     <td><span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                                    <td class="action-placeholder">No actions</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="empty-cell">No upcoming appointments.</td>
+                                    <td colspan="6" class="empty-cell">No upcoming appointments.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -458,6 +479,7 @@
                                     <th>Date</th>
                                     <th>Time</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -468,10 +490,11 @@
                                     <td>{{ appointment.appointment_date|date:"Y-m-d" }}</td>
                                     <td>{{ appointment.appointment_time|time:"H:i" }}</td>
                                     <td><span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                                    <td class="action-placeholder">No actions</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="empty-cell">No recent appointments.</td>
+                                    <td colspan="6" class="empty-cell">No recent appointments.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -633,6 +656,14 @@ tabButtons.forEach(button => {
 .info-card { background: #ffffff; border-radius: 16px; padding: 18px; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); display: flex; flex-direction: column; gap: 6px; }
 .info-card span { font-size: 0.85rem; color: #61837d; }
 .info-card strong { font-size: 1.5rem; color: #183a37; }
+.table-action-buttons { display: flex; gap: 10px; align-items: center; }
+.table-action-form { margin: 0; }
+.action-button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 999px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; color: #ffffff; }
+.action-button i { font-size: 1rem; }
+.action-button.approve { background: linear-gradient(135deg, #0BA57A 0%, #0D8C9B 100%); }
+.action-button.reject { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); }
+.action-button:hover { transform: translateY(-1px); box-shadow: 0 12px 20px rgba(0, 60, 52, 0.18); }
+.action-placeholder { color: #89a19b; font-style: italic; }
 .table-wrapper { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; min-width: 640px; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 36px rgba(0, 60, 52, 0.08); }
 .data-table thead { background: rgba(0, 137, 123, 0.08); color: #00695C; }

@@ -466,7 +466,7 @@ def admin_update_appointment_status(request, appointment_id):
     valid_statuses = {value for value, _ in Appointment.STATUS_CHOICES}
     if status not in valid_statuses:
         messages.error(request, 'Invalid status selected.')
-        return redirect('dashboard')
+        return redirect('admin_dashboard')
     appointment.status = status
     appointment.notes = notes
     appointment.save()
@@ -491,4 +491,4 @@ def admin_update_appointment_status(request, appointment_id):
             related_appointment=appointment
         )
     messages.success(request, 'Appointment status updated successfully.')
-    return redirect('dashboard')
+    return redirect('admin_dashboard')
