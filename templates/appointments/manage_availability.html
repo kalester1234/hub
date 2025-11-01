@@ -2,7 +2,302 @@
 
 {% block title %}Manage Availability - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+    .doctor-dashboard {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f4fbfb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .doctor-sidebar {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .doctor-profile-card {
+        text-align: center;
+    }
+    .doctor-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #11b5c5, #0f7186);
+        color: #ffffff;
+        font-size: 36px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+    }
+    .doctor-profile-card h4 {
+        margin-bottom: 4px;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-profile-card span {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        display: block;
+    }
+    .doctor-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #003366;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    .doctor-nav a:hover,
+    .doctor-nav a.active {
+        background: rgba(17, 181, 197, 0.1);
+        color: #0f7186;
+    }
+    .doctor-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-card {
+        background: #ffffff;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .doctor-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .doctor-card__header h3 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .doctor-card__tools {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .doctor-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .doctor-table thead tr {
+        background: #f4fbfb;
+    }
+    .doctor-table th,
+    .doctor-table td {
+        padding: 14px 16px;
+        text-align: left;
+        color: #003366;
+    }
+    .doctor-table tbody tr {
+        background: #ffffff;
+        border-bottom: 1px solid rgba(23, 162, 184, 0.08);
+    }
+    .doctor-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status-confirmed {
+        background: rgba(40, 167, 69, 0.12);
+        color: #1f8c3c;
+    }
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.12);
+        color: #b11e31;
+    }
+    @media (max-width: 992px) {
+        .doctor-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .doctor-sidebar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            position: static;
+            max-height: none;
+            overflow: visible;
+        }
+        .doctor-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .doctor-main {
+            padding: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% if user.role == 'doctor' %}
+<div class="doctor-dashboard">
+    <aside class="doctor-sidebar">
+        <div class="doctor-profile-card">
+            <div class="doctor-avatar">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+            <h4>Dr. {{ user.get_full_name }}</h4>
+            {% if user.doctor_profile %}
+                <span>{{ user.doctor_profile.get_specialization_display }}</span>
+            {% endif %}
+            <span>{{ user.email }}</span>
+        </div>
+        <nav class="doctor-nav">
+            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{% url 'my_appointments' %}" class="{% if request.resolver_match.url_name == 'my_appointments' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Appointments</a>
+            <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' %}active{% endif %}"><i class="bi bi-clock-history"></i> Availability</a>
+            <a href="{% url 'conversations_list' %}" class="{% if request.resolver_match.url_name == 'conversations_list' %}active{% endif %}"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </aside>
+    <div class="doctor-main">
+        <div class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>Manage Availability</h3>
+                    <p class="doctor-card__subtitle">Set your consultation schedule and time slots</p>
+                </div>
+            </div>
+            <div class="doctor-card__tools">
+                <form method="POST" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-6">
+                        <label for="{{ form.day_of_week.id_for_label }}" class="form-label">Day of Week</label>
+                        {{ form.day_of_week }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.slot_duration.id_for_label }}" class="form-label">Slot Duration (minutes)</label>
+                        {{ form.slot_duration }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time</label>
+                        {{ form.start_time }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.end_time.id_for_label }}" class="form-label">End Time</label>
+                        {{ form.end_time }}
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Add Availability
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                {% if slots %}
+                    <div class="table-responsive">
+                        <table class="doctor-table">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Time Range</th>
+                                    <th>Slot Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in slots %}
+                                    <tr>
+                                        <td>{{ slot.get_day_of_week_display }}</td>
+                                        <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
+                                        <td>{{ slot.slot_duration }} minutes</td>
+                                        <td>
+                                            {% if slot.is_active %}
+                                                <span class="status-chip status-confirmed">Active</span>
+                                            {% else %}
+                                                <span class="status-chip status-cancelled">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="table-empty">
+                        <i class="bi bi-info-circle"></i> No availability slots set yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>Availability Tips</h3>
+                    <p class="doctor-card__subtitle">Keep your schedule optimized for patients</p>
+                </div>
+            </div>
+            <div>
+                <ul style="color: #666; font-size: 0.95rem; line-height: 1.8; margin: 0; padding-left: 18px;">
+                    <li>Set realistic working hours</li>
+                    <li>Include breaks between appointments</li>
+                    <li>Update availability seasonally</li>
+                    <li>Mark unavailable slots appropriately</li>
+                    <li>Maintain consistency for patient convenience</li>
+                </ul>
+                <div style="margin-top: 16px; color: #666; font-size: 0.95rem;">
+                    <strong>Morning:</strong> 9:00 AM - 1:00 PM<br>
+                    <strong>Afternoon:</strong> 2:00 PM - 6:00 PM<br>
+                    <strong>Evening:</strong> 6:00 PM - 8:00 PM
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col-12">
@@ -10,10 +305,8 @@
             <p style="color: #666;">Set your consultation schedule and time slots</p>
         </div>
     </div>
-
     <div class="row">
         <div class="col-lg-8">
-            <!-- Add Slot Form -->
             <div class="card mb-4">
                 <div class="card-header" style="background-color: #17a2b8; color: white;">
                     <h5 class="card-title mb-0">
@@ -23,38 +316,30 @@
                 <div class="card-body">
                     <form method="POST">
                         {% csrf_token %}
-                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.day_of_week.id_for_label }}" class="form-label">Day of Week</label>
                                 {{ form.day_of_week }}
                             </div>
-
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.slot_duration.id_for_label }}" class="form-label">Slot Duration (minutes)</label>
                                 {{ form.slot_duration }}
                             </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time</label>
                                 {{ form.start_time }}
                             </div>
-
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.end_time.id_for_label }}" class="form-label">End Time</label>
                                 {{ form.end_time }}
                             </div>
                         </div>
-
                         <div class="mb-3 form-check">
                             {{ form.is_active }}
-                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-                                Active
-                            </label>
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
                         </div>
-
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-check-circle"></i> Add Availability
@@ -63,8 +348,6 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Current Slots -->
             <div class="card">
                 <div class="card-header" style="background-color: #17a2b8; color: white;">
                     <h5 class="card-title mb-0">
@@ -109,7 +392,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header" style="background-color: #F4F6F8;">
@@ -124,7 +406,6 @@
                         <li>Mark unavailable slots appropriately</li>
                         <li>Maintain consistency for patient convenience</li>
                     </ul>
-
                     <h6 style="color: #1a3a4a; margin-top: 20px; margin-bottom: 10px;">Standard Hours:</h6>
                     <p style="color: #666; font-size: 0.9rem;">
                         <strong>Morning:</strong> 9:00 AM - 1:00 PM<br>
@@ -136,4 +417,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

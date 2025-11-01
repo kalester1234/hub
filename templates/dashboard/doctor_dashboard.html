@@ -11,6 +11,7 @@
         padding: 24px;
         background: #f4fbfb;
         border-radius: 24px;
+        align-items: flex-start;
     }
     .doctor-sidebar {
         background: #ffffff;
@@ -20,6 +21,10 @@
         display: flex;
         flex-direction: column;
         gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
     }
     .doctor-profile-card {
         text-align: center;

@@ -237,8 +237,10 @@ def notifications(request):
             messages.success(request, 'All notifications marked as read.')
             return redirect('notifications')
     
+    has_unread_notifications = notifications.filter(is_read=False).exists()
     context = {
-        'notifications': notifications
+        'notifications': notifications,
+        'has_unread_notifications': has_unread_notifications
     }
     return render(request, 'messaging/notifications.html', context)
 

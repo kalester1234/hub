@@ -2,7 +2,477 @@
 
 {% block title %}Conversations - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+    .doctor-dashboard {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f4fbfb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .doctor-sidebar {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .doctor-profile-card {
+        text-align: center;
+    }
+    .doctor-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #11b5c5, #0f7186);
+        color: #ffffff;
+        font-size: 36px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+    }
+    .doctor-profile-card h4 {
+        margin-bottom: 4px;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-profile-card span {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        display: block;
+    }
+    .doctor-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #003366;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    .doctor-nav a:hover,
+    .doctor-nav a.active {
+        background: rgba(17, 181, 197, 0.1);
+        color: #0f7186;
+    }
+    .doctor-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-card {
+        background: #ffffff;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .doctor-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .doctor-card__header h3 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .doctor-conversation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .doctor-conversation-card {
+        border: 1px solid rgba(17, 181, 197, 0.16);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        text-decoration: none;
+        color: inherit;
+        background: #ffffff;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .doctor-conversation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 32px rgba(16, 30, 115, 0.12);
+    }
+    .doctor-conversation-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .doctor-conversation-meta h5 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-conversation-meta p {
+        margin: 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .doctor-conversation-stats {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+    }
+    .doctor-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: rgba(17, 181, 197, 0.12);
+        color: #0f7186;
+    }
+    .doctor-empty {
+        padding: 48px;
+        text-align: center;
+        color: #5d6d7e;
+        background: #f8fbff;
+        border-radius: 20px;
+        border: 1px dashed rgba(17, 181, 197, 0.24);
+    }
+    @media (max-width: 992px) {
+        .doctor-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .doctor-sidebar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            position: static;
+            max-height: none;
+            overflow: visible;
+        }
+        .doctor-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .doctor-main {
+            padding: 24px;
+        }
+        .doctor-conversation-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .doctor-conversation-stats {
+            align-items: flex-start;
+        }
+    }
+    .admin-dashboard {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f5f7fb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .admin-sidebar {
+        background: linear-gradient(180deg, #0ba57a 0%, #0d8c9b 100%);
+        color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.12);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .admin-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .admin-brand__icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 24px;
+    }
+    .admin-brand__text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .admin-brand__label {
+        font-size: 0.9rem;
+        opacity: 0.85;
+    }
+    .admin-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .admin-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.88);
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+    }
+    .admin-sidebar-footer {
+        margin-top: auto;
+    }
+    .admin-logout {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: #0d8c9b;
+        background: #ffffff;
+        font-weight: 600;
+    }
+    .admin-logout:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    .admin-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .admin-card {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .admin-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .admin-card__header h3 {
+        margin: 0;
+        color: #12344d;
+        font-weight: 700;
+    }
+    .admin-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #607b8a;
+        font-size: 0.9rem;
+    }
+    .admin-card__body {
+        display: grid;
+        gap: 16px;
+    }
+    .admin-conversation-card {
+        border: 1px solid rgba(13, 140, 155, 0.18);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        text-decoration: none;
+        color: inherit;
+        background: #ffffff;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .admin-conversation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 32px rgba(16, 30, 115, 0.12);
+    }
+    .admin-conversation-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .admin-conversation-meta h5 {
+        margin: 0;
+        color: #12344d;
+        font-weight: 700;
+    }
+    .admin-conversation-meta p {
+        margin: 0;
+        color: #607b8a;
+        font-size: 0.9rem;
+    }
+    .admin-conversation-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+        text-align: right;
+    }
+    .admin-empty {
+        padding: 32px;
+        text-align: center;
+        color: #607b8a;
+        background: #f8fbff;
+        border-radius: 16px;
+        border: 1px dashed rgba(13, 140, 155, 0.24);
+    }
+    @media (max-width: 992px) {
+        .admin-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .admin-sidebar {
+            position: static;
+            max-height: none;
+            overflow: visible;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .admin-main {
+            padding: 24px;
+        }
+        .admin-conversation-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .admin-conversation-stats {
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% if user.role == 'doctor' %}
+<div class="doctor-dashboard">
+    <aside class="doctor-sidebar">
+        <div class="doctor-profile-card">
+            <div class="doctor-avatar">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+            <h4>Dr. {{ user.get_full_name }}</h4>
+            {% if user.doctor_profile %}
+                <span>{{ user.doctor_profile.get_specialization_display }}</span>
+            {% endif %}
+            <span>{{ user.email }}</span>
+        </div>
+        <nav class="doctor-nav">
+            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{% url 'my_appointments' %}" class="{% if request.resolver_match.url_name == 'my_appointments' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Appointments</a>
+            <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' %}active{% endif %}"><i class="bi bi-clock-history"></i> Availability</a>
+            <a href="{% url 'conversations_list' %}" class="{% if request.resolver_match.url_name == 'conversations_list' %}active{% endif %}"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </aside>
+    <div class="doctor-main">
+        <div class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>Conversations</h3>
+                    <p class="doctor-card__subtitle">Direct messaging with your patients</p>
+                </div>
+                {% if unread_count > 0 %}
+                    <span class="doctor-chip"><i class="bi bi-envelope"></i> {{ unread_count }} unread</span>
+                {% endif %}
+            </div>
+            <div>
+                {% if conversations %}
+                    <div class="doctor-conversation-list">
+                        {% for conversation in conversations %}
+                            <a href="{% url 'conversation_detail' conversation.id %}" class="doctor-conversation-card">
+                                <div class="doctor-conversation-meta">
+                                    <h5>
+                                        {% if user == conversation.doctor %}
+                                            {{ conversation.patient.get_full_name }}
+                                        {% else %}
+                                            Dr. {{ conversation.doctor.get_full_name }}
+                                        {% endif %}
+                                    </h5>
+                                    <p>
+                                        {% with last_message=conversation.messages.last %}
+                                            {% if last_message %}
+                                                {% if last_message.sender == user %}You: {% endif %}{{ last_message.content|truncatewords:12 }}
+                                            {% else %}
+                                                No messages yet
+                                            {% endif %}
+                                        {% endwith %}
+                                    </p>
+                                </div>
+                                <div class="doctor-conversation-stats">
+                                    {% if conversation.messages.count > 0 %}
+                                        <span class="doctor-chip"><i class="bi bi-chat-dots"></i> {{ conversation.messages.count }} msgs</span>
+                                    {% endif %}
+                                    <small style="color: #5d6d7e;">Updated {{ conversation.updated_at|timesince }} ago</small>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="doctor-empty">
+                        <i class="bi bi-chat-dots" style="font-size: 2rem; color: #0f7186;"></i>
+                        <div style="margin-top: 12px; font-weight: 600; color: #003366;">No conversations yet</div>
+                        <div style="margin-top: 6px;">Accept appointments to start messaging with patients.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col-12">
@@ -85,4 +555,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

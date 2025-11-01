@@ -8,6 +8,9 @@
 .explore-link:hover {
     color: #000000 !important;
 }
+.browse-link:hover {
+    color: #000000 !important;
+}
 </style>
 {% endblock %}
 
@@ -22,7 +25,11 @@
                 <div class="d-flex flex-wrap gap-3">
                     {% if user.is_authenticated %}
                         <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg text-primary">Go to Dashboard</a>
-                        <a href="{% url 'browse_doctors' %}" class="btn btn-outline-light btn-lg text-white">Browse Doctors</a>
+                        {% if user.role == 'doctor' %}
+                            <a href="{% url 'manage_availability' %}" class="btn btn-outline-light btn-lg text-white">Manage Availability</a>
+                        {% else %}
+                            <a href="{% url 'browse_doctors' %}" class="btn btn-outline-light btn-lg text-white browse-link">Browse Doctors</a>
+                        {% endif %}
                     {% else %}
                         <a href="{% url 'patient_signup' %}" class="btn btn-light btn-lg text-primary">Get Started</a>
                         <a href="{% url 'services' %}" class="btn btn-outline-light btn-lg text-white explore-link">Explore Services</a>

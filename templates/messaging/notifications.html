@@ -2,13 +2,298 @@
 
 {% block title %}Notifications - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+    .doctor-dashboard {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f4fbfb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .doctor-sidebar {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .doctor-profile-card {
+        text-align: center;
+    }
+    .doctor-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #11b5c5, #0f7186);
+        color: #ffffff;
+        font-size: 36px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+    }
+    .doctor-profile-card h4 {
+        margin-bottom: 4px;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-profile-card span {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        display: block;
+    }
+    .doctor-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #003366;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    .doctor-nav a:hover,
+    .doctor-nav a.active {
+        background: rgba(17, 181, 197, 0.1);
+        color: #0f7186;
+    }
+    .doctor-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-card {
+        background: #ffffff;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .doctor-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .doctor-card__header h3 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .doctor-notification-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .doctor-notification-card {
+        border: 1px solid rgba(17, 181, 197, 0.16);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        background: #ffffff;
+    }
+    .doctor-notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: #ffffff;
+    }
+    .doctor-notification-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .doctor-notification-content h5 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-notification-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        min-width: 120px;
+    }
+    .doctor-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .doctor-chip--new {
+        background: rgba(10, 116, 218, 0.12);
+        color: #0a74da;
+    }
+    .doctor-empty {
+        padding: 48px;
+        text-align: center;
+        color: #5d6d7e;
+        background: #f8fbff;
+        border-radius: 20px;
+        border: 1px dashed rgba(17, 181, 197, 0.24);
+    }
+    @media (max-width: 992px) {
+        .doctor-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .doctor-sidebar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            position: static;
+            max-height: none;
+            overflow: visible;
+        }
+        .doctor-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .doctor-main {
+            padding: 24px;
+        }
+        .doctor-notification-card {
+            flex-direction: column;
+        }
+        .doctor-notification-actions {
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% if user.role == 'doctor' %}
+<div class="doctor-dashboard">
+    <aside class="doctor-sidebar">
+        <div class="doctor-profile-card">
+            <div class="doctor-avatar">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+            <h4>Dr. {{ user.get_full_name }}</h4>
+            {% if user.doctor_profile %}
+                <span>{{ user.doctor_profile.get_specialization_display }}</span>
+            {% endif %}
+            <span>{{ user.email }}</span>
+        </div>
+        <nav class="doctor-nav">
+            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{% url 'my_appointments' %}" class="{% if request.resolver_match.url_name == 'my_appointments' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Appointments</a>
+            <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' %}active{% endif %}"><i class="bi bi-clock-history"></i> Availability</a>
+            <a href="{% url 'conversations_list' %}" class="{% if request.resolver_match.url_name == 'conversations_list' %}active{% endif %}"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </aside>
+    <div class="doctor-main">
+        <div class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>Notifications</h3>
+                    <p class="doctor-card__subtitle">Stay up to date with patient activity</p>
+                </div>
+                {% if has_unread_notifications %}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_all_read">
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-check-all"></i> Mark all as read
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <div>
+                {% if notifications %}
+                    <div class="doctor-notification-list">
+                        {% for notification in notifications %}
+                            <div class="doctor-notification-card" style="border-left: 4px solid {% if notification.is_read %}#e0e7ff{% else %}#0a74da{% endif %};">
+                                <div class="doctor-notification-icon" style="background: {% if notification.notification_type == 'appointment_request' %}#ffc107{% elif notification.notification_type == 'appointment_confirmed' %}#28a745{% elif notification.notification_type == 'appointment_cancelled' %}#dc3545{% elif notification.notification_type == 'message' %}#0a74da{% elif notification.notification_type == 'doctor_approved' %}#20c997{% else %}#6c757d{% endif %};">
+                                    {% if notification.notification_type == 'appointment_request' %}
+                                        <i class="bi bi-calendar-plus"></i>
+                                    {% elif notification.notification_type == 'appointment_confirmed' %}
+                                        <i class="bi bi-check-circle"></i>
+                                    {% elif notification.notification_type == 'appointment_cancelled' %}
+                                        <i class="bi bi-x-circle"></i>
+                                    {% elif notification.notification_type == 'message' %}
+                                        <i class="bi bi-chat-dots"></i>
+                                    {% elif notification.notification_type == 'doctor_approved' %}
+                                        <i class="bi bi-check2-square"></i>
+                                    {% else %}
+                                        <i class="bi bi-bell"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="doctor-notification-content">
+                                    <h5>{{ notification.title }}</h5>
+                                    <div style="color: #5d6d7e;">{{ notification.description }}</div>
+                                    <small style="color: #9aa7b8;">{{ notification.created_at|timesince }} ago</small>
+                                </div>
+                                <div class="doctor-notification-actions">
+                                    {% if not notification.is_read %}
+                                        <span class="doctor-chip doctor-chip--new"><i class="bi bi-dot"></i> New</span>
+                                    {% endif %}
+                                    {% if notification.related_appointment %}
+                                        <a href="{% url 'mark_notification_read' notification.id %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-arrow-right"></i> View
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="doctor-empty">
+                        <i class="bi bi-bell" style="font-size: 2rem; color: #0a74da; opacity: 0.7;"></i>
+                        <div style="margin-top: 12px; font-weight: 600; color: #003366;">No notifications</div>
+                        <div style="margin-top: 6px;">You're all caught up!</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 style="color: #1a3a4a; font-weight: 700;">Notifications</h1>
-                {% if notifications.filter(is_read=False) %}
+                {% if has_unread_notifications %}
                     <form method="POST" class="d-inline">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="mark_all_read">
@@ -76,4 +361,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

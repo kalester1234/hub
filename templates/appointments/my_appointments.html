@@ -2,7 +2,619 @@
 
 {% block title %}My Appointments - Medical Connect{% endblock %}
 
+{% block extra_css %}
+<style>
+    .doctor-dashboard {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f4fbfb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .doctor-sidebar {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .doctor-profile-card {
+        text-align: center;
+    }
+    .doctor-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #11b5c5, #0f7186);
+        color: #ffffff;
+        font-size: 36px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+    }
+    .doctor-profile-card h4 {
+        margin-bottom: 4px;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-profile-card span {
+        color: #5d6d7e;
+        font-size: 0.9rem;
+        display: block;
+    }
+    .doctor-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .doctor-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #003366;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    .doctor-nav a:hover,
+    .doctor-nav a.active {
+        background: rgba(17, 181, 197, 0.1);
+        color: #0f7186;
+    }
+    .doctor-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .doctor-card {
+        background: #ffffff;
+        border: 1px solid rgba(17, 181, 197, 0.1);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(16, 30, 115, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .doctor-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .doctor-card__header h3 {
+        margin: 0;
+        color: #003366;
+        font-weight: 700;
+    }
+    .doctor-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #5d6d7e;
+        font-size: 0.9rem;
+    }
+    .doctor-card__tools {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .doctor-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .doctor-table thead tr {
+        background: #f4fbfb;
+    }
+    .doctor-table th,
+    .doctor-table td {
+        padding: 14px 16px;
+        text-align: left;
+        color: #003366;
+    }
+    .doctor-table tbody tr {
+        background: #ffffff;
+        border-bottom: 1px solid rgba(23, 162, 184, 0.08);
+    }
+    .doctor-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    .patient-name {
+        font-weight: 600;
+        color: #003366;
+    }
+    .patient-meta {
+        font-size: 0.8rem;
+        color: #6c7c8e;
+    }
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status-confirmed {
+        background: rgba(40, 167, 69, 0.12);
+        color: #1f8c3c;
+    }
+    .status-pending {
+        background: rgba(255, 193, 7, 0.18);
+        color: #ad7a00;
+    }
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.12);
+        color: #b11e31;
+    }
+    .doctor-actions-cell {
+        min-width: 220px;
+    }
+    .doctor-action-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .doctor-action-group .btn-sm {
+        border-radius: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .table-empty {
+        padding: 32px;
+        text-align: center;
+        color: #5d6d7e;
+    }
+    @media (max-width: 992px) {
+        .doctor-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .doctor-sidebar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            position: static;
+            max-height: none;
+            overflow: visible;
+        }
+        .doctor-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .doctor-main {
+            padding: 24px;
+        }
+    }
+    .admin-dashboard {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+        padding: 24px;
+        background: #f5f7fb;
+        border-radius: 24px;
+        align-items: flex-start;
+    }
+    .admin-sidebar {
+        background: linear-gradient(180deg, #0ba57a 0%, #0d8c9b 100%);
+        color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.12);
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: sticky;
+        top: 24px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+    .admin-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .admin-brand__icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 24px;
+    }
+    .admin-brand__text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .admin-brand__label {
+        font-size: 0.9rem;
+        opacity: 0.85;
+    }
+    .admin-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .admin-nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.88);
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+    }
+    .admin-sidebar-footer {
+        margin-top: auto;
+    }
+    .admin-logout {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: #0d8c9b;
+        background: #ffffff;
+        font-weight: 600;
+    }
+    .admin-logout:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    .admin-main {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(16, 30, 115, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+    .admin-card {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .admin-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .admin-card__header h3 {
+        margin: 0;
+        color: #12344d;
+        font-weight: 700;
+    }
+    .admin-card__subtitle {
+        margin: 8px 0 0 0;
+        color: #607b8a;
+        font-size: 0.9rem;
+    }
+    .admin-card__tools {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .admin-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        font-weight: 600;
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .admin-table thead tr {
+        background: #eef6f8;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 14px 16px;
+        text-align: left;
+        color: #12344d;
+    }
+    .admin-table tbody tr {
+        background: #ffffff;
+        border-bottom: 1px solid rgba(13, 140, 155, 0.12);
+    }
+    .admin-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    .admin-empty {
+        padding: 32px;
+        text-align: center;
+        color: #607b8a;
+        background: #f8fbff;
+        border-radius: 16px;
+        border: 1px dashed rgba(13, 140, 155, 0.28);
+    }
+    @media (max-width: 992px) {
+        .admin-dashboard {
+            grid-template-columns: 1fr;
+        }
+        .admin-sidebar {
+            position: static;
+            max-height: none;
+            overflow: visible;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .admin-main {
+            padding: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{% if user.role == 'doctor' %}
+<div class="doctor-dashboard">
+    <aside class="doctor-sidebar">
+        <div class="doctor-profile-card">
+            <div class="doctor-avatar">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+            <h4>Dr. {{ user.get_full_name }}</h4>
+            {% if user.doctor_profile %}
+                <span>{{ user.doctor_profile.get_specialization_display }}</span>
+            {% endif %}
+            <span>{{ user.email }}</span>
+        </div>
+        <nav class="doctor-nav">
+            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{% url 'my_appointments' %}" class="{% if request.resolver_match.url_name == 'my_appointments' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Appointments</a>
+            <a href="{% url 'manage_availability' %}"><i class="bi bi-clock-history"></i> Availability</a>
+            <a href="{% url 'conversations_list' %}"><i class="bi bi-chat-dots"></i> Messages</a>
+            <a href="{% url 'notifications' %}"><i class="bi bi-bell"></i> Notifications</a>
+        </nav>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </aside>
+    <div class="doctor-main">
+        <div class="doctor-card">
+            <div class="doctor-card__header">
+                <div>
+                    <h3>My Appointments</h3>
+                    <p class="doctor-card__subtitle">View and manage all your scheduled appointments</p>
+                </div>
+            </div>
+            <div class="doctor-card__tools">
+                <form method="GET" class="row g-3 align-items-end" style="width:100%;">
+                    <div class="col-md-8">
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="doctor-table">
+                            <thead>
+                                <tr>
+                                    <th>{% if user.role == 'doctor' %}Patient{% else %}Doctor{% endif %}</th>
+                                    <th>Specialization</th>
+                                    <th>Date & Time</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                    <tr>
+                                        <td>
+                                            {% if user.role == 'doctor' %}
+                                                <div class="patient-name">{{ appointment.patient.get_full_name }}</div>
+                                                <div class="patient-meta">#{{ appointment.patient.id }}</div>
+                                            {% else %}
+                                                <div class="patient-name">Dr. {{ appointment.doctor.get_full_name }}</div>
+                                                <div class="patient-meta">{{ appointment.doctor.doctor_profile.get_specialization_display }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.role == 'doctor' %}
+                                                Patient
+                                            {% else %}
+                                                {{ appointment.doctor.doctor_profile.get_specialization_display }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div>{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                                            <div class="patient-meta">{{ appointment.appointment_time|time:"h:i A" }}</div>
+                                        </td>
+                                        <td>{{ appointment.reason|default:"General Consultation"|truncatewords:6 }}</td>
+                                        <td>
+                                            <span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+                                        </td>
+                                        <td class="doctor-actions-cell">
+                                            <div class="doctor-action-group">
+                                                <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                {% if user.role == 'doctor' and appointment.status == 'confirmed' %}
+                                                    <form method="post" action="{% url 'complete_appointment' appointment.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-check2-circle"></i> Complete
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="table-empty">
+                        <i class="bi bi-info-circle"></i> No appointments found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% elif user.role == 'admin' %}
+<div class="admin-dashboard">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="admin-brand__icon"><i class="bi bi-heart-pulse"></i></div>
+            <div class="admin-brand__text">
+                <span class="admin-brand__label">Medical Connect</span>
+                <strong>Admin Console</strong>
+            </div>
+        </div>
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Overview</a>
+            <a href="{% url 'admin:index' %}"><i class="bi bi-kanban"></i> Manage Data</a>
+            <a href="{% url 'admin:accounts_customuser_changelist' %}"><i class="bi bi-people"></i> Users</a>
+            <a href="{% url 'admin:appointments_appointment_changelist' %}"><i class="bi bi-calendar-event"></i> Appointment Models</a>
+            <a href="{% url 'my_appointments' %}" class="{% if request.resolver_match.url_name == 'my_appointments' %}active{% endif %}"><i class="bi bi-list-check"></i> Appointments</a>
+            <a href="{% url 'notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i> Notifications</a>
+            <a href="{% url 'conversations_list' %}" class="{% if request.resolver_match.url_name == 'conversations_list' %}active{% endif %}"><i class="bi bi-chat-dots"></i> Messages</a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="{% url 'logout' %}" class="admin-logout"><i class="bi bi-box-arrow-right"></i> Sign out</a>
+        </div>
+    </aside>
+    <section class="admin-main">
+        <div class="admin-card">
+            <div class="admin-card__header">
+                <div>
+                    <h3>Appointments Directory</h3>
+                    <p class="admin-card__subtitle">Monitor bookings across the platform</p>
+                </div>
+                <span class="admin-chip"><i class="bi bi-database"></i> {{ appointments|length }} records</span>
+            </div>
+            <div class="admin-card__tools">
+                <form method="GET" class="row g-3 align-items-end" style="width:100%;">
+                    <div class="col-md-8">
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Patient</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td>
+                                        {% if appointment.doctor %}
+                                            Dr. {{ appointment.doctor.get_full_name }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if appointment.patient %}
+                                            {{ appointment.patient.get_full_name }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                                        <div class="patient-meta">{{ appointment.appointment_time|time:"h:i A" }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="status-chip status-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+                                    </td>
+                                    <td>{{ appointment.reason|default:"General Consultation"|truncatewords:6 }}</td>
+                                    <td>
+                                        <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Inspect
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="admin-empty">
+                        <i class="bi bi-info-circle"></i> No appointments found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% else %}
 <div style="background: linear-gradient(135deg, #E8EEFB 0%, #D0E0F5 100%); padding: 40px 0; margin-bottom: 30px;">
     <div class="container">
         <h1 style="color: #003366; font-weight: 700; margin-bottom: 5px;">My Appointments</h1>
@@ -11,10 +623,6 @@
 </div>
 
 <div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12"></div>
-    </div>
-
     <!-- Filter -->
     <div class="row mb-4">
         <div class="col-12">
@@ -111,4 +719,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

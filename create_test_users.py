@@ -9,6 +9,7 @@ from datetime import time
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from accounts.models import PatientProfile, DoctorProfile
+from appointments.models import AvailabilitySlot
 
 User = get_user_model()
 
@@ -356,6 +357,51 @@ def ensure_doctors():
             'available_to': time(23, 59),
             'rating': 4.6,
         },
+        {
+            'username': 'noah.adams@demo.com',
+            'password': 'Doctor123!',
+            'first_name': 'Noah',
+            'last_name': 'Adams',
+            'phone': '555080001',
+            'specialization': 'other',
+            'license_number': 'OTH-24-001',
+            'experience_years': 10,
+            'hospital_name': 'Global Care Center',
+            'consultation_fee': Decimal('150.00'),
+            'available_from': time(0, 0),
+            'available_to': time(8, 0),
+            'rating': 4.8,
+        },
+        {
+            'username': 'sophia.mendez@demo.com',
+            'password': 'Doctor123!',
+            'first_name': 'Sophia',
+            'last_name': 'Mendez',
+            'phone': '555080002',
+            'specialization': 'other',
+            'license_number': 'OTH-24-002',
+            'experience_years': 12,
+            'hospital_name': 'Global Care Center',
+            'consultation_fee': Decimal('155.00'),
+            'available_from': time(8, 0),
+            'available_to': time(16, 0),
+            'rating': 4.7,
+        },
+        {
+            'username': 'liam.owens@demo.com',
+            'password': 'Doctor123!',
+            'first_name': 'Liam',
+            'last_name': 'Owens',
+            'phone': '555080003',
+            'specialization': 'other',
+            'license_number': 'OTH-24-003',
+            'experience_years': 8,
+            'hospital_name': 'Global Care Center',
+            'consultation_fee': Decimal('145.00'),
+            'available_from': time(16, 0),
+            'available_to': time(23, 59),
+            'rating': 4.6,
+        },
     ]
     for entry in doctor_definitions:
         user, created = User.objects.get_or_create(
@@ -395,9 +441,85 @@ def ensure_doctors():
         print(f"✓ {entry['first_name']} {entry['last_name']} ({entry['username']}) {status}")
 
 
+def ensure_availability_slots(slot_duration=30, break_count=2, break_duration=20):
+    doctors = User.objects.filter(role='doctor', doctor_profile__isnull=False).select_related('doctor_profile')
+    created = 0
+    removed = 0
+    for doctor in doctors:
+        profile = doctor.doctor_profile
+        start_minutes = profile.available_from.hour * 60 + profile.available_from.minute
+        end_minutes = profile.available_to.hour * 60 + profile.available_to.minute
+        if profile.available_to == time(23, 59):
+            end_minutes = 24 * 60
+        elif end_minutes <= start_minutes:
+            end_minutes += 24 * 60
+        shift_length = end_minutes - start_minutes
+        if shift_length <= 0:
+            continue
+        total_break_minutes = break_count * break_duration
+        effective_breaks = min(break_count, max((shift_length - break_duration) // break_duration, 0))
+        if shift_length <= total_break_minutes:
+            effective_breaks = 0
+        break_intervals = []
+        if effective_breaks:
+            spacing = shift_length / (effective_breaks + 1)
+            for index in range(1, effective_breaks + 1):
+                tentative_start = start_minutes + int(round(spacing * index - break_duration / 2))
+                lower_bound = start_minutes if not break_intervals else break_intervals[-1][1]
+                upper_bound = end_minutes - (effective_breaks - index + 1) * break_duration
+                if upper_bound < lower_bound:
+                    upper_bound = lower_bound
+                break_start = max(lower_bound, min(tentative_start, upper_bound))
+                break_end = break_start + break_duration
+                break_intervals.append((break_start, break_end))
+        working_intervals = []
+        cursor = start_minutes
+        for break_start, break_end in break_intervals:
+            if break_start > cursor:
+                working_intervals.append((cursor, break_start))
+            cursor = break_end
+        if cursor < end_minutes:
+            working_intervals.append((cursor, end_minutes))
+        if not working_intervals:
+            working_intervals.append((start_minutes, end_minutes))
+        desired = set()
+        for period_start, period_end in working_intervals:
+            current = period_start
+            while current < period_end:
+                slot_end = min(current + slot_duration, period_end)
+                slot_length = slot_end - current
+                start_mod = current % (24 * 60)
+                start_time = time(start_mod // 60, start_mod % 60)
+                end_mod = slot_end % (24 * 60)
+                end_time = time(end_mod // 60, end_mod % 60)
+                for day in range(7):
+                    _, was_created = AvailabilitySlot.objects.update_or_create(
+                        doctor=doctor,
+                        day_of_week=day,
+                        start_time=start_time,
+                        defaults={
+                            'end_time': end_time,
+                            'slot_duration': slot_length,
+                            'is_active': True,
+                        },
+                    )
+                    desired.add((day, start_time))
+                    if was_created:
+                        created += 1
+                current = slot_end
+        existing_slots = AvailabilitySlot.objects.filter(doctor=doctor)
+        for slot in existing_slots:
+            key = (slot.day_of_week, slot.start_time)
+            if key not in desired:
+                slot.delete()
+                removed += 1
+    print(f"✓ Availability slots ensured ({created} created, {removed} removed)")
+
+
 def main():
     ensure_patient()
     ensure_doctors()
+    ensure_availability_slots()
 
 
 if __name__ == '__main__':
