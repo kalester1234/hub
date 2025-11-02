@@ -332,6 +332,8 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% block chatbot_widget %}
+    {% if not request.user.is_authenticated or request.user.role != 'doctor' %}
     <button type="button" class="chatbot-toggle" id="chatbot-toggle" aria-label="Chat with assistant">
         <i class="bi bi-chat-dots fs-4"></i>
     </button>
@@ -369,6 +371,8 @@
             </form>
         </div>
     </div>
+    {% endif %}
+    {% endblock %}
 
     <!-- Footer -->
     <footer class="footer mt-3">

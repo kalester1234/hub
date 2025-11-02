@@ -116,6 +116,13 @@ def book_appointment(request, doctor_id):
             appointment = form.save(commit=False)
             appointment.doctor = doctor
             appointment.patient = request.user
+
+            appointment_date = appointment.appointment_date
+            appointment_time = appointment.appointment_time
+            now = timezone.localtime()
+            if appointment_date < now.date() or (appointment_date == now.date() and appointment_time <= now.time()):
+                messages.error(request, 'You cannot book an appointment in the past.')
+                return redirect('book_appointment', doctor_id=doctor_id)
             
             # Calculate end_time (default 30 minutes consultation)
             start_time = appointment.appointment_time
@@ -123,29 +130,39 @@ def book_appointment(request, doctor_id):
             appointment.end_time = end_datetime.time()
             
             # Check if slot already exists
-            existing = Appointment.objects.filter(
+            slot_bookings = Appointment.objects.filter(
                 doctor=doctor,
                 appointment_date=appointment.appointment_date,
                 appointment_time=appointment.appointment_time,
                 status__in=['confirmed', 'pending']
-            ).exists()
+            ).count()
             
-            if existing:
+            if slot_bookings >= 3:
                 messages.error(request, 'This time slot is already booked.')
                 return redirect('book_appointment', doctor_id=doctor_id)
             
-            appointment.save()
-            
-            # Create notification for doctor
-            Notification.objects.create(
-                user=doctor,
-                notification_type='appointment_request',
-                title='New Appointment Request',
-                description=f'{request.user.get_full_name()} has requested an appointment',
-                related_appointment=appointment
-            )
-            
-            messages.success(request, 'Appointment booked successfully! Awaiting confirmation.')
+            if slot_bookings < 2:
+                appointment.status = 'confirmed'
+                appointment.save()
+                Notification.objects.create(
+                    user=doctor,
+                    notification_type='appointment_confirmed',
+                    title='New Appointment Confirmed',
+                    description=f'{request.user.get_full_name()} auto-confirmed an appointment',
+                    related_appointment=appointment
+                )
+                messages.success(request, 'Appointment booked and confirmed!')
+            else:
+                appointment.status = 'pending'
+                appointment.save()
+                Notification.objects.create(
+                    user=doctor,
+                    notification_type='appointment_request',
+                    title='Appointment Requires Approval',
+                    description=f'{request.user.get_full_name()} requested an appointment awaiting admin approval',
+                    related_appointment=appointment
+                )
+                messages.success(request, 'Appointment booked successfully! Awaiting admin approval.')
             return redirect('my_appointments')
     else:
         form = AppointmentBookingForm()
@@ -233,10 +250,37 @@ def manage_availability(request):
     if request.method == 'POST':
         form = AvailabilitySlotForm(request.POST)
         if form.is_valid():
-            slot = form.save(commit=False)
-            slot.doctor = request.user
-            slot.save()
-            messages.success(request, 'Availability slot added successfully!')
+            day_value = form.cleaned_data['day_of_week']
+            start_time = form.cleaned_data['start_time']
+            end_time = form.cleaned_data['end_time']
+            slot_duration = form.cleaned_data['slot_duration']
+            is_active = form.cleaned_data['is_active']
+            apply_everyday = getattr(form, 'apply_everyday', False)
+            if apply_everyday:
+                for day, _ in AvailabilitySlot.DAYS_OF_WEEK:
+                    AvailabilitySlot.objects.update_or_create(
+                        doctor=request.user,
+                        day_of_week=day,
+                        start_time=start_time,
+                        defaults={
+                            'end_time': end_time,
+                            'slot_duration': slot_duration,
+                            'is_active': is_active,
+                        }
+                    )
+                messages.success(request, 'Availability slots updated for every day.')
+            else:
+                AvailabilitySlot.objects.update_or_create(
+                    doctor=request.user,
+                    day_of_week=day_value,
+                    start_time=start_time,
+                    defaults={
+                        'end_time': end_time,
+                        'slot_duration': slot_duration,
+                        'is_active': is_active,
+                    }
+                )
+                messages.success(request, 'Availability slot saved successfully!')
             return redirect('manage_availability')
     else:
         form = AvailabilitySlotForm()

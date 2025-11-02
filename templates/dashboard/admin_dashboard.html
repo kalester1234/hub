@@ -31,14 +31,14 @@
                 <p>{{ user_summary.status_text }}</p>
             </div>
             <div class="header-summary">
-                <div class="summary-card">
+                <a href="{% url 'admin_dashboard' %}?focus=users#users" class="summary-card" style="text-decoration: none;">
                     <span>Total Users</span>
                     <strong>{{ total_users }}</strong>
-                </div>
-                <div class="summary-card">
+                </a>
+                <a href="{% url 'admin_dashboard' %}?focus=manage-data#manage-data" class="summary-card" style="text-decoration: none;">
                     <span>Pending Doctors</span>
                     <strong>{{ pending_doctors }}</strong>
-                </div>
+                </a>
                 <div class="user-avatar">{{ user_summary.initials }}</div>
             </div>
         </header>
@@ -178,12 +178,13 @@
                     <div class="table-actions">
                         <form method="get" class="search-form">
                             <input type="hidden" name="patient_search" value="{{ patient_search_query }}">
+                            <input type="hidden" name="focus" value="manage-data">
                             <div class="search-field">
                                 <i class="bi bi-search"></i>
                                 <input type="text" name="doctor_search" value="{{ doctor_search_query }}" placeholder="Search doctors">
                             </div>
                             {% if doctor_search_query %}
-                            <a href="{% url 'admin_dashboard' %}?patient_search={{ patient_search_query|urlencode }}" class="clear-search">Clear</a>
+                            <a href="{% url 'admin_dashboard' %}?focus=manage-data&patient_search={{ patient_search_query|urlencode }}" class="clear-search">Clear</a>
                             {% endif %}
                             <button type="submit" class="search-button">Search</button>
                         </form>
@@ -205,7 +206,7 @@
                                 <tr>
                                     <td>
                                         <div class="person">
-                                            <div class="avatar">{{ row.name|slice:":1"|upper }}</div>
+                                            <div class="avatar">{{ row.initials }}</div>
                                             <div>
                                                 <span class="person-name">{{ row.name }}</span>
                                                 <small>{{ row.email }}</small>
@@ -221,11 +222,27 @@
                                     </td>
                                     <td>
                                         <span class="status-chip {{ row.status_class }}">{{ row.status }}</span>
+                                        {% if row.can_approve %}
+                                        <form method="post" action="{% url 'admin_dashboard' %}" class="inline-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="approve_doctor">
+                                            <input type="hidden" name="user_id" value="{{ row.id }}">
+                                            <button type="submit" class="action-button approve"><i class="bi bi-check-circle"></i> Approve</button>
+                                        </form>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <div class="action-menu" data-records="{{ row.records_json|escapejs }}" data-total="{{ row.records_total }}" data-name="{{ row.name }}" data-doctor-id="{{ row.id }}">
                                             <button type="button" class="action-toggle"><i class="bi bi-three-dots"></i> Actions</button>
                                             <div class="action-dropdown">
+                                                {% if row.can_approve %}
+                                                <form method="post" action="{% url 'admin_dashboard' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="approve_doctor">
+                                                    <input type="hidden" name="user_id" value="{{ row.id }}">
+                                                    <button type="submit" class="dropdown-item approve"><i class="bi bi-check-circle"></i> Approve doctor</button>
+                                                </form>
+                                                {% endif %}
                                                 <form method="post" action="{% url 'admin_dashboard' %}">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="action" value="delete_doctor">
@@ -246,7 +263,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="tab-panel" data-tab-group="manage" data-tab-id="hospitals">
+                <div class="tab-panel {% if manage_tab == 'hospitals' %}active{% endif %}" data-tab-group="manage" data-tab-id="hospitals">
                     <div class="info-cards">
                         <div class="info-card">
                             <span>Total Hospitals</span>
@@ -319,12 +336,13 @@
                     <div class="table-actions">
                         <form method="get" class="search-form">
                             <input type="hidden" name="doctor_search" value="{{ doctor_search_query }}">
+                            <input type="hidden" name="focus" value="users">
                             <div class="search-field">
                                 <i class="bi bi-search"></i>
                                 <input type="text" name="patient_search" value="{{ patient_search_query }}" placeholder="Search patients">
                             </div>
                             {% if patient_search_query %}
-                            <a href="{% url 'admin_dashboard' %}?doctor_search={{ doctor_search_query|urlencode }}" class="clear-search">Clear</a>
+                            <a href="{% url 'admin_dashboard' %}?focus=users&doctor_search={{ doctor_search_query|urlencode }}" class="clear-search">Clear</a>
                             {% endif %}
                             <button type="submit" class="search-button">Search</button>
                         </form>
@@ -345,7 +363,7 @@
                                 <tr>
                                     <td>
                                         <div class="person">
-                                            <div class="avatar">{{ row.name|slice:":1"|upper }}</div>
+                                            <div class="avatar">{{ row.initials }}</div>
                                             <div>
                                                 <span class="person-name">{{ row.name }}</span>
                                                 <small>{{ row.email }}</small>
@@ -390,7 +408,7 @@
                                 <tr>
                                     <td>
                                         <div class="person">
-                                            <div class="avatar">{{ row.name|slice:":1"|upper }}</div>
+                                            <div class="avatar">{{ row.initials }}</div>
                                             <div>
                                                 <span class="person-name">{{ row.name }}</span>
                                                 <small>{{ row.email }}</small>
@@ -654,6 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const group = button.dataset.tabGroup;
@@ -661,24 +680,30 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll(`.tab-button[data-tab-group="${group}"]`).forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             document.querySelectorAll(`.tab-panel[data-tab-group="${group}"]`).forEach(panel => {
-                panel.classList.toggle('active', panel.dataset.tabId === target);
+                const isActive = panel.dataset.tabId === target;
+                panel.classList.toggle('active', isActive);
             });
         });
     });
-    const actionMenus = document.querySelectorAll('.action-menu');
     const recordsModal = document.getElementById('doctor-records-modal');
-    const recordsList = recordsModal.querySelector('.records-list');
-    const recordsName = recordsModal.querySelector('.records-name');
-    const recordsTotal = recordsModal.querySelector('.records-total');
-    const recordsClose = recordsModal.querySelector('.records-close');
-    const recordsOverlay = recordsModal.querySelector('.records-overlay');
+    const recordsList = recordsModal ? recordsModal.querySelector('.records-list') : null;
+    const recordsName = recordsModal ? recordsModal.querySelector('.records-name') : null;
+    const recordsTotal = recordsModal ? recordsModal.querySelector('.records-total') : null;
+    const recordsClose = recordsModal ? recordsModal.querySelector('.records-close') : null;
+    const recordsOverlay = recordsModal ? recordsModal.querySelector('.records-overlay') : null;
 
     function closeRecordsModal() {
+        if (!recordsModal || !recordsList) {
+            return;
+        }
         recordsModal.setAttribute('hidden', '');
         recordsList.innerHTML = '';
     }
 
     function openRecordsModal(name, total, records) {
+        if (!recordsModal || !recordsList || !recordsName || !recordsTotal) {
+            return;
+        }
         recordsName.textContent = name;
         recordsTotal.textContent = `${total} past appointments`;
         recordsList.scrollTop = 0;
@@ -702,39 +727,92 @@ document.addEventListener('DOMContentLoaded', () => {
         recordsModal.removeAttribute('hidden');
     }
 
-    actionMenus.forEach(menu => {
-        const toggle = menu.querySelector('.action-toggle');
-        const dropdown = menu.querySelector('.action-dropdown');
-        const recordsTrigger = menu.querySelector('.records-trigger');
-        toggle.addEventListener('click', event => {
-            event.stopPropagation();
-            dropdown.classList.toggle('open');
-        });
-        recordsTrigger.addEventListener('click', () => {
-            dropdown.classList.remove('open');
-            const name = menu.dataset.name;
-            const total = menu.dataset.total;
-            const records = JSON.parse(menu.dataset.records);
-            openRecordsModal(name, total, records);
-        });
-    });
+    function parseRecords(value) {
+        if (!value) {
+            return [];
+        }
+        try {
+            return JSON.parse(value);
+        } catch (error) {
+            const parser = new DOMParser();
+            const decoded = parser.parseFromString(value, 'text/html').documentElement.textContent;
+            try {
+                return JSON.parse(decoded);
+            } catch (nestedError) {
+                return [];
+            }
+        }
+    }
 
-    document.addEventListener('click', event => {
-        actionMenus.forEach(menu => {
-            const dropdown = menu.querySelector('.action-dropdown');
-            if (!menu.contains(event.target)) {
-                dropdown.classList.remove('open');
+    function closeAllDropdowns(except) {
+        document.querySelectorAll('.action-dropdown.open').forEach(item => {
+            if (!except || item !== except) {
+                item.classList.remove('open');
             }
         });
-    });
+    }
 
-    recordsClose.addEventListener('click', closeRecordsModal);
-    recordsOverlay.addEventListener('click', closeRecordsModal);
-    window.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && !recordsModal.hasAttribute('hidden')) {
-            closeRecordsModal();
+    document.addEventListener('click', event => {
+        const origin = event.target instanceof Element ? event.target : null;
+        if (!origin) {
+            closeAllDropdowns();
+            return;
+        }
+        const toggle = origin.closest('.action-toggle');
+        if (toggle) {
+            event.preventDefault();
+            const menu = toggle.closest('.action-menu');
+            if (!menu) {
+                closeAllDropdowns();
+                return;
+            }
+            const dropdown = menu.querySelector('.action-dropdown');
+            if (!dropdown) {
+                closeAllDropdowns();
+                return;
+            }
+            const shouldOpen = !dropdown.classList.contains('open');
+            closeAllDropdowns(dropdown);
+            if (shouldOpen) {
+                dropdown.classList.add('open');
+            }
+            return;
+        }
+        const recordsButton = origin.closest('.records-trigger');
+        if (recordsButton) {
+            event.preventDefault();
+            const menu = recordsButton.closest('.action-menu');
+            if (menu) {
+                const dropdown = menu.querySelector('.action-dropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('open');
+                }
+                const name = menu.dataset.name || '';
+                const total = menu.dataset.total || '0';
+                const records = parseRecords(menu.dataset.records);
+                openRecordsModal(name, total, records);
+            }
+            return;
+        }
+        if (!origin.closest('.action-menu')) {
+            closeAllDropdowns();
         }
     });
+
+    if (recordsClose) {
+        recordsClose.addEventListener('click', closeRecordsModal);
+    }
+    if (recordsOverlay) {
+        recordsOverlay.addEventListener('click', closeRecordsModal);
+    }
+    if (recordsModal) {
+        window.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !recordsModal.hasAttribute('hidden')) {
+                closeRecordsModal();
+            }
+        });
+    }
+
 });
 </script>
 <div id="doctor-records-modal" class="records-modal" hidden>
@@ -754,6 +832,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 </div>
 {% endblock %}
+
+{% block chatbot_widget %}{% endblock %}
 
 {% block extra_css %}
 <style>

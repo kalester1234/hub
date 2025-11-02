@@ -164,6 +164,50 @@ document.addEventListener('DOMContentLoaded', function() {
     let step = 'welcome';
     let currentSlots = [];
     let selectedSlot = null;
+    function todayIso() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    function updateDateMin() {
+        if (!dateField) {
+            return;
+        }
+        const today = todayIso();
+        dateField.setAttribute('min', today);
+        if (dateField.value && dateField.value < today) {
+            dateField.value = today;
+        }
+    }
+    function updateTimeMin() {
+        if (!timeField) {
+            return;
+        }
+        if (!dateField || dateField.value !== todayIso()) {
+            timeField.removeAttribute('min');
+            return;
+        }
+        const now = new Date();
+        const min = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        timeField.setAttribute('min', min);
+        if (timeField.value && timeField.value < min) {
+            timeField.value = min;
+        }
+    }
+    updateDateMin();
+    updateTimeMin();
+    if (dateField) {
+        dateField.addEventListener('change', () => {
+            updateDateMin();
+            updateTimeMin();
+        });
+    }
+    if (timeField) {
+        timeField.addEventListener('focus', updateTimeMin);
+        timeField.addEventListener('change', updateTimeMin);
+    }
     async function fetchSlots(pref) {
         const payload = {
             query: pref || '',

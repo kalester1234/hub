@@ -193,6 +193,19 @@ def admin_dashboard(request):
             patient.delete()
             messages.success(request, 'Patient removed successfully.')
             return redirect('admin_dashboard')
+        if action == 'approve_doctor':
+            user_id = request.POST.get('user_id')
+            doctor = get_object_or_404(CustomUser, id=user_id, role='doctor')
+            profile = getattr(doctor, 'doctor_profile', None)
+            if not profile:
+                messages.error(request, 'Doctor profile not found.')
+            elif profile.is_approved:
+                messages.info(request, 'Doctor already approved.')
+            else:
+                profile.is_approved = True
+                profile.save(update_fields=['is_approved'])
+                messages.success(request, 'Doctor approved successfully.')
+            return redirect('admin_dashboard')
         if action == 'delete_doctor':
             user_id = request.POST.get('user_id')
             doctor = get_object_or_404(CustomUser, id=user_id, role='doctor')
@@ -334,9 +347,12 @@ def admin_dashboard(request):
     for doctor in doctors_qs.order_by('first_name', 'last_name'):
         profile = getattr(doctor, 'doctor_profile', None)
         records = doctor_records_map.get(doctor.id, [])
+        full_name = doctor.get_full_name()
+        initials = ''.join([part[0] for part in full_name.split() if part]) if full_name else (doctor.username[:1] if doctor.username else '')
+        initials = initials.upper()
         doctor_rows.append({
             'id': doctor.id,
-            'name': doctor.get_full_name() or doctor.username,
+            'name': full_name or doctor.username or 'Unknown Doctor',
             'specialization': profile.get_specialization_display() if profile else 'Not specified',
             'hospital': profile.hospital_name if profile and profile.hospital_name else 'Not provided',
             'email': doctor.email or 'Not provided',
@@ -344,32 +360,42 @@ def admin_dashboard(request):
             'status': 'Approved' if profile and profile.is_approved else 'Pending',
             'status_class': 'approved' if profile and profile.is_approved else 'pending',
             'records_json': json.dumps(records),
-            'records_total': doctor_records_total.get(doctor.id, 0)
+            'records_total': doctor_records_total.get(doctor.id, 0),
+            'initials': initials or '?',
+            'can_approve': not (profile and profile.is_approved)
         })
 
     patient_rows = []
     for patient in patients_qs.order_by('-date_joined'):
         profile = getattr(patient, 'patient_profile', None)
+        full_name = patient.get_full_name()
+        initials = ''.join([part[0] for part in full_name.split() if part]) if full_name else (patient.username[:1] if patient.username else '')
+        initials = initials.upper()
         patient_rows.append({
             'id': patient.id,
-            'name': patient.get_full_name() or patient.username,
+            'name': full_name or patient.username or 'Unknown Patient',
             'email': patient.email or 'Not provided',
             'phone': patient.phone or 'Not provided',
             'dob': profile.date_of_birth if profile and profile.date_of_birth else None,
             'joined': patient.date_joined,
             'status': 'Active' if patient.is_active else 'Inactive',
-            'status_class': 'active' if patient.is_active else 'inactive'
+            'status_class': 'active' if patient.is_active else 'inactive',
+            'initials': initials or '?'
         })
 
     admin_rows = []
     for admin_user in admin_qs.order_by('first_name', 'last_name'):
+        full_name = admin_user.get_full_name()
+        initials = ''.join([part[0] for part in full_name.split() if part]) if full_name else (admin_user.username[:1] if admin_user.username else '')
+        initials = initials.upper()
         admin_rows.append({
-            'name': admin_user.get_full_name() or admin_user.username,
+            'name': full_name or admin_user.username or 'Unknown Admin',
             'email': admin_user.email or 'Not provided',
             'phone': admin_user.phone or 'Not provided',
             'status': 'Active' if admin_user.is_active else 'Inactive',
             'status_class': 'active' if admin_user.is_active else 'inactive',
-            'joined': admin_user.date_joined
+            'joined': admin_user.date_joined,
+            'initials': initials or '?'
         })
 
     appointments_recent = list(
