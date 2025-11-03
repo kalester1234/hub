@@ -344,9 +344,11 @@ def admin_dashboard(request):
                 })
 
     doctor_rows = []
-    for doctor in doctors_qs.order_by('first_name', 'last_name'):
+    for doctor in doctors_qs.order_by('-date_joined'):
         profile = getattr(doctor, 'doctor_profile', None)
         records = doctor_records_map.get(doctor.id, [])
+        if not isinstance(records, list):
+            records = []
         full_name = doctor.get_full_name()
         initials = ''.join([part[0] for part in full_name.split() if part]) if full_name else (doctor.username[:1] if doctor.username else '')
         initials = initials.upper()

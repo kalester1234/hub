@@ -633,13 +633,32 @@ def chatbot_suggest_slot(request):
             message = f"No open slots found for {label.lower()} in the next two weeks. Please try a different specialty or time."
         return JsonResponse({'status': 'empty', 'message': message, 'slots': []})
     available_slots.sort(key=lambda item: (item['date'], item['time']))
-    top_slots = available_slots[:3]
+    selected_indices = []
+    seen_doctors = set()
+    for index, item in enumerate(available_slots):
+        doctor_identifier = item['doctor'].id
+        if doctor_identifier in seen_doctors:
+            continue
+        seen_doctors.add(doctor_identifier)
+        selected_indices.append(index)
+        if len(selected_indices) == 3:
+            break
+    if len(selected_indices) < 3:
+        for index in range(len(available_slots)):
+            if index in selected_indices:
+                continue
+            selected_indices.append(index)
+            if len(selected_indices) == 3:
+                break
+    top_slots = [available_slots[index] for index in selected_indices]
     slots_response = []
+    unique_doctors = set()
     for item in top_slots:
         doctor = item['doctor']
         profile = item['profile']
         date_value = item['date']
         time_value = item['time']
+        unique_doctors.add(doctor.id)
         slots_response.append({
             'doctor_id': doctor.id,
             'doctor_name': doctor.get_full_name() or doctor.username,
@@ -660,11 +679,18 @@ def chatbot_suggest_slot(request):
             message = f"Here are the next available times with {doctor_label}."
     else:
         label = specialization_map.get(specialization, 'Doctors') if specialization else 'Doctors'
+        doctor_count = len(unique_doctors)
         if preferred_date:
             date_phrase = preferred_date.strftime('%b %d')
-            message = f"Here are {label.lower()} available around {date_phrase}."
+            if doctor_count > 1:
+                message = f"Here are {doctor_count} doctors available around {date_phrase}."
+            else:
+                message = f"Here are {label.lower()} available around {date_phrase}."
         else:
-            message = f"Here are the next available {label.lower()} slots."
+            if doctor_count > 1:
+                message = f"Here are {doctor_count} doctors with upcoming slots."
+            else:
+                message = f"Here are the next available {label.lower()} slots."
     return JsonResponse({'status': 'success', 'message': message, 'slots': slots_response})
 
 

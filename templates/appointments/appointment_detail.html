@@ -176,9 +176,15 @@
                 </div>
                 <div class="card-body">
                     {% if appointment.status != 'cancelled' and appointment.is_upcoming %}
-                        <a href="{% url 'start_conversation' appointment.doctor.id %}" class="btn btn-primary w-100 mb-2">
-                            <i class="bi bi-chat-dots"></i> Message Doctor
-                        </a>
+                        {% if appointment.doctor == user %}
+                            <a href="{% url 'start_conversation' appointment.patient.id %}" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-chat-dots"></i> Message Patient
+                            </a>
+                        {% else %}
+                            <a href="{% url 'start_conversation' appointment.doctor.id %}" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-chat-dots"></i> Message Doctor
+                            </a>
+                        {% endif %}
                         <a href="{% url 'cancel_appointment' appointment.id %}" class="btn btn-outline-danger w-100">
                             <i class="bi bi-x-circle"></i> Cancel Appointment
                         </a>
