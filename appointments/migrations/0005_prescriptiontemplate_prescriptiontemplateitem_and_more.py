@@ -45,27 +45,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='DoctorProfile',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('specialization', models.CharField(choices=[('cardiology', 'Cardiology'), ('dermatology', 'Dermatology'), ('neurology', 'Neurology'), ('pediatrics', 'Pediatrics'), ('psychiatry', 'Psychiatry'), ('orthopedics', 'Orthopedics'), ('general', 'General Practice'), ('other', 'Other')], max_length=50)),
-                ('license_number', models.CharField(max_length=50, unique=True)),
-                ('experience_years', models.IntegerField()),
-                ('hospital_name', models.CharField(blank=True, max_length=200)),
-                ('consultation_fee', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('available_from', models.TimeField()),
-                ('available_to', models.TimeField()),
-                ('is_approved', models.BooleanField(default=False)),
-                ('rating', models.FloatField(default=5.0)),
-                ('total_appointments', models.IntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='appointments_doctor_profile', to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'ordering': ['-rating'],
-            },
-        ),
-        migrations.CreateModel(
             name='AppointmentReminder',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

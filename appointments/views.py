@@ -11,8 +11,8 @@ from datetime import datetime, timedelta, time
 from django.contrib.auth import get_user_model
 import json
 import re
-from .models import Appointment, AvailabilitySlot, Prescription
-from .forms import AppointmentBookingForm, AvailabilitySlotForm, PrescriptionForm, AppointmentStatusForm, PrescriptionItemFormSet
+from .models import Appointment, AvailabilitySlot, Prescription, PrescriptionTemplate, PrescriptionTemplateItem, DoctorLeave
+from .forms import AppointmentBookingForm, AvailabilitySlotForm, PrescriptionForm, AppointmentStatusForm, PrescriptionItemFormSet, DoctorLeaveForm
 from accounts.models import DoctorProfile
 from messaging.models import Notification, Conversation
 
@@ -754,6 +754,30 @@ def chatbot_book_appointment(request):
 
 
 @login_required(login_url='login')
+def get_template_items(request, template_id):
+    if request.user.role != 'doctor':
+        return JsonResponse({'status': 'error', 'message': 'Only doctors can access templates.'}, status=403)
+    
+    try:
+        template = PrescriptionTemplate.objects.prefetch_related('items').get(id=template_id, is_active=True)
+    except PrescriptionTemplate.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Template not found.'}, status=404)
+    
+    items_data = [
+        {
+            'medicine_name': item.medicine_name,
+            'dosage': item.dosage,
+            'frequency': item.frequency,
+            'duration_days': item.duration_days,
+            'instructions': item.instructions,
+        }
+        for item in template.items.all()
+    ]
+    
+    return JsonResponse({'status': 'success', 'items': items_data})
+
+
+@login_required(login_url='login')
 def request_leave(request):
     """Allow doctors to request leave"""
     if request.user.role != 'doctor':
@@ -820,3 +844,10 @@ def manage_leave_requests(request):
         'title': 'Manage Leave Requests'
     }
     return render(request, 'appointments/manage_leave_requests.html', context)
+
+
+@login_required(login_url='login')
+def get_template_items(request, template_id):
+    template = get_object_or_404(PrescriptionTemplate, id=template_id)
+    items = template.items.all().values('id', 'medicine_name', 'dosage', 'frequency', 'duration_days', 'instructions')
+    return JsonResponse(list(items), safe=False)

@@ -2,39 +2,9 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
+from accounts.models import DoctorProfile
 
 CustomUser = get_user_model()
-
-class DoctorProfile(models.Model):
-    SPECIALIZATION_CHOICES = [
-        ('cardiology', 'Cardiology'),
-        ('dermatology', 'Dermatology'),
-        ('neurology', 'Neurology'),
-        ('pediatrics', 'Pediatrics'),
-        ('psychiatry', 'Psychiatry'),
-        ('orthopedics', 'Orthopedics'),
-        ('general', 'General Practice'),
-        ('other', 'Other'),
-    ]
-
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='appointments_doctor_profile')
-    specialization = models.CharField(max_length=50, choices=SPECIALIZATION_CHOICES)
-    license_number = models.CharField(max_length=50, unique=True)
-    experience_years = models.IntegerField()
-    hospital_name = models.CharField(max_length=200, blank=True)
-    consultation_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    available_from = models.TimeField()
-    available_to = models.TimeField()
-    is_approved = models.BooleanField(default=False)
-    rating = models.FloatField(default=5.0)
-    total_appointments = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-rating']
-
-    def __str__(self):
-        return f"Dr. {self.user.get_full_name()}"
 
 class AvailabilitySlot(models.Model):
     DAYS_OF_WEEK = [
