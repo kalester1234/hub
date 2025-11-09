@@ -5,10 +5,25 @@ from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.urls import reverse
+from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime, timedelta
+import requests
 from .models import Conversation, Message, Notification
 from .forms import MessageForm
 from appointments.models import Appointment, AvailabilitySlot
+
+def generate_llm_reply(prompt):
+    try:
+        response = requests.post(
+            "http://127.0.0.1:11434/api/generate",
+            json={"model": "phi3:mini", "prompt": prompt, "stream": False},
+            timeout=60
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data.get("response", "").strip()
+    except requests.RequestException:
+        return ""
 
 @login_required(login_url='login')
 def conversations_list(request):
@@ -168,6 +183,15 @@ def conversation_detail(request, conversation_id):
             message.conversation = conversation
             message.sender = request.user
             message.save()
+            if request.user == conversation.patient:
+                assistant_text = generate_llm_reply(message.content)
+                if assistant_text:
+                    Message.objects.create(
+                        conversation=conversation,
+                        sender=conversation.doctor,
+                        content=assistant_text,
+                        is_read=False
+                    )
             recipient = conversation.patient if request.user == conversation.doctor else conversation.doctor
             Notification.objects.create(
                 user=recipient,

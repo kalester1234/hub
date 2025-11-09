@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg
 from django.db import IntegrityError
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from datetime import timedelta
 from collections import defaultdict
 import json
-from appointments.models import Appointment, AvailabilitySlot, DoctorLeave
+from appointments.models import Appointment, AvailabilitySlot, DoctorLeave, PrescriptionTemplate
 from appointments.forms import AvailabilitySlotForm, DoctorLeaveForm
 from messaging.models import Notification
 from accounts.models import DoctorProfile
@@ -516,6 +516,25 @@ def admin_dashboard(request):
         'upcoming': upcoming_appointments,
     }
 
+    # Analytics data for charts
+    from django.db.models.functions import TruncMonth
+    monthly_appointments = Appointment.objects.annotate(
+        month=TruncMonth('appointment_date')
+    ).values('month').annotate(
+        total=Count('id'),
+        completed=Count('id', filter=Q(status='completed')),
+        cancelled=Count('id', filter=Q(status='cancelled'))
+    ).order_by('month')[:12]
+
+    doctor_performance = DoctorProfile.objects.filter(is_approved=True).annotate(
+        total_appointments=Count('user__doctor_appointments'),
+        completed_appointments=Count('user__doctor_appointments', filter=Q(user__doctor_appointments__status='completed')),
+        avg_rating=Avg('rating')
+    ).order_by('-total_appointments')[:10]
+
+    # Prescription templates count
+    prescription_templates = PrescriptionTemplate.objects.filter(is_active=True).count()
+
     user_name = request.user.get_full_name() or request.user.username
     user_summary = {
         'name': user_name,
@@ -557,6 +576,9 @@ def admin_dashboard(request):
         'active_section': focus or active_section,
         'manage_tab': manage_tab,
         'users_tab': users_tab,
+        'monthly_appointments': monthly_appointments,
+        'doctor_performance': doctor_performance,
+        'prescription_templates': prescription_templates,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 

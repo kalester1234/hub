@@ -324,6 +324,7 @@ def add_prescription(request, appointment_id):
             return redirect('appointment_detail', appointment_id=appointment.id)
     else:
         form = PrescriptionForm()
+        form.doctor_profile = doctor_profile  # Pass doctor profile for template filtering
         formset = PrescriptionItemFormSet(instance=placeholder_prescription, prefix='items')
     
     context = {
@@ -365,6 +366,7 @@ def edit_prescription(request, appointment_id):
             return redirect('appointment_detail', appointment_id=appointment.id)
     else:
         form = PrescriptionForm(instance=prescription)
+        form.doctor_profile = doctor_profile  # Pass doctor profile for template filtering
         formset = PrescriptionItemFormSet(instance=prescription, prefix='items')
     
     context = {
@@ -749,3 +751,72 @@ def chatbot_book_appointment(request):
     messages.success(request, 'Appointment booked successfully! Awaiting confirmation.')
     redirect_url = reverse('my_appointments')
     return JsonResponse({'status': 'success', 'message': 'Appointment booked successfully!', 'redirect_url': redirect_url})
+
+
+@login_required(login_url='login')
+def request_leave(request):
+    """Allow doctors to request leave"""
+    if request.user.role != 'doctor':
+        messages.error(request, 'Only doctors can request leave.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = DoctorLeaveForm(request.POST)
+        if form.is_valid():
+            leave = form.save(commit=False)
+            leave.doctor = request.user
+            leave.save()
+            messages.success(request, 'Leave request submitted successfully!')
+            return redirect('dashboard')
+    else:
+        form = DoctorLeaveForm()
+
+    context = {
+        'form': form,
+        'title': 'Request Leave'
+    }
+    return render(request, 'appointments/request_leave.html', context)
+
+
+@login_required(login_url='login')
+def manage_leave_requests(request):
+    """Admin view to manage leave requests"""
+    if request.user.role != 'admin':
+        messages.error(request, 'You do not have permission to manage leave requests.')
+        return redirect('dashboard')
+
+    leave_requests = DoctorLeave.objects.select_related('doctor').order_by('-created_at')
+
+    if request.method == 'POST':
+        leave_id = request.POST.get('leave_id')
+        action = request.POST.get('action')
+        leave = get_object_or_404(DoctorLeave, id=leave_id)
+
+        if action == 'approve':
+            leave.status = 'approved'
+            leave.save()
+            Notification.objects.create(
+                user=leave.doctor,
+                notification_type='doctor_approved',
+                title='Leave Request Approved',
+                description=f'Your leave request from {leave.start_date} to {leave.end_date} has been approved.',
+            )
+            messages.success(request, 'Leave request approved.')
+        elif action == 'reject':
+            leave.status = 'rejected'
+            leave.save()
+            Notification.objects.create(
+                user=leave.doctor,
+                notification_type='appointment_cancelled',
+                title='Leave Request Rejected',
+                description=f'Your leave request from {leave.start_date} to {leave.end_date} has been rejected.',
+            )
+            messages.success(request, 'Leave request rejected.')
+
+        return redirect('manage_leave_requests')
+
+    context = {
+        'leave_requests': leave_requests,
+        'title': 'Manage Leave Requests'
+    }
+    return render(request, 'appointments/manage_leave_requests.html', context)

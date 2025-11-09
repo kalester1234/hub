@@ -15,4 +15,7 @@ urlpatterns = [
     path('<int:appointment_id>/prescription/', views.add_prescription, name='add_prescription'),
     path('<int:appointment_id>/prescription/edit/', views.edit_prescription, name='edit_prescription'),
     path('<int:appointment_id>/prescription/download/', views.download_prescription, name='download_prescription'),
+    path('leave/request/', views.request_leave, name='request_leave'),
+    path('leave/manage/', views.manage_leave_requests, name='manage_leave_requests'),
+    path('api/template-items/<int:template_id>/', views.get_template_items, name='get_template_items'),
 ]

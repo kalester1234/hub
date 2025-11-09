@@ -1,7 +1,8 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.utils import timezone
-from .models import Appointment, AvailabilitySlot, Prescription, DoctorLeave, PrescriptionItem
+from django.db import models
+from .models import Appointment, AvailabilitySlot, Prescription, DoctorLeave, PrescriptionItem, PrescriptionTemplate, PrescriptionTemplateItem
 
 class AppointmentBookingForm(forms.ModelForm):
     class Meta:
@@ -91,12 +92,32 @@ class AvailabilitySlotForm(forms.ModelForm):
 
 
 class PrescriptionForm(forms.ModelForm):
+    template = forms.ModelChoiceField(
+        queryset=PrescriptionTemplate.objects.filter(is_active=True),
+        required=False,
+        empty_label="Select a template (optional)",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text="Choose a prescription template to pre-fill medicines"
+    )
+
     class Meta:
         model = Prescription
         fields = ['instructions']
         widgets = {
             'instructions': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Provide overall guidance or precautions'})
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter templates by doctor's specialization if doctor_profile is available
+        if hasattr(self, 'doctor_profile') and self.doctor_profile:
+            self.fields['template'].queryset = PrescriptionTemplate.objects.filter(
+                is_active=True
+            ).filter(
+                models.Q(specialization=self.doctor_profile.specialization) |
+                models.Q(specialization__isnull=True) |
+                models.Q(specialization='')
+            )
 
 
 PrescriptionItemFormSet = inlineformset_factory(
@@ -144,3 +165,33 @@ class AppointmentStatusForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
+
+
+class PrescriptionTemplateForm(forms.ModelForm):
+    class Meta:
+        model = PrescriptionTemplate
+        fields = ['name', 'description', 'specialization', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'specialization': forms.Select(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+PrescriptionTemplateItemFormSet = inlineformset_factory(
+    PrescriptionTemplate,
+    PrescriptionTemplateItem,
+    fields=['medicine_name', 'dosage', 'frequency', 'duration_days', 'instructions'],
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+    widgets={
+        'medicine_name': forms.TextInput(attrs={'class': 'form-control'}),
+        'dosage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 500mg'}),
+        'frequency': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Twice a day'}),
+        'duration_days': forms.NumberInput(attrs={'class': 'form-control'}),
+        'instructions': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Directions for this medicine'}),
+    }
+)

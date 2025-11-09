@@ -335,6 +335,20 @@
             <form method="POST" class="prescription-form" id="prescription-form">
                 {% csrf_token %}
                 {{ formset.management_form }}
+
+                {% if form.template %}
+                <div class="form-group">
+                    <label for="{{ form.template.id_for_label }}">{{ form.template.label }}</label>
+                    {{ form.template }}
+                    {% if form.template.errors %}
+                        <div class="invalid-feedback d-block">{{ form.template.errors.0 }}</div>
+                    {% endif %}
+                    {% if form.template.help_text %}
+                        <small class="form-text text-muted">{{ form.template.help_text }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <div id="medicine-formset" class="medicine-formset" data-prefix="{{ formset.prefix }}">
                     {% for medicine_form in formset %}
                         <div class="medicine-card" data-form-index="{{ forloop.counter0 }}" data-is-new="false" {% if medicine_form.DELETE.value %}data-hidden="true" style="display:none"{% else %}data-hidden="false"{% endif %}>
