@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.utils import timezone
-from django.db import models
+from django.db.models import Q
 from .models import Appointment, AvailabilitySlot, Prescription, DoctorLeave, PrescriptionItem, PrescriptionTemplate, PrescriptionTemplateItem
 
 class AppointmentBookingForm(forms.ModelForm):
@@ -108,15 +108,16 @@ class PrescriptionForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        doctor_profile = kwargs.pop('doctor_profile', None)
         super().__init__(*args, **kwargs)
         # Filter templates by doctor's specialization if doctor_profile is available
-        if hasattr(self, 'doctor_profile') and self.doctor_profile:
+        if doctor_profile:
             self.fields['template'].queryset = PrescriptionTemplate.objects.filter(
                 is_active=True
             ).filter(
-                models.Q(specialization=self.doctor_profile.specialization) |
-                models.Q(specialization__isnull=True) |
-                models.Q(specialization='')
+                Q(specialization=doctor_profile.specialization) |
+                Q(specialization__isnull=True) |
+                Q(specialization='')
             )
 
 

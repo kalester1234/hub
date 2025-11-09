@@ -52,7 +52,7 @@ def doctor_dashboard(request):
         doctor=doctor,
         status='pending'
     ).count()
-    total_appointments = Appointment.objects.filter(doctor=doctor).count()
+    appointment_count = Appointment.objects.filter(doctor=doctor).count()
     completed_appointments = Appointment.objects.filter(
         doctor=doctor,
         status='completed'
@@ -103,7 +103,7 @@ def doctor_dashboard(request):
         'upcoming_appointments': upcoming_appointments,
         'today_appointments': today_appointments,
         'pending_requests': pending_requests,
-        'total_appointments': total_appointments,
+        'appointment_count': appointment_count,
         'completed_appointments': completed_appointments,
         'next_day_appointments': next_day_appointments,
         'pending_prescriptions': pending_prescriptions,
@@ -136,7 +136,7 @@ def patient_dashboard(request):
         status='confirmed'
     ).count()
     
-    total_appointments = Appointment.objects.filter(patient=patient).count()
+    appointment_count = Appointment.objects.filter(patient=patient).count()
     completed_appointments = Appointment.objects.filter(
         patient=patient,
         status='completed'
@@ -160,7 +160,7 @@ def patient_dashboard(request):
     context = {
         'upcoming_appointments': upcoming_appointments,
         'today_appointments': today_appointments,
-        'total_appointments': total_appointments,
+        'appointment_count': appointment_count,
         'completed_appointments': completed_appointments,
         'doctors_available': doctors,
         'unread_notifications': unread_notifications,
@@ -213,38 +213,91 @@ def admin_dashboard(request):
             messages.success(request, 'Doctor removed successfully.')
             return redirect('admin_dashboard')
 
-    doctors_qs = CustomUser.objects.filter(role='doctor').select_related('doctor_profile')
-    if doctor_search_query:
-        doctors_qs = doctors_qs.filter(
+    # Build doctors queryset - COMPLETELY avoid filtering on related fields to prevent annotation conflicts
+    has_doctor_search = bool(doctor_search_query)
+    all_doctor_ids = None  # Initialize variable
+    if has_doctor_search:
+        active_section = 'manage-data'
+        manage_tab = 'doctors'
+        # Filter on user fields only, then filter profiles in Python to avoid annotation conflicts
+        doctors_qs_user_fields = CustomUser.objects.filter(role='doctor').filter(
             Q(first_name__icontains=doctor_search_query) |
             Q(last_name__icontains=doctor_search_query) |
             Q(username__icontains=doctor_search_query) |
             Q(email__icontains=doctor_search_query) |
-            Q(phone__icontains=doctor_search_query) |
-            Q(doctor_profile__hospital_name__icontains=doctor_search_query) |
-            Q(doctor_profile__specialization__icontains=doctor_search_query)
-        ).distinct()
-        active_section = 'manage-data'
-        manage_tab = 'doctors'
-    patients_qs = CustomUser.objects.filter(role='patient').select_related('patient_profile')
-    if patient_search_query:
-        patients_qs = patients_qs.filter(
+            Q(phone__icontains=doctor_search_query)
+        )
+        # Get IDs from user field search
+        doctor_ids_from_user_search = list(doctors_qs_user_fields.values_list('id', flat=True))
+        
+        # For related field searches, fetch separately and filter in Python
+        # Search in doctor profiles separately
+        matching_profiles = DoctorProfile.objects.filter(
+            Q(hospital_name__icontains=doctor_search_query) |
+            Q(specialization__icontains=doctor_search_query)
+        ).values_list('user_id', flat=True)
+        doctor_ids_from_profile_search = list(matching_profiles)
+        # Combine and deduplicate
+        all_doctor_ids = list(dict.fromkeys(doctor_ids_from_user_search + doctor_ids_from_profile_search))
+        
+        total_doctors_from_search = len(all_doctor_ids) if all_doctor_ids else 0
+    
+    # Build patients queryset - COMPLETELY avoid filtering on related fields to prevent annotation conflicts
+    has_patient_search = bool(patient_search_query)
+    all_patient_ids = None  # Initialize variable
+    if has_patient_search:
+        active_section = 'users'
+        users_tab = 'patients'
+        # Filter on user fields only, then filter profiles in Python to avoid annotation conflicts
+        patients_qs_user_fields = CustomUser.objects.filter(role='patient').filter(
             Q(first_name__icontains=patient_search_query) |
             Q(last_name__icontains=patient_search_query) |
             Q(username__icontains=patient_search_query) |
             Q(email__icontains=patient_search_query) |
-            Q(phone__icontains=patient_search_query) |
-            Q(patient_profile__medical_history__icontains=patient_search_query)
-        ).distinct()
-        active_section = 'users'
-        users_tab = 'patients'
+            Q(phone__icontains=patient_search_query)
+        )
+        # Get IDs from user field search
+        patient_ids_from_user_search = list(patients_qs_user_fields.values_list('id', flat=True))
+        
+        # For related field searches, fetch separately and filter in Python
+        # Search in patient profiles separately
+        from accounts.models import PatientProfile
+        matching_profiles = PatientProfile.objects.filter(
+            Q(medical_history__icontains=patient_search_query)
+        ).values_list('user_id', flat=True)
+        patient_ids_from_profile_search = list(matching_profiles)
+        # Combine and deduplicate
+        all_patient_ids = list(dict.fromkeys(patient_ids_from_user_search + patient_ids_from_profile_search))
+        
+        total_patients_from_search = len(all_patient_ids) if all_patient_ids else 0
+    
     admin_qs = CustomUser.objects.filter(role='admin')
     total_users = CustomUser.objects.count()
-    total_doctors = doctors_qs.count()
-    total_patients = patients_qs.count()
+    
+    # Get counts using separate queries to avoid annotation conflicts
+    # When distinct() is used with related field filters, don't use select_related
+    if has_doctor_search:
+        # Use the pre-evaluated count to avoid annotation conflicts
+        total_doctors = total_doctors_from_search
+    else:
+        total_doctors = CustomUser.objects.filter(role='doctor').count()
+    
+    if has_patient_search:
+        # Use the pre-evaluated count to avoid annotation conflicts
+        total_patients = total_patients_from_search
+    else:
+        total_patients = CustomUser.objects.filter(role='patient').count()
     approved_doctors = DoctorProfile.objects.filter(is_approved=True).count()
     pending_doctors = DoctorProfile.objects.filter(is_approved=False).count()
-    active_patients = patients_qs.filter(is_active=True).count()
+    # Get active_patients count safely to avoid annotation conflicts
+    if has_patient_search:
+        # Count active patients from the pre-evaluated list more efficiently
+        if all_patient_ids:
+            active_patients = CustomUser.objects.filter(id__in=all_patient_ids, is_active=True).count()
+        else:
+            active_patients = 0
+    else:
+        active_patients = CustomUser.objects.filter(role='patient', is_active=True).count()
 
     today = timezone.now().date()
     month_start = today.replace(day=1)
@@ -324,7 +377,9 @@ def admin_dashboard(request):
     hospital_list = hospital_list_full[:5]
     doctors_with_hospital = len(hospital_profiles)
 
-    doctor_ids = list(doctors_qs.values_list('id', flat=True))
+    # Get doctor IDs explicitly to avoid annotation conflicts
+    # Create a fresh queryset without prefetch_related for values_list
+    doctor_ids = list(CustomUser.objects.filter(role='doctor').values_list('id', flat=True))
     doctor_records_map = defaultdict(list)
     doctor_records_total = defaultdict(int)
     if doctor_ids:
@@ -344,7 +399,25 @@ def admin_dashboard(request):
                 })
 
     doctor_rows = []
-    for doctor in doctors_qs.order_by('-date_joined'):
+    # CRITICAL: Fetch doctors and profiles separately to avoid annotation conflicts
+    if has_doctor_search:
+        # Use the pre-computed IDs to fetch doctors - this completely avoids annotation conflicts
+        if all_doctor_ids:
+            doctors_list = list(
+                CustomUser.objects.filter(id__in=all_doctor_ids)
+                .select_related('doctor_profile')
+                .order_by('-date_joined')
+            )
+        else:
+            doctors_list = []
+    else:
+        # When no search, we can safely use select_related
+        doctors_list = list(
+            CustomUser.objects.filter(role='doctor')
+            .select_related('doctor_profile')
+            .order_by('-date_joined')
+        )
+    for doctor in doctors_list:
         profile = getattr(doctor, 'doctor_profile', None)
         records = doctor_records_map.get(doctor.id, [])
         if not isinstance(records, list):
@@ -368,7 +441,25 @@ def admin_dashboard(request):
         })
 
     patient_rows = []
-    for patient in patients_qs.order_by('-date_joined'):
+    # CRITICAL: Fetch patients and profiles separately to avoid annotation conflicts
+    if has_patient_search:
+        # Use the pre-computed IDs to fetch patients - this completely avoids annotation conflicts
+        if all_patient_ids:
+            patients_list = list(
+                CustomUser.objects.filter(id__in=all_patient_ids)
+                .select_related('patient_profile')
+                .order_by('-date_joined')
+            )
+        else:
+            patients_list = []
+    else:
+        # When no search, we can safely use select_related
+        patients_list = list(
+            CustomUser.objects.filter(role='patient')
+            .select_related('patient_profile')
+            .order_by('-date_joined')
+        )
+    for patient in patients_list:
         profile = getattr(patient, 'patient_profile', None)
         full_name = patient.get_full_name()
         initials = ''.join([part[0] for part in full_name.split() if part]) if full_name else (patient.username[:1] if patient.username else '')
@@ -518,19 +609,31 @@ def admin_dashboard(request):
 
     # Analytics data for charts
     from django.db.models.functions import TruncMonth
-    monthly_appointments = Appointment.objects.annotate(
-        month=TruncMonth('appointment_date')
-    ).values('month').annotate(
-        total=Count('id'),
-        completed=Count('id', filter=Q(status='completed')),
-        cancelled=Count('id', filter=Q(status='cancelled'))
-    ).order_by('month')[:12]
+    # Evaluate queryset immediately to avoid any lazy evaluation issues
+    monthly_appointments = list(
+        Appointment.objects.annotate(
+            month=TruncMonth('appointment_date')
+        ).values('month').annotate(
+            total=Count('id'),
+            completed=Count('id', filter=Q(status='completed')),
+            cancelled=Count('id', filter=Q(status='cancelled'))
+        ).order_by('month')[:12]
+    )
 
-    doctor_performance = DoctorProfile.objects.filter(is_approved=True).annotate(
-        total_appointments=Count('user__doctor_appointments'),
-        completed_appointments=Count('user__doctor_appointments', filter=Q(user__doctor_appointments__status='completed')),
-        avg_rating=Avg('rating')
-    ).order_by('-total_appointments')[:10]
+    doctor_performance = []
+    # Efficiently fetch doctor performance data using annotations
+    # Note: Cannot use 'total_appointments' as annotation name since it's a field on DoctorProfile
+    doctors_with_performance = DoctorProfile.objects.filter(is_approved=True).select_related('user').annotate(
+        appt_count=Count('user__doctor_appointments'),
+        completed_appts=Count('user__doctor_appointments', filter=Q(user__doctor_appointments__status='completed'))
+    ).order_by('-appt_count')[:10]
+
+    for doctor in doctors_with_performance:
+        doctor_performance.append({
+            'doctor': doctor,
+            'appointment_count': doctor.appt_count,
+            'completed_appointments': doctor.completed_appts
+        })
 
     # Prescription templates count
     prescription_templates = PrescriptionTemplate.objects.filter(is_active=True).count()

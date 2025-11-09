@@ -47,8 +47,9 @@ class DoctorProfile(models.Model):
     available_to = models.TimeField()
     is_approved = models.BooleanField(default=False)
     rating = models.FloatField(default=5.0)
-    total_appointments = models.IntegerField(default=0)
+    total_appointments= models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
     
     class Meta:
         ordering = ['-rating']

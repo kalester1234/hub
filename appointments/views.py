@@ -51,6 +51,9 @@ def browse_doctors(request):
 
         doctors = doctors.filter(search_filters)
 
+    # Force evaluation to avoid lazy evaluation issues with renamed field
+    doctors = list(doctors)
+
     context = {
         'doctors': doctors,
         'specializations': DoctorProfile._meta.get_field('specialization').choices,
@@ -309,9 +312,10 @@ def add_prescription(request, appointment_id):
         return redirect('edit_prescription', appointment_id=appointment.id)
     
     placeholder_prescription = Prescription(appointment=appointment)
+    doctor_profile = getattr(request.user, 'doctor_profile', None)
 
     if request.method == 'POST':
-        form = PrescriptionForm(request.POST)
+        form = PrescriptionForm(request.POST, doctor_profile=doctor_profile)
         formset = PrescriptionItemFormSet(request.POST, instance=placeholder_prescription, prefix='items')
         if form.is_valid() and formset.is_valid():
             prescription = form.save(commit=False)
@@ -323,8 +327,7 @@ def add_prescription(request, appointment_id):
             messages.success(request, 'Prescription added successfully!')
             return redirect('appointment_detail', appointment_id=appointment.id)
     else:
-        form = PrescriptionForm()
-        form.doctor_profile = doctor_profile  # Pass doctor profile for template filtering
+        form = PrescriptionForm(doctor_profile=doctor_profile)
         formset = PrescriptionItemFormSet(instance=placeholder_prescription, prefix='items')
     
     context = {
@@ -354,8 +357,10 @@ def edit_prescription(request, appointment_id):
         messages.error(request, 'No prescription found for this consultation.')
         return redirect('add_prescription', appointment_id=appointment.id)
     
+    doctor_profile = getattr(request.user, 'doctor_profile', None)
+    
     if request.method == 'POST':
-        form = PrescriptionForm(request.POST, instance=prescription)
+        form = PrescriptionForm(request.POST, instance=prescription, doctor_profile=doctor_profile)
         formset = PrescriptionItemFormSet(request.POST, instance=prescription, prefix='items')
         if form.is_valid() and formset.is_valid():
             updated_prescription = form.save(commit=False)
@@ -365,8 +370,7 @@ def edit_prescription(request, appointment_id):
             messages.success(request, 'Prescription updated successfully!')
             return redirect('appointment_detail', appointment_id=appointment.id)
     else:
-        form = PrescriptionForm(instance=prescription)
-        form.doctor_profile = doctor_profile  # Pass doctor profile for template filtering
+        form = PrescriptionForm(instance=prescription, doctor_profile=doctor_profile)
         formset = PrescriptionItemFormSet(instance=prescription, prefix='items')
     
     context = {
@@ -846,8 +850,3 @@ def manage_leave_requests(request):
     return render(request, 'appointments/manage_leave_requests.html', context)
 
 
-@login_required(login_url='login')
-def get_template_items(request, template_id):
-    template = get_object_or_404(PrescriptionTemplate, id=template_id)
-    items = template.items.all().values('id', 'medicine_name', 'dosage', 'frequency', 'duration_days', 'instructions')
-    return JsonResponse(list(items), safe=False)
